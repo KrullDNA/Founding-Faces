@@ -157,6 +157,33 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'background-color: {{VALUE}};' ),
 		) );
 
+		// A line under the header — off by default; set a width to show it.
+		$this->add_control( 'header_divider_h', array(
+			'label'     => __( 'Line under header', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'header_divider_width', array(
+			'label'       => __( 'Line thickness', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SLIDER,
+			'range'       => array( 'px' => array( 'min' => 0, 'max' => 10 ) ),
+			'default'     => array( 'size' => 0 ),
+			'description' => __( 'Set above 0 to show a line under the header.', 'founding-faces' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-history-header' => 'border-bottom-width: {{SIZE}}{{UNIT}}; border-bottom-style: solid;' ),
+		) );
+		$this->add_control( 'header_divider_color', array(
+			'label'     => __( 'Line colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'default'   => '#d5d8dd',
+			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'border-bottom-color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'header_divider_gap', array(
+			'label'     => __( 'Space above the line', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'padding-bottom: {{SIZE}}{{UNIT}};' ),
+		) );
+
 		$this->end_controls_section();
 
 		/* =========================== HEADING STYLE ========================== */

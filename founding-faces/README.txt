@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.13
+Stable tag: 1.0.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,10 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.14 =
+* New: "Line under header" controls (thickness, colour, spacing) so a divider
+  can be added and styled in the widget. Off by default.
 
 = 1.0.13 =
 * Change: the date now sits as a small right-hand column at the bottom of each
