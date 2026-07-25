@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.8 =
+* New: Elementor dynamic tags in a "Founding Faces" group — Note Stage, Trial
+  number, Date, Audience, Product name, and Image gallery. Use them in an
+  Elementor (Pro) Loop Item to design the note card visually: click a widget's
+  dynamic (database) icon and pick the field. Reads the note being looped.
 
 = 1.0.7 =
 * New: JetEngine integration. Note meta is available to JetEngine Dynamic Field
