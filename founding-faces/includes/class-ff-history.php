@@ -40,10 +40,7 @@ class FF_History {
 	 */
 	public static function register_widgets( $widgets_manager ) {
 		require_once FF_PATH . 'includes/class-ff-history-widgets.php';
-		$widgets_manager->register( new FF_My_Activity_Widget() );
-		$widgets_manager->register( new FF_My_Votes_Widget() );
-		$widgets_manager->register( new FF_My_Notes_Widget() );
-		$widgets_manager->register( new FF_My_Feedback_Widget() );
+		$widgets_manager->register( new FF_Member_Archive_Widget() );
 	}
 
 	/**
@@ -134,9 +131,10 @@ class FF_History {
 	 * Sample notes-read markup.
 	 *
 	 * @param string $heading Optional heading override.
+	 * @param bool   $link    Whether to render the titles as links (to '#').
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '' ) {
+	public static function sample_notes( $heading = '', $link = true ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes you\'ve read', 'founding-faces' );
 		$titles  = array(
 			__( 'Trial 12 — stability at 40°C', 'founding-faces' ),
@@ -148,8 +146,9 @@ class FF_History {
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $titles as $i => $title ) {
+			$main = $link ? '<a href="#">' . esc_html( $title ) . '</a>' : esc_html( $title );
 			$out .= '<li class="ff-history-item">';
-			$out .= '<span class="ff-history-item-main">' . esc_html( $title ) . '</span>';
+			$out .= '<span class="ff-history-item-main">' . $main . '</span>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
 		}
@@ -291,9 +290,10 @@ class FF_History {
 	 *
 	 * @param int    $member_id The current member's id.
 	 * @param string $heading   Optional heading override.
+	 * @param bool   $link      Whether to link each note to its own page.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '' ) {
+	public static function render_notes( $member_id, $heading = '', $link = true ) {
 		$rows    = FF_Interactions::get_for_member( $member_id, 'note_viewed' );
 		$heading = '' !== $heading ? $heading : __( 'Notes you\'ve read', 'founding-faces' );
 
@@ -307,11 +307,23 @@ class FF_History {
 
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $rows as $row ) {
-			$title = get_the_title( (int) $row->reference_id );
-			$out  .= '<li class="ff-history-item">';
-			$out  .= '<span class="ff-history-item-main">' . esc_html( $title ? $title : __( '(note removed)', 'founding-faces' ) ) . '</span>';
-			$out  .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
-			$out  .= '</li>';
+			$ref   = (int) $row->reference_id;
+			$title = get_the_title( $ref );
+			$title = $title ? $title : __( '(note removed)', 'founding-faces' );
+
+			// Link the title to the note's own page when asked and possible.
+			$main = esc_html( $title );
+			if ( $link ) {
+				$url = get_permalink( $ref );
+				if ( $url ) {
+					$main = '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a>';
+				}
+			}
+
+			$out .= '<li class="ff-history-item">';
+			$out .= '<span class="ff-history-item-main">' . $main . '</span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
+			$out .= '</li>';
 		}
 		$out .= '</ul>';
 

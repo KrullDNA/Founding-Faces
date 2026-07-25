@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.12 =
+* Change: the four activity widgets are replaced by ONE "Founding Faces Member
+  Archive" widget with a Section selector (Full record / Header / Votes / Notes
+  / Feedback) — drop it multiple times to build any layout.
+* New: a full Style tab — typography, colour, background, padding, margin,
+  border and radius for the header, section headings, section box, items, and
+  item text (title / sub text / date), plus note-link colours.
+* New: notes in "Notes you've read" now link to the note's own page (toggle).
+* If you placed the old My Activity / My Votes / My Notes / My Feedback widgets,
+  re-add them as the Member Archive widget.
 
 = 1.0.11 =
 * New: the member-activity widgets (My Activity / My Votes / My Notes / My
