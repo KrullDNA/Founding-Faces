@@ -130,7 +130,7 @@ Stage 9 — Personal history page:
 * This is the seed of the launch "fingerprint" — the same data, later made
   presentable and optionally public with consent.
 
-Stage 10 (this release) — The members map:
+Stage 10 — The members map:
 * [ff_members_map] shortcode: an anonymous dot per member, placed from their
   postcode via a bundled Australian postcode-to-coordinates table (3,170
   postcodes) — no external API call.
@@ -148,6 +148,19 @@ Bundled data attribution: Australian postcode coordinates derived from the
 Matthew Proctor Australian postcodes dataset (matthewproctor.com), deduplicated
 to one centroid per postcode.
 
+Stage 11 (this release) — Account settings:
+* [ff_account] page: change email (with a confirmation link sent to the new
+  address), change password (secure token reset, the same mechanism as the
+  welcome link), and edit name.
+* Email-consent toggle that writes back through the connector — turning it off
+  unsubscribes at Campaign Monitor, not just locally; turning it on re-syncs.
+* Self-service data export (CSV) and delete buttons, calling the shared privacy
+  core (FF_Privacy): export gathers the whole record; delete removes the
+  application and personal meta, unsubscribes, retires (never reuses) the
+  number, and anonymises/deactivates the account.
+* Number, group and standing are shown read-only — Nick's to control, never the
+  member's to edit.
+
 == Changelog ==
 
 = 1.0.0 =
@@ -161,3 +174,4 @@ to one centroid per postcode.
 * Stage 8: interactive poll widget, aggregate results, admin who-voted view.
 * Stage 9: personal history page reading only the member's own spine rows.
 * Stage 10: anonymous members map (bundled postcodes, Leaflet, postcode-only).
+* Stage 11: account settings, consent write-back, self-service export/delete.

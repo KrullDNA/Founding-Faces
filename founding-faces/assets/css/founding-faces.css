@@ -623,3 +623,86 @@
 	font-family: var(--ff-font);
 	background: #f2f3f4;
 }
+
+/* ==========================================================================
+ * Account settings page.
+ * ========================================================================== */
+
+.ff-account {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+	max-width: 560px;
+	margin: 0 auto;
+}
+
+.ff-account-title {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 0 0 1.25rem;
+}
+
+.ff-account-standing {
+	background: var(--ff-bg);
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 1rem 1.2rem;
+	margin-bottom: 1.75rem;
+}
+
+.ff-account-standing > div {
+	display: flex;
+	justify-content: space-between;
+	padding: 0.35rem 0;
+}
+
+.ff-account-label {
+	color: var(--ff-muted);
+}
+
+.ff-account-standing-note {
+	margin: 0.6rem 0 0;
+	font-size: 0.82rem;
+	color: var(--ff-muted);
+}
+
+.ff-account-block {
+	margin-top: 1.75rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--ff-line);
+}
+
+.ff-account-block h3 {
+	font-size: 1.05rem;
+	font-weight: 700;
+	margin: 0 0 0.8rem;
+}
+
+.ff-account-data-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.ff-account .button {
+	font-family: inherit;
+	font-size: 0.95rem;
+	padding: 0.55rem 1.1rem;
+	border-radius: var(--ff-radius);
+	border: 1px solid var(--ff-line);
+	background: #fff;
+	color: var(--ff-ink);
+	cursor: pointer;
+}
+
+.ff-account .button:hover {
+	background: var(--ff-bg);
+}
+
+.ff-account .ff-danger {
+	border-color: #e6c3c3;
+	color: var(--ff-error-ink);
+}
+
+.ff-account .ff-danger:hover {
+	background: var(--ff-error);
+}

@@ -193,6 +193,37 @@ class FF_Emails {
 		return strtr( $template, $replacements );
 	}
 
+	/**
+	 * Send a member a secure password-reset link.
+	 *
+	 * Uses the same one-time token mechanism as the welcome link, so a member
+	 * who asks to change their password from the account page gets a secure
+	 * set-password screen rather than a plain-text password.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return bool
+	 */
+	public static function send_reset_link( $user_id ) {
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return false;
+		}
+
+		$token = self::create_setpw_token( $user_id );
+		$link  = self::build_setpw_link( $user_id, $token );
+
+		$subject = __( 'Reset your Founding Faces password', 'founding-faces' );
+		$body    = wpautop( make_clickable( sprintf(
+			/* translators: 1: member first name or display name, 2: secure link, 3: site name. */
+			__( "Hi %1\$s,\n\nUse this secure link to set a new password (valid for 7 days):\n%2\$s\n\nIf you didn't ask for this, you can safely ignore this email.\n\n%3\$s", 'founding-faces' ),
+			esc_html( $user->display_name ),
+			esc_url( $link ),
+			esc_html( get_bloginfo( 'name' ) )
+		) ) );
+
+		return wp_mail( $user->user_email, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8' ) );
+	}
+
 	/*
 	 * -----------------------------------------------------------------------
 	 * The token mechanism.

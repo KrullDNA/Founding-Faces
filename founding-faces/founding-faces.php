@@ -78,6 +78,13 @@ require_once FF_PATH . 'includes/class-ff-history.php';
 // The anonymous members map (Leaflet, bundled; postcode-only, nothing clickable).
 require_once FF_PATH . 'includes/class-ff-map.php';
 
+// Privacy: export and delete a member's data (reused by the account page and
+// the Stage 12 admin tools).
+require_once FF_PATH . 'includes/class-ff-privacy.php';
+
+// The member account-settings page: email, password, name, consent, data rights.
+require_once FF_PATH . 'includes/class-ff-account.php';
+
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
@@ -134,6 +141,7 @@ function ff_init() {
 	FF_Polls::register();
 	FF_History::register();
 	FF_Map::register();
+	FF_Account::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {

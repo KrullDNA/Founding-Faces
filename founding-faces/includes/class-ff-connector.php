@@ -184,6 +184,40 @@ class FF_Connectors {
 	}
 
 	/**
+	 * Unsubscribe a member from the active platform.
+	 *
+	 * Used by the account page's consent toggle so that turning consent off
+	 * writes back to Campaign Monitor, not only locally. Skips silently if there
+	 * is no configured connector.
+	 *
+	 * @param int $user_id The member's WordPress user id.
+	 * @return void
+	 */
+	public static function unsubscribe_member( $user_id ) {
+		$connector = self::get_active();
+		if ( ! $connector || ! $connector->is_configured() ) {
+			return;
+		}
+
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return;
+		}
+
+		$result = $connector->unsubscribe( $user->user_email );
+		if ( is_wp_error( $result ) ) {
+			update_option(
+				self::OPT_LAST_ERROR,
+				array(
+					'message' => $result->get_error_message(),
+					'email'   => $user->user_email,
+					'time'    => current_time( 'mysql' ),
+				)
+			);
+		}
+	}
+
+	/**
 	 * Build the outward payload for a member from their stored data.
 	 *
 	 * Only the four fields the programme ever shares: name, email, number and
