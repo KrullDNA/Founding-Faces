@@ -480,9 +480,12 @@ class FF_Display {
 	/**
 	 * The "members only" notice shown to non-members.
 	 *
+	 * Public so other components (like the personal-history page) can show the
+	 * same consistent prompt.
+	 *
 	 * @return string
 	 */
-	private static function members_only_notice() {
+	public static function members_only_notice() {
 		return '<div class="ff-notice ff-members-only">'
 			. esc_html__( 'This area is for Founding Faces members.', 'founding-faces' )
 			. ' <a href="' . esc_url( wp_login_url( self::current_url() ) ) . '">' . esc_html__( 'Log in', 'founding-faces' ) . '</a>'

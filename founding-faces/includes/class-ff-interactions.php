@@ -72,6 +72,42 @@ class FF_Interactions {
 	}
 
 	/**
+	 * Get a member's own interaction rows, newest first.
+	 *
+	 * Reads only the given member's rows — the caller passes the current
+	 * member's id, so no one ever sees another member's history.
+	 *
+	 * @param int         $member_id The member's user id.
+	 * @param string|null $type      Optional interaction type to filter by.
+	 * @param int         $limit     Maximum rows to return.
+	 * @return array
+	 */
+	public static function get_for_member( $member_id, $type = null, $limit = 200 ) {
+		global $wpdb;
+
+		$limit = max( 1, (int) $limit );
+
+		if ( null === $type ) {
+			return $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}ff_interactions WHERE member_id = %d ORDER BY created_at DESC LIMIT %d",
+					(int) $member_id,
+					$limit
+				)
+			);
+		}
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}ff_interactions WHERE member_id = %d AND type = %s ORDER BY created_at DESC LIMIT %d",
+				(int) $member_id,
+				$type,
+				$limit
+			)
+		);
+	}
+
+	/**
 	 * Record an interaction only if it hasn't been recorded before.
 	 *
 	 * Used for "first viewed" style events, where we want one row per member and

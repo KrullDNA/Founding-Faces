@@ -105,7 +105,7 @@ Stage 7 — Frontend display:
 * First views recorded to the interaction spine (note_viewed) for the later
   personal-history page.
 
-Stage 8 (this release) — Poll widget:
+Stage 8 — Poll widget:
 * Polls as a non-public ff_poll type: question, two-or-more options each with an
   optional image, per-poll audience (everyone / the-35-only), open/closed
   status, an "active poll" flag, and an outcome/reasoning field.
@@ -120,6 +120,16 @@ Stage 8 (this release) — Poll widget:
 * Admin "who voted for what" view on the poll screen: each option's count and
   the members (real name + number) who chose it. Never exposed on the frontend.
 
+Stage 9 (this release) — Personal history page:
+* [ff_history] shortcode: a logged-in member sees their number and group, the
+  polls they voted in and how they voted, the notes they've read, and any
+  feedback they've shared.
+* Reads only the current member's own rows from ff_poll_votes and
+  ff_interactions — the member id always comes from the session, never the
+  request, so no other member's data is ever visible.
+* This is the seed of the launch "fingerprint" — the same data, later made
+  presentable and optionally public with consent.
+
 == Changelog ==
 
 = 1.0.0 =
@@ -131,3 +141,4 @@ Stage 8 (this release) — Poll widget:
 * Stage 6: structured notes, per-note gating, Elementor visibility condition.
 * Stage 7: designed-once note template, display components, hybrid home screen.
 * Stage 8: interactive poll widget, aggregate results, admin who-voted view.
+* Stage 9: personal history page reading only the member's own spine rows.

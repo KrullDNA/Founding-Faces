@@ -513,3 +513,89 @@
 	color: var(--ff-muted);
 	margin-bottom: 0.4rem;
 }
+
+/* ==========================================================================
+ * Personal history page.
+ * ========================================================================== */
+
+.ff-history {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+	max-width: 680px;
+	margin: 0 auto;
+}
+
+.ff-history-header {
+	text-align: center;
+	padding: 1.5rem 1rem 2rem;
+	border-bottom: 1px solid var(--ff-line);
+	margin-bottom: 1.5rem;
+}
+
+.ff-history-number {
+	font-size: 1.9rem;
+	font-weight: 700;
+	color: var(--ff-ink);
+}
+
+.ff-history-group {
+	display: inline-block;
+	margin-top: 0.4rem;
+	padding: 3px 12px;
+	border-radius: 999px;
+	background: var(--ff-bg);
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--ff-accent);
+}
+
+.ff-history-intro {
+	margin-top: 0.9rem;
+	color: var(--ff-muted);
+	font-size: 0.92rem;
+}
+
+.ff-history-section {
+	margin-bottom: 2rem;
+}
+
+.ff-history-heading {
+	font-size: 1.05rem;
+	font-weight: 700;
+	margin: 0 0 0.9rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 2px solid var(--ff-accent);
+	display: inline-block;
+}
+
+.ff-history-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ff-history-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.3rem 1rem;
+	padding: 0.8rem 0;
+	border-bottom: 1px solid var(--ff-line);
+}
+
+.ff-history-item-main {
+	font-weight: 600;
+	flex: 1 1 60%;
+}
+
+.ff-history-item-detail {
+	color: var(--ff-accent);
+	font-size: 0.9rem;
+	flex: 1 1 100%;
+}
+
+.ff-history-item-date {
+	color: var(--ff-muted);
+	font-size: 0.82rem;
+	margin-left: auto;
+}

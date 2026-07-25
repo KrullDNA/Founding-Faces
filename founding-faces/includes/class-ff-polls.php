@@ -295,6 +295,40 @@ class FF_Polls {
 	}
 
 	/**
+	 * A member's own poll votes, newest first.
+	 *
+	 * Reads only this member's rows from ff_poll_votes.
+	 *
+	 * @param int $member_id The member's user id.
+	 * @return array Rows of poll_id, option_id, voted_at.
+	 */
+	public static function member_votes( $member_id ) {
+		global $wpdb;
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT poll_id, option_id, voted_at FROM {$wpdb->prefix}ff_poll_votes WHERE member_id = %d ORDER BY voted_at DESC",
+				(int) $member_id
+			)
+		);
+	}
+
+	/**
+	 * The label of a specific option within a poll.
+	 *
+	 * @param int $poll_id   The poll id.
+	 * @param int $option_id The option id.
+	 * @return string The label, or an empty string if not found.
+	 */
+	public static function option_label( $poll_id, $option_id ) {
+		foreach ( self::get_options( $poll_id ) as $opt ) {
+			if ( (int) $opt['id'] === (int) $option_id ) {
+				return $opt['label'];
+			}
+		}
+		return '';
+	}
+
+	/**
 	 * The id of the current active poll, or 0 if none.
 	 *
 	 * @return int

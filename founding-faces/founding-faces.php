@@ -72,6 +72,9 @@ require_once FF_PATH . 'includes/class-ff-display.php';
 // Polls: the poll content type, voting, results and the Elementor widget.
 require_once FF_PATH . 'includes/class-ff-polls.php';
 
+// The personal history page: a member's own record, and only their own.
+require_once FF_PATH . 'includes/class-ff-history.php';
+
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
@@ -126,6 +129,7 @@ function ff_init() {
 	FF_Gating::register();
 	FF_Display::register();
 	FF_Polls::register();
+	FF_History::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {

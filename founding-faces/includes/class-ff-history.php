@@ -1,0 +1,202 @@
+<?php
+/**
+ * The personal history page.
+ *
+ * A logged-in member visits their own page and sees their number, the polls
+ * they voted in and how they voted, the feedback they submitted, and the notes
+ * they've engaged with. It reads only their own rows from the interaction log
+ * and the poll-votes table — no other member's data is ever visible here.
+ *
+ * This is the seed of the launch "fingerprint" moment: the same data, later
+ * made presentable and optionally public with consent.
+ *
+ * @package FoundingFaces
+ */
+
+// Stop anyone loading this file directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Class FF_History
+ *
+ * The read side of the spine, scoped hard to the current member.
+ */
+class FF_History {
+
+	/**
+	 * Register the personal-history shortcode.
+	 */
+	public static function register() {
+		add_shortcode( 'ff_history', array( __CLASS__, 'shortcode' ) );
+	}
+
+	/**
+	 * Render the [ff_history] shortcode.
+	 *
+	 * Always reads the CURRENT member's id from the session — never an id from
+	 * the request — so a member can only ever see their own record.
+	 *
+	 * @return string
+	 */
+	public static function shortcode() {
+		wp_enqueue_style( 'founding-faces', FF_URL . 'assets/css/founding-faces.css', array(), FF_VERSION );
+
+		if ( ! FF_Gating::is_member() ) {
+			return FF_Display::members_only_notice();
+		}
+
+		$member_id = get_current_user_id();
+
+		$out  = '<div class="ff-history">';
+		$out .= self::render_header( $member_id );
+		$out .= self::render_votes( $member_id );
+		$out .= self::render_notes( $member_id );
+		$out .= self::render_feedback( $member_id );
+		$out .= '</div>';
+
+		return $out;
+	}
+
+	/**
+	 * Render the header: the member's number and group.
+	 *
+	 * @param int $member_id The current member's id.
+	 * @return string
+	 */
+	private static function render_header( $member_id ) {
+		$number = get_user_meta( $member_id, FF_Members::META_NUMBER, true );
+		$group  = FF_Gating::is_the_35( $member_id ) ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' );
+
+		$out  = '<header class="ff-history-header">';
+		if ( $number ) {
+			$out .= '<div class="ff-history-number">' . sprintf(
+				/* translators: %d is the member's Founding number. */
+				esc_html__( 'Founding Face %d', 'founding-faces' ),
+				(int) $number
+			) . '</div>';
+		}
+		$out .= '<div class="ff-history-group">' . esc_html( $group ) . '</div>';
+		$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		$out .= '</header>';
+
+		return $out;
+	}
+
+	/**
+	 * Render the polls the member voted in and how they voted.
+	 *
+	 * @param int $member_id The current member's id.
+	 * @return string
+	 */
+	private static function render_votes( $member_id ) {
+		$votes = FF_Polls::member_votes( $member_id );
+
+		$out  = '<section class="ff-history-section">';
+		$out .= '<h3 class="ff-history-heading">' . esc_html__( 'Your votes', 'founding-faces' ) . '</h3>';
+
+		if ( empty( $votes ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t voted in a poll yet.', 'founding-faces' ) . '</p>';
+			return $out . '</section>';
+		}
+
+		$out .= '<ul class="ff-history-list">';
+		foreach ( $votes as $vote ) {
+			$question = get_the_title( (int) $vote->poll_id );
+			$choice   = FF_Polls::option_label( (int) $vote->poll_id, (int) $vote->option_id );
+
+			$out .= '<li class="ff-history-item">';
+			$out .= '<span class="ff-history-item-main">' . esc_html( $question ? $question : __( '(poll removed)', 'founding-faces' ) ) . '</span>';
+			if ( '' !== $choice ) {
+				$out .= '<span class="ff-history-item-detail">' . sprintf(
+					/* translators: %s is the option the member chose. */
+					esc_html__( 'You chose: %s', 'founding-faces' ),
+					esc_html( $choice )
+				) . '</span>';
+			}
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $vote->voted_at ) ) . '</span>';
+			$out .= '</li>';
+		}
+		$out .= '</ul>';
+
+		return $out . '</section>';
+	}
+
+	/**
+	 * Render the notes the member has engaged with.
+	 *
+	 * @param int $member_id The current member's id.
+	 * @return string
+	 */
+	private static function render_notes( $member_id ) {
+		$rows = FF_Interactions::get_for_member( $member_id, 'note_viewed' );
+
+		$out  = '<section class="ff-history-section">';
+		$out .= '<h3 class="ff-history-heading">' . esc_html__( 'Notes you\'ve read', 'founding-faces' ) . '</h3>';
+
+		if ( empty( $rows ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t opened any notes yet.', 'founding-faces' ) . '</p>';
+			return $out . '</section>';
+		}
+
+		$out .= '<ul class="ff-history-list">';
+		foreach ( $rows as $row ) {
+			$title = get_the_title( (int) $row->reference_id );
+			$out  .= '<li class="ff-history-item">';
+			$out  .= '<span class="ff-history-item-main">' . esc_html( $title ? $title : __( '(note removed)', 'founding-faces' ) ) . '</span>';
+			$out  .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
+			$out  .= '</li>';
+		}
+		$out .= '</ul>';
+
+		return $out . '</section>';
+	}
+
+	/**
+	 * Render the feedback the member has submitted.
+	 *
+	 * Reads feedback rows from the interaction spine. Feedback capture is a
+	 * later addition; this section shows entries whenever they exist and stays
+	 * quietly empty until then.
+	 *
+	 * @param int $member_id The current member's id.
+	 * @return string
+	 */
+	private static function render_feedback( $member_id ) {
+		// Accept either spine label used for feedback.
+		$rows = array_merge(
+			FF_Interactions::get_for_member( $member_id, 'feedback_submitted' ),
+			FF_Interactions::get_for_member( $member_id, 'feedback' )
+		);
+
+		$out  = '<section class="ff-history-section">';
+		$out .= '<h3 class="ff-history-heading">' . esc_html__( 'Feedback you\'ve shared', 'founding-faces' ) . '</h3>';
+
+		if ( empty( $rows ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t shared any feedback yet.', 'founding-faces' ) . '</p>';
+			return $out . '</section>';
+		}
+
+		$out .= '<ul class="ff-history-list">';
+		foreach ( $rows as $row ) {
+			$out .= '<li class="ff-history-item">';
+			$out .= '<span class="ff-history-item-main">' . esc_html__( 'Feedback submitted', 'founding-faces' ) . '</span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
+			$out .= '</li>';
+		}
+		$out .= '</ul>';
+
+		return $out . '</section>';
+	}
+
+	/**
+	 * Format a stored datetime to the site's date format.
+	 *
+	 * @param string $datetime A stored MySQL datetime.
+	 * @return string
+	 */
+	private static function format_date( $datetime ) {
+		return mysql2date( get_option( 'date_format' ), $datetime );
+	}
+}
