@@ -97,6 +97,7 @@ require_once FF_PATH . 'includes/class-ff-emails.php';
 // re-synced from the front-end account page later.
 require_once FF_PATH . 'includes/class-ff-connector.php';
 require_once FF_PATH . 'add-ons/campaign-monitor/class-ff-cm-connector.php';
+require_once FF_PATH . 'add-ons/klaviyo/class-ff-klaviyo-connector.php';
 
 // Admin-only screens: the moderation queue and the settings page.
 if ( is_admin() ) {

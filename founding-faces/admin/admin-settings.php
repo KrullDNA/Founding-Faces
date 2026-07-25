@@ -94,6 +94,10 @@ class FF_Settings {
 			array( 'sanitize_callback' => 'sanitize_text_field' )
 		);
 
+		// Klaviyo add-on keys.
+		register_setting( self::GROUP, FF_Klaviyo_Connector::OPT_API_KEY, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Klaviyo_Connector::OPT_LIST_ID, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+
 		// Members map settings: tile source, and per-tier dot colour and size.
 		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => 'esc_url_raw' ) );
 		register_setting( self::GROUP, FF_Map::OPT_TILE_ATTRIBUTION, array( 'sanitize_callback' => 'wp_kses_post' ) );
@@ -296,6 +300,34 @@ class FF_Settings {
 						type="text" class="regular-text"
 						value="<?php echo esc_attr( $list_id ); ?>" />
 					<p class="description"><?php esc_html_e( 'The Group and Number custom fields are created on this list automatically.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
+		<?php
+		$k_key  = get_option( FF_Klaviyo_Connector::OPT_API_KEY, '' );
+		$k_list = get_option( FF_Klaviyo_Connector::OPT_LIST_ID, '' );
+		?>
+		<h3><?php esc_html_e( 'Klaviyo', 'founding-faces' ); ?></h3>
+		<p class="description"><?php esc_html_e( 'For when Klaviyo is purchased. The group is sent as both a tag and a profile property, alongside name, email and number.', 'founding-faces' ); ?></p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_API_KEY ); ?>"><?php esc_html_e( 'Klaviyo private API key', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_API_KEY ); ?>"
+						id="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_API_KEY ); ?>"
+						type="password" class="regular-text" autocomplete="off"
+						value="<?php echo esc_attr( $k_key ); ?>" />
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_LIST_ID ); ?>"><?php esc_html_e( 'Klaviyo list ID (optional)', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_LIST_ID ); ?>"
+						id="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_LIST_ID ); ?>"
+						type="text" class="regular-text"
+						value="<?php echo esc_attr( $k_list ); ?>" />
+					<p class="description"><?php esc_html_e( 'If set, approved members are also added to this Klaviyo list.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>

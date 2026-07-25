@@ -161,7 +161,7 @@ Stage 11 — Account settings:
 * Number, group and standing are shown read-only — Nick's to control, never the
   member's to edit.
 
-Stage 12 (this release) — Privacy & admin tools:
+Stage 12 — Privacy & admin tools:
 * Privacy & Tools admin page: per-member CSV export, delete-with-number-
   retention (personal data removed, number retired never reused), and a consent
   audit (who consented and when) in one members table.
@@ -171,6 +171,17 @@ Stage 12 (this release) — Privacy & admin tools:
   clears the retired list — together — so the next real The 35 member is 01.
   Refuses to run if any real numbered member exists, and requires typing the
   word RESET, not a single click.
+
+Stage 13 (this release) — Klaviyo add-on:
+* Second connector implementing the same FF_Connector contract, for when
+  Klaviyo is purchased. Select it as the active platform on the Settings page;
+  only one connector is ever active at a time.
+* Syncs name, email, number and group; the group is sent as BOTH a profile
+  property and a tag (a "tags" array property Klaviyo can segment on).
+* Upserts the profile (create, or update if it already exists) and optionally
+  adds it to a configured Klaviyo list. Consent toggle write-back unsubscribes
+  at Klaviyo too. Gated on consent, like Campaign Monitor. Private API key and
+  optional list ID in Settings. Uses WordPress's HTTP API, no SDK.
 
 == Changelog ==
 
@@ -187,3 +198,4 @@ Stage 12 (this release) — Privacy & admin tools:
 * Stage 10: anonymous members map (bundled postcodes, Leaflet, postcode-only).
 * Stage 11: account settings, consent write-back, self-service export/delete.
 * Stage 12: privacy admin tools, consent audit, guarded test-mode reset.
+* Stage 13: Klaviyo add-on (group as tag + property), consent-gated.

@@ -96,9 +96,13 @@ class FF_Connectors {
 	 * Called once on plugin load.
 	 */
 	public static function register() {
-		// The Campaign Monitor add-on ships now; Klaviyo is added in Stage 13.
+		// Register each available add-on. Only one is active at a time (chosen
+		// on the settings page); the core doesn't care which.
 		if ( class_exists( 'FF_CM_Connector' ) ) {
 			self::add( new FF_CM_Connector() );
+		}
+		if ( class_exists( 'FF_Klaviyo_Connector' ) ) {
+			self::add( new FF_Klaviyo_Connector() );
 		}
 
 		// Sync a member to the active platform the moment they're approved.
