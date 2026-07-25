@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.1 =
+* Fix: the Polls admin menu now registers reliably (where polls are created).
+* Fix: the members map initialises correctly inside the Elementor editor and
+  when the widget is added live.
+* Change: the anonymous members map now renders for everyone (it exposes no
+  personal data); restrict it with the Elementor "Show to" control or page
+  access if desired.
+* New: page-level access control — a "Founding Faces Access" box on every Page
+  and Post (Public / All members / The 35 / The Circle) that redirects
+  unauthorised visitors, with a restricted-page redirect setting.
 
 = 1.0.0 =
 * Stage 1: foundation and data layer.

@@ -267,12 +267,10 @@ class FF_Map {
 
 		$args = wp_parse_args( $args, $defaults );
 
-		// Members-only on the front end, but always visible inside the Elementor
-		// builder so the page can be designed.
-		if ( ! FF_Gating::is_member() && ! self::is_builder() ) {
-			return FF_Display::members_only_notice();
-		}
-
+		// The map is fully anonymous — only coordinates and tier, no names — so
+		// it is safe to show to anyone, and it is not gated here. Restrict where
+		// it appears, if you want to, with the Elementor "Show to" control or the
+		// page-level access setting.
 		self::enqueue_assets();
 
 		self::$instance++;
