@@ -38,6 +38,13 @@ class FF_Gating {
 		// isn't in The 35. This is what keeps the vault safe in a JetEngine grid.
 		add_action( 'pre_get_posts', array( __CLASS__, 'gate_note_queries' ) );
 
+		// Gate the single-note URL: a note now has its own page (so Elementor
+		// can style it), but the wrong viewer is redirected before it renders.
+		add_action( 'template_redirect', array( __CLASS__, 'gate_single_note' ) );
+
+		// Keep notes out of the WordPress sitemap, so single URLs aren't listed.
+		add_filter( 'wp_sitemaps_post_types', array( __CLASS__, 'exclude_notes_from_sitemap' ) );
+
 		// Add the "Show to" control to the Advanced tab of every element.
 		add_action( 'elementor/element/after_section_end', array( __CLASS__, 'add_visibility_control' ), 10, 3 );
 
@@ -167,6 +174,60 @@ class FF_Gating {
 			),
 		);
 		$query->set( 'meta_query', $meta_query );
+	}
+
+	/**
+	 * Redirect the wrong viewer away from a single note's page.
+	 *
+	 * The note has a public URL now (for Elementor Single templates), but the
+	 * audience gate is enforced here before anything renders: a member who can't
+	 * view the note is sent away, and a logged-out visitor is sent to log in.
+	 *
+	 * @return void
+	 */
+	public static function gate_single_note() {
+		if ( is_admin() || ! is_singular( FF_Post_Types::NOTE_CPT ) ) {
+			return;
+		}
+
+		$note_id = get_queried_object_id();
+		if ( self::can_view_note( $note_id ) ) {
+			return;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			wp_safe_redirect( wp_login_url( self::current_url() ) );
+			exit;
+		}
+
+		$redirect_id = (int) get_option( FF_Page_Access::OPT_REDIRECT, 0 );
+		$target      = $redirect_id ? get_permalink( $redirect_id ) : home_url( '/' );
+		if ( ! $target ) {
+			$target = home_url( '/' );
+		}
+		wp_safe_redirect( add_query_arg( 'ff_denied', '1', $target ) );
+		exit;
+	}
+
+	/**
+	 * Remove the notes post type from the WordPress sitemap.
+	 *
+	 * @param array $post_types The sitemap post types, keyed by name.
+	 * @return array
+	 */
+	public static function exclude_notes_from_sitemap( $post_types ) {
+		unset( $post_types[ FF_Post_Types::NOTE_CPT ] );
+		return $post_types;
+	}
+
+	/**
+	 * The URL of the current request, for a post-login redirect.
+	 *
+	 * @return string
+	 */
+	private static function current_url() {
+		global $wp;
+		return home_url( add_query_arg( array(), $wp ? $wp->request : '' ) );
 	}
 
 	/*

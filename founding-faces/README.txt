@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.8
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,24 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.10 =
+* New: "Note — First image" dynamic tag (single image) for the Elementor Image
+  widget. The existing "Note — Image gallery" tag is for gallery/carousel
+  widgets; a single Image widget needs this single-image tag.
+
+= 1.0.9 =
+* New: member-activity Elementor widgets — "My Activity" (with section toggles
+  and editable headings), plus "My Votes", "My Notes Read" and "My Feedback".
+  Each reads only the signed-in member's own data; admins see a placeholder
+  when building.
+* New: "Member — My number" and "Member — My group" dynamic tags, for designing
+  the activity header freely.
+* New: notes now have a single URL (slug /note/), so Elementor Theme Builder
+  can target them with a Single template and display conditions. The single
+  view is gated server-side (wrong viewers are redirected before render), notes
+  stay out of REST and the sitemap, and loop gating is unchanged. Rewrite rules
+  are flushed once automatically.
 
 = 1.0.8 =
 * New: Elementor dynamic tags in a "Founding Faces" group — Note Stage, Trial

@@ -169,15 +169,21 @@ class FF_Post_Types {
 			'show_in_menu'        => true,
 			'menu_icon'           => 'dashicons-editor-ul',
 			'menu_position'       => 27,
-			'publicly_queryable'  => false,
+			// Publicly queryable so a note has a single URL and Elementor Theme
+			// Builder can target it with a Single template and display rules.
+			// The single view is gated server-side (see FF_Gating::gate_single_note),
+			// so 35-only notes still can't be reached by the wrong viewer.
+			'publicly_queryable'  => true,
 			'exclude_from_search' => true,
 			'has_archive'         => false,
-			'rewrite'             => false,
+			'rewrite'             => array(
+				'slug'       => 'note',
+				'with_front' => false,
+			),
 			'hierarchical'        => false,
 			'supports'            => array( 'title', 'editor', 'thumbnail' ),
-			// Kept out of the REST API so 35-only note content can never be
-			// pulled by an unauthorised browser through the API. Notes reach a
-			// page only through the plugin's gated renderer.
+			// Still kept out of the REST API so 35-only note content can never be
+			// pulled by an unauthorised browser through the API.
 			'show_in_rest'        => false,
 		);
 
