@@ -54,6 +54,132 @@ class FF_History {
 	}
 
 	/**
+	 * Whether we're rendering inside the Elementor editor or its preview.
+	 *
+	 * @return bool
+	 */
+	public static function is_editor() {
+		if ( ! class_exists( '\Elementor\Plugin' ) ) {
+			return false;
+		}
+		$p    = \Elementor\Plugin::$instance;
+		$edit = isset( $p->editor ) && $p->editor->is_edit_mode();
+		$prev = isset( $p->preview ) && method_exists( $p->preview, 'is_preview_mode' ) && $p->preview->is_preview_mode();
+		return $edit || $prev;
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Sample renderers.
+	 * Used only in the Elementor editor so the widgets can be styled on-brand
+	 * before there are any real members. Same markup and classes as the real
+	 * sections, so styling carries straight over.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * A sample date a number of weeks in the past, formatted for display.
+	 *
+	 * @param int $weeks_ago How many weeks back.
+	 * @return string
+	 */
+	private static function sample_date( $weeks_ago ) {
+		$ts = current_time( 'timestamp' ) - ( $weeks_ago * WEEK_IN_SECONDS );
+		return date_i18n( get_option( 'date_format' ), $ts );
+	}
+
+	/**
+	 * Sample header markup.
+	 *
+	 * @return string
+	 */
+	public static function sample_header() {
+		$out  = '<header class="ff-history-header">';
+		$out .= '<div class="ff-history-number">' . sprintf( esc_html__( 'Founding Face %d', 'founding-faces' ), 7 ) . '</div>';
+		$out .= '<div class="ff-history-group">' . esc_html__( 'The 35', 'founding-faces' ) . '</div>';
+		$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		$out .= '</header>';
+		return $out;
+	}
+
+	/**
+	 * Sample votes markup.
+	 *
+	 * @param string $heading Optional heading override.
+	 * @return string
+	 */
+	public static function sample_votes( $heading = '' ) {
+		$heading = '' !== $heading ? $heading : __( 'Your votes', 'founding-faces' );
+		$rows    = array(
+			array( __( 'The Serum — accent colour', 'founding-faces' ), __( 'Darker grey', 'founding-faces' ) ),
+			array( __( 'The Cleanser — texture', 'founding-faces' ), __( 'Gel-cream', 'founding-faces' ) ),
+			array( __( 'The Mist — fragrance', 'founding-faces' ), __( 'Unscented', 'founding-faces' ) ),
+		);
+
+		$out  = '<section class="ff-history-section">';
+		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<ul class="ff-history-list">';
+		foreach ( $rows as $i => $row ) {
+			$out .= '<li class="ff-history-item">';
+			$out .= '<span class="ff-history-item-main">' . esc_html( $row[0] ) . '</span>';
+			$out .= '<span class="ff-history-item-detail">' . sprintf( esc_html__( 'You chose: %s', 'founding-faces' ), esc_html( $row[1] ) ) . '</span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
+			$out .= '</li>';
+		}
+		$out .= '</ul></section>';
+		return $out;
+	}
+
+	/**
+	 * Sample notes-read markup.
+	 *
+	 * @param string $heading Optional heading override.
+	 * @return string
+	 */
+	public static function sample_notes( $heading = '' ) {
+		$heading = '' !== $heading ? $heading : __( 'Notes you\'ve read', 'founding-faces' );
+		$titles  = array(
+			__( 'Trial 12 — stability at 40°C', 'founding-faces' ),
+			__( 'Switching to a mild preservative system', 'founding-faces' ),
+			__( 'Why we rejected the first serum base', 'founding-faces' ),
+		);
+
+		$out  = '<section class="ff-history-section">';
+		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<ul class="ff-history-list">';
+		foreach ( $titles as $i => $title ) {
+			$out .= '<li class="ff-history-item">';
+			$out .= '<span class="ff-history-item-main">' . esc_html( $title ) . '</span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
+			$out .= '</li>';
+		}
+		$out .= '</ul></section>';
+		return $out;
+	}
+
+	/**
+	 * Sample feedback markup.
+	 *
+	 * @param string $heading Optional heading override.
+	 * @return string
+	 */
+	public static function sample_feedback( $heading = '' ) {
+		$heading = '' !== $heading ? $heading : __( 'Feedback you\'ve shared', 'founding-faces' );
+
+		$out  = '<section class="ff-history-section">';
+		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<ul class="ff-history-list">';
+		foreach ( array( 1, 3 ) as $weeks ) {
+			$out .= '<li class="ff-history-item">';
+			$out .= '<span class="ff-history-item-main">' . esc_html__( 'Feedback submitted', 'founding-faces' ) . '</span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $weeks ) ) . '</span>';
+			$out .= '</li>';
+		}
+		$out .= '</ul></section>';
+		return $out;
+	}
+
+	/**
 	 * The current member's id for a widget, or 0 with a placeholder shown.
 	 *
 	 * Returns the logged-in member's id. For a non-member who can nonetheless
