@@ -69,6 +69,9 @@ require_once FF_PATH . 'includes/class-ff-gating.php';
 // The frontend display layer: the note template, renderer and components.
 require_once FF_PATH . 'includes/class-ff-display.php';
 
+// Polls: the poll content type, voting, results and the Elementor widget.
+require_once FF_PATH . 'includes/class-ff-polls.php';
+
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
@@ -122,10 +125,12 @@ function ff_init() {
 	FF_Connectors::register();
 	FF_Gating::register();
 	FF_Display::register();
+	FF_Polls::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {
 		FF_Post_Types::register_admin();
+		FF_Polls::register_admin();
 		FF_Admin_Applications::register();
 		FF_Settings::register();
 	}

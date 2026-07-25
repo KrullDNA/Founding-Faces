@@ -90,7 +90,7 @@ Stage 6 — Products & notes with gating:
   so gated content is never produced or sent to the browser.
 * Notes and Products kept out of the REST API to close any path around the gate.
 
-Stage 7 (this release) — Frontend display:
+Stage 7 — Frontend display:
 * A note is designed once and rendered automatically: every note (single or in
   a list) goes through one render_note_card() template, so publishing note 30
   is just filling in fields — it appears already styled and on-brand.
@@ -105,6 +105,21 @@ Stage 7 (this release) — Frontend display:
 * First views recorded to the interaction spine (note_viewed) for the later
   personal-history page.
 
+Stage 8 (this release) — Poll widget:
+* Polls as a non-public ff_poll type: question, two-or-more options each with an
+  optional image, per-poll audience (everyone / the-35-only), open/closed
+  status, an "active poll" flag, and an outcome/reasoning field.
+* Elementor Atomic widget (Founding Faces Poll): pick a poll or the active one,
+  with alignment, accent colour and spacing controls defaulting to Apotheca
+  tokens. has_widget_inner_wrapper() correct, single wrapper div. Also a
+  [ff_poll] shortcode.
+* Results hidden until the member votes; then the aggregate is revealed. Closed
+  polls show the aggregate plus Nick's reasoning.
+* Votes stored per member in ff_poll_votes (one per member per poll) and logged
+  to ff_interactions (vote_cast). Front end is aggregate-only.
+* Admin "who voted for what" view on the poll screen: each option's count and
+  the members (real name + number) who chose it. Never exposed on the frontend.
+
 == Changelog ==
 
 = 1.0.0 =
@@ -115,3 +130,4 @@ Stage 7 (this release) — Frontend display:
 * Stage 5: email-connector interface and Campaign Monitor add-on (consent-gated).
 * Stage 6: structured notes, per-note gating, Elementor visibility condition.
 * Stage 7: designed-once note template, display components, hybrid home screen.
+* Stage 8: interactive poll widget, aggregate results, admin who-voted view.
