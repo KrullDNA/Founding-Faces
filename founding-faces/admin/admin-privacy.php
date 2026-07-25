@@ -99,6 +99,7 @@ class FF_Admin_Privacy {
 		echo '<th>' . esc_html__( 'Number', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Member', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Group', 'founding-faces' ) . '</th>';
+		echo '<th>' . esc_html__( 'Postcode', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Consent', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Consent recorded', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Actions', 'founding-faces' ) . '</th>';
@@ -125,6 +126,11 @@ class FF_Admin_Privacy {
 			}
 			echo '</td>';
 			echo '<td>' . esc_html( 'the-35' === $group ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' ) ) . '</td>';
+			$postcode = get_user_meta( $uid, FF_Members::META_POSTCODE, true );
+			if ( '' === $postcode && $app ) {
+				$postcode = $app->postcode;
+			}
+			echo '<td>' . ( $postcode ? esc_html( $postcode ) : '—' ) . '</td>';
 			echo '<td>' . ( $consent ? '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Yes', 'founding-faces' ) . '</span>' : '<span style="color:#8a1f1f;">' . esc_html__( 'No', 'founding-faces' ) . '</span>' ) . '</td>';
 			echo '<td>' . esc_html( $app && $app->consent_at ? $app->consent_at : '—' ) . '</td>';
 			echo '<td class="ff-actions">';

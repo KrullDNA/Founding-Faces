@@ -176,10 +176,11 @@ class FF_Map {
 		foreach ( $users as $user ) {
 			$uid = (int) $user->ID;
 
+			// Deactivated members drop off the map. Test members DO appear (they
+			// exist to exercise the whole flow, including the map, and are
+			// cleared by the guarded reset before launch); they are only kept
+			// out of the external email sync.
 			if ( get_user_meta( $uid, FF_Members::META_DEACTIVATED, true ) ) {
-				continue;
-			}
-			if ( get_user_meta( $uid, FF_Members::META_IS_TEST, true ) ) {
 				continue;
 			}
 
