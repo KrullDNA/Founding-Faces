@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.4 =
+* Fix (map): the tile URL setting no longer strips Leaflet's {z}/{x}/{y}
+  placeholders when saved. esc_url_raw was removing the curly braces, which
+  broke tile loading and left the map grey after any settings save. The map
+  also falls back to the working default if a stored tile URL looks broken.
+* New: query-level gating for notes. 35-only notes are now excluded at the
+  query source for anyone who isn't in The 35, so a JetEngine Listing Grid,
+  an Elementor Pro Loop, or any WP_Query over ff_note stays gated with no
+  extra work. Admins and The 35 still see everything.
 
 = 1.0.3 =
 * New: native Elementor widgets for the note display — Founding Faces Notes
