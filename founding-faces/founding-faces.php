@@ -66,6 +66,9 @@ require_once FF_PATH . 'includes/class-ff-interactions.php';
 // Content gating: the server-side role check and the Elementor condition.
 require_once FF_PATH . 'includes/class-ff-gating.php';
 
+// Page-level access control: lock whole pages to a group, with redirect.
+require_once FF_PATH . 'includes/class-ff-page-access.php';
+
 // The frontend display layer: the note template, renderer and components.
 require_once FF_PATH . 'includes/class-ff-display.php';
 
@@ -138,6 +141,7 @@ function ff_init() {
 	FF_Emails::register();
 	FF_Connectors::register();
 	FF_Gating::register();
+	FF_Page_Access::register();
 	FF_Display::register();
 	FF_Polls::register();
 	FF_History::register();

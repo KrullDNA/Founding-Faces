@@ -84,6 +84,13 @@ class FF_Settings {
 			array( 'sanitize_callback' => 'sanitize_key' )
 		);
 
+		// Page-access: the page a logged-in but unauthorised visitor is sent to.
+		register_setting(
+			self::GROUP,
+			FF_Page_Access::OPT_REDIRECT,
+			array( 'sanitize_callback' => 'absint' )
+		);
+
 		// Members map settings: tile source, and per-tier dot colour and size.
 		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => 'esc_url_raw' ) );
 		register_setting( self::GROUP, FF_Map::OPT_TILE_ATTRIBUTION, array( 'sanitize_callback' => 'wp_kses_post' ) );
@@ -168,11 +175,44 @@ class FF_Settings {
 					</tr>
 				</table>
 
+				<?php self::render_access_section(); ?>
+
 				<?php self::render_map_section(); ?>
 
 				<?php submit_button(); ?>
 			</form>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render the members-access section of the settings form.
+	 *
+	 * Just the optional page a logged-in but unauthorised visitor is redirected
+	 * to (the per-page access level itself is set on each page).
+	 */
+	private static function render_access_section() {
+		$redirect = (int) get_option( FF_Page_Access::OPT_REDIRECT, 0 );
+		?>
+		<h2><?php esc_html_e( 'Members access', 'founding-faces' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'Set who can view each page on the page itself, in the "Founding Faces Access" box. This is only the page a logged-in member is sent to when they open a page their group can\'t access.', 'founding-faces' ); ?></p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Page_Access::OPT_REDIRECT ); ?>"><?php esc_html_e( 'Restricted page redirect', 'founding-faces' ); ?></label></th>
+				<td>
+					<?php
+					wp_dropdown_pages( array(
+						'name'              => FF_Page_Access::OPT_REDIRECT,
+						'id'                => FF_Page_Access::OPT_REDIRECT,
+						'selected'          => $redirect,
+						'show_option_none'  => __( '— Home page —', 'founding-faces' ),
+						'option_none_value' => 0,
+					) );
+					?>
+					<p class="description"><?php esc_html_e( 'Logged-out visitors always go to the login page and back. This only affects logged-in members in the wrong group.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+		</table>
 		<?php
 	}
 
