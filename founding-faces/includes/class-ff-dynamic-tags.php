@@ -66,6 +66,8 @@ class FF_Dynamic_Tags {
 			'FF_Tag_Note_Audience',
 			'FF_Tag_Note_Product',
 			'FF_Tag_Note_Gallery',
+			'FF_Tag_My_Number',
+			'FF_Tag_My_Group',
 		);
 
 		foreach ( $tags as $tag ) {

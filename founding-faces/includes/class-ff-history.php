@@ -26,10 +26,45 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FF_History {
 
 	/**
-	 * Register the personal-history shortcode.
+	 * Register the personal-history shortcode and the Elementor widgets.
 	 */
 	public static function register() {
 		add_shortcode( 'ff_history', array( __CLASS__, 'shortcode' ) );
+		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
+	}
+
+	/**
+	 * Register the "My …" activity widgets with Elementor.
+	 *
+	 * @param object $widgets_manager Elementor's widgets manager.
+	 */
+	public static function register_widgets( $widgets_manager ) {
+		require_once FF_PATH . 'includes/class-ff-history-widgets.php';
+		$widgets_manager->register( new FF_My_Activity_Widget() );
+		$widgets_manager->register( new FF_My_Votes_Widget() );
+		$widgets_manager->register( new FF_My_Notes_Widget() );
+		$widgets_manager->register( new FF_My_Feedback_Widget() );
+	}
+
+	/**
+	 * Enqueue the frontend stylesheet.
+	 */
+	public static function enqueue() {
+		wp_enqueue_style( 'founding-faces', FF_URL . 'assets/css/founding-faces.css', array(), FF_VERSION );
+	}
+
+	/**
+	 * The current member's id for a widget, or 0 with a placeholder shown.
+	 *
+	 * Returns the logged-in member's id. For a non-member who can nonetheless
+	 * see the members area (an admin building the page), returns 0 so the widget
+	 * can show a neutral placeholder instead of real data. For everyone else it
+	 * returns 0 and the caller shows the login notice.
+	 *
+	 * @return int
+	 */
+	public static function current_member_id() {
+		return FF_Gating::is_member() ? get_current_user_id() : 0;
 	}
 
 	/**
@@ -65,7 +100,7 @@ class FF_History {
 	 * @param int $member_id The current member's id.
 	 * @return string
 	 */
-	private static function render_header( $member_id ) {
+	public static function render_header( $member_id ) {
 		$number = get_user_meta( $member_id, FF_Members::META_NUMBER, true );
 		$group  = FF_Gating::is_the_35( $member_id ) ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' );
 
@@ -87,14 +122,16 @@ class FF_History {
 	/**
 	 * Render the polls the member voted in and how they voted.
 	 *
-	 * @param int $member_id The current member's id.
+	 * @param int    $member_id The current member's id.
+	 * @param string $heading   Optional heading override.
 	 * @return string
 	 */
-	private static function render_votes( $member_id ) {
-		$votes = FF_Polls::member_votes( $member_id );
+	public static function render_votes( $member_id, $heading = '' ) {
+		$votes   = FF_Polls::member_votes( $member_id );
+		$heading = '' !== $heading ? $heading : __( 'Your votes', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html__( 'Your votes', 'founding-faces' ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 
 		if ( empty( $votes ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t voted in a poll yet.', 'founding-faces' ) . '</p>';
@@ -126,14 +163,16 @@ class FF_History {
 	/**
 	 * Render the notes the member has engaged with.
 	 *
-	 * @param int $member_id The current member's id.
+	 * @param int    $member_id The current member's id.
+	 * @param string $heading   Optional heading override.
 	 * @return string
 	 */
-	private static function render_notes( $member_id ) {
-		$rows = FF_Interactions::get_for_member( $member_id, 'note_viewed' );
+	public static function render_notes( $member_id, $heading = '' ) {
+		$rows    = FF_Interactions::get_for_member( $member_id, 'note_viewed' );
+		$heading = '' !== $heading ? $heading : __( 'Notes you\'ve read', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html__( 'Notes you\'ve read', 'founding-faces' ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 
 		if ( empty( $rows ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t opened any notes yet.', 'founding-faces' ) . '</p>';
@@ -160,18 +199,20 @@ class FF_History {
 	 * later addition; this section shows entries whenever they exist and stays
 	 * quietly empty until then.
 	 *
-	 * @param int $member_id The current member's id.
+	 * @param int    $member_id The current member's id.
+	 * @param string $heading   Optional heading override.
 	 * @return string
 	 */
-	private static function render_feedback( $member_id ) {
+	public static function render_feedback( $member_id, $heading = '' ) {
 		// Accept either spine label used for feedback.
 		$rows = array_merge(
 			FF_Interactions::get_for_member( $member_id, 'feedback_submitted' ),
 			FF_Interactions::get_for_member( $member_id, 'feedback' )
 		);
+		$heading = '' !== $heading ? $heading : __( 'Feedback you\'ve shared', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html__( 'Feedback you\'ve shared', 'founding-faces' ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 
 		if ( empty( $rows ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t shared any feedback yet.', 'founding-faces' ) . '</p>';

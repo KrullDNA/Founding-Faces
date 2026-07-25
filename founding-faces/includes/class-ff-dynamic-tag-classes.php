@@ -133,6 +133,56 @@ class FF_Tag_Note_Product extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
+ * Member — My Founding number (the signed-in member's own number).
+ */
+class FF_Tag_My_Number extends \Elementor\Core\DynamicTags\Tag {
+
+	public function get_name() {
+		return 'ff-my-number';
+	}
+	public function get_title() {
+		return __( 'Member — My number', 'founding-faces' );
+	}
+	public function get_group() {
+		return 'founding-faces';
+	}
+	public function get_categories() {
+		return array( \Elementor\Modules\DynamicTags\Module::TEXT_CATEGORY );
+	}
+	public function render() {
+		if ( ! FF_Gating::is_member() ) {
+			return;
+		}
+		echo esc_html( (string) get_user_meta( get_current_user_id(), FF_Members::META_NUMBER, true ) );
+	}
+}
+
+/**
+ * Member — My group (the signed-in member's own group label).
+ */
+class FF_Tag_My_Group extends \Elementor\Core\DynamicTags\Tag {
+
+	public function get_name() {
+		return 'ff-my-group';
+	}
+	public function get_title() {
+		return __( 'Member — My group', 'founding-faces' );
+	}
+	public function get_group() {
+		return 'founding-faces';
+	}
+	public function get_categories() {
+		return array( \Elementor\Modules\DynamicTags\Module::TEXT_CATEGORY );
+	}
+	public function render() {
+		if ( ! FF_Gating::is_member() ) {
+			return;
+		}
+		echo esc_html( FF_Gating::is_the_35() ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' ) );
+	}
+}
+
+/**
  * Note — Image gallery (a gallery data tag for Elementor's Gallery / Carousel).
  */
 class FF_Tag_Note_Gallery extends \Elementor\Core\DynamicTags\Data_Tag {
