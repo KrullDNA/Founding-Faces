@@ -49,6 +49,13 @@
 			attributionControl: true
 		} );
 
+		// Remove Leaflet's own "Leaflet" credit (the library is BSD-licensed and
+		// doesn't require UI attribution). The tile/data attribution below —
+		// OpenStreetMap and CARTO — is legally required and stays.
+		if ( map.attributionControl ) {
+			map.attributionControl.setPrefix( false );
+		}
+
 		// Optionally lock panning to Australia's bounds.
 		if ( cfg.lockBounds ) {
 			var bounds = L.latLngBounds( AU_BOUNDS );
