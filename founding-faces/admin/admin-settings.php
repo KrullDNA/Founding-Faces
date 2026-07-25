@@ -76,27 +76,13 @@ class FF_Settings {
 			array( 'sanitize_callback' => 'wp_kses_post' )
 		);
 
-		// Email-platform settings: which connector is active, and the Campaign
-		// Monitor API key and list id.
+		// Which connector is active (core). The connector add-on plugins register
+		// their own API-key settings against this same group via 'admin_init'.
 		register_setting(
 			self::GROUP,
 			FF_Connectors::OPT_ACTIVE,
 			array( 'sanitize_callback' => 'sanitize_key' )
 		);
-		register_setting(
-			self::GROUP,
-			FF_CM_Connector::OPT_API_KEY,
-			array( 'sanitize_callback' => 'sanitize_text_field' )
-		);
-		register_setting(
-			self::GROUP,
-			FF_CM_Connector::OPT_LIST_ID,
-			array( 'sanitize_callback' => 'sanitize_text_field' )
-		);
-
-		// Klaviyo add-on keys.
-		register_setting( self::GROUP, FF_Klaviyo_Connector::OPT_API_KEY, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Klaviyo_Connector::OPT_LIST_ID, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Members map settings: tile source, and per-tier dot colour and size.
 		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => 'esc_url_raw' ) );
@@ -243,15 +229,14 @@ class FF_Settings {
 	/**
 	 * Render the email-platform section of the settings form.
 	 *
-	 * Lets Nick choose the active platform and enter the Campaign Monitor API
-	 * key and list id, and shows whether the connector is configured plus the
-	 * last sync error, if any.
+	 * The core owns the "active platform" choice and shows the configured
+	 * status and last sync error. Each installed connector add-on prints its own
+	 * API-key fields via the 'ff_settings_connectors' hook, so the core never
+	 * references a connector that may not be installed.
 	 */
 	private static function render_email_platform_section() {
-		$active  = get_option( FF_Connectors::OPT_ACTIVE, 'campaign_monitor' );
-		$api_key = get_option( FF_CM_Connector::OPT_API_KEY, '' );
-		$list_id = get_option( FF_CM_Connector::OPT_LIST_ID, '' );
-
+		$active     = get_option( FF_Connectors::OPT_ACTIVE, '' );
+		$available  = FF_Connectors::available();
 		$connector  = FF_Connectors::get_active();
 		$configured = $connector ? $connector->is_configured() : false;
 		$last_error = get_option( FF_Connectors::OPT_LAST_ERROR );
@@ -261,76 +246,42 @@ class FF_Settings {
 			<?php esc_html_e( 'On approval, a consented member is synced to the active platform with their name, email, group and (for The 35) number. Nothing is ever synced without stored consent.', 'founding-faces' ); ?>
 		</p>
 
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><label for="<?php echo esc_attr( FF_Connectors::OPT_ACTIVE ); ?>"><?php esc_html_e( 'Active platform', 'founding-faces' ); ?></label></th>
-				<td>
-					<select name="<?php echo esc_attr( FF_Connectors::OPT_ACTIVE ); ?>" id="<?php echo esc_attr( FF_Connectors::OPT_ACTIVE ); ?>">
-						<?php foreach ( FF_Connectors::available() as $id => $conn ) : ?>
-							<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $active, $id ); ?>>
-								<?php echo esc_html( $conn->get_label() ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description">
-						<?php
-						if ( $configured ) {
-							echo '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Configured and ready.', 'founding-faces' ) . '</span>';
-						} else {
-							echo '<span style="color:#8a1f1f;font-weight:600;">' . esc_html__( 'Not configured yet — add the API key and list id below.', 'founding-faces' ) . '</span>';
-						}
-						?>
-					</p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="<?php echo esc_attr( FF_CM_Connector::OPT_API_KEY ); ?>"><?php esc_html_e( 'Campaign Monitor API key', 'founding-faces' ); ?></label></th>
-				<td>
-					<input name="<?php echo esc_attr( FF_CM_Connector::OPT_API_KEY ); ?>"
-						id="<?php echo esc_attr( FF_CM_Connector::OPT_API_KEY ); ?>"
-						type="password" class="regular-text" autocomplete="off"
-						value="<?php echo esc_attr( $api_key ); ?>" />
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="<?php echo esc_attr( FF_CM_Connector::OPT_LIST_ID ); ?>"><?php esc_html_e( 'Campaign Monitor list ID', 'founding-faces' ); ?></label></th>
-				<td>
-					<input name="<?php echo esc_attr( FF_CM_Connector::OPT_LIST_ID ); ?>"
-						id="<?php echo esc_attr( FF_CM_Connector::OPT_LIST_ID ); ?>"
-						type="text" class="regular-text"
-						value="<?php echo esc_attr( $list_id ); ?>" />
-					<p class="description"><?php esc_html_e( 'The Group and Number custom fields are created on this list automatically.', 'founding-faces' ); ?></p>
-				</td>
-			</tr>
-		</table>
+		<?php if ( empty( $available ) ) : ?>
+			<div class="notice notice-info inline"><p>
+				<?php esc_html_e( 'No connector add-on is installed yet. Install and activate the Campaign Monitor (or Klaviyo) add-on plugin to sync members to your email platform.', 'founding-faces' ); ?>
+			</p></div>
+		<?php else : ?>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="<?php echo esc_attr( FF_Connectors::OPT_ACTIVE ); ?>"><?php esc_html_e( 'Active platform', 'founding-faces' ); ?></label></th>
+					<td>
+						<select name="<?php echo esc_attr( FF_Connectors::OPT_ACTIVE ); ?>" id="<?php echo esc_attr( FF_Connectors::OPT_ACTIVE ); ?>">
+							<?php foreach ( $available as $id => $conn ) : ?>
+								<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $active, $id ); ?>>
+									<?php echo esc_html( $conn->get_label() ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description">
+							<?php
+							if ( $configured ) {
+								echo '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Configured and ready.', 'founding-faces' ) . '</span>';
+							} else {
+								echo '<span style="color:#8a1f1f;font-weight:600;">' . esc_html__( 'Not configured yet — add the API key below.', 'founding-faces' ) . '</span>';
+							}
+							?>
+						</p>
+					</td>
+				</tr>
+			</table>
 
-		<?php
-		$k_key  = get_option( FF_Klaviyo_Connector::OPT_API_KEY, '' );
-		$k_list = get_option( FF_Klaviyo_Connector::OPT_LIST_ID, '' );
-		?>
-		<h3><?php esc_html_e( 'Klaviyo', 'founding-faces' ); ?></h3>
-		<p class="description"><?php esc_html_e( 'For when Klaviyo is purchased. The group is sent as both a tag and a profile property, alongside name, email and number.', 'founding-faces' ); ?></p>
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><label for="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_API_KEY ); ?>"><?php esc_html_e( 'Klaviyo private API key', 'founding-faces' ); ?></label></th>
-				<td>
-					<input name="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_API_KEY ); ?>"
-						id="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_API_KEY ); ?>"
-						type="password" class="regular-text" autocomplete="off"
-						value="<?php echo esc_attr( $k_key ); ?>" />
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_LIST_ID ); ?>"><?php esc_html_e( 'Klaviyo list ID (optional)', 'founding-faces' ); ?></label></th>
-				<td>
-					<input name="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_LIST_ID ); ?>"
-						id="<?php echo esc_attr( FF_Klaviyo_Connector::OPT_LIST_ID ); ?>"
-						type="text" class="regular-text"
-						value="<?php echo esc_attr( $k_list ); ?>" />
-					<p class="description"><?php esc_html_e( 'If set, approved members are also added to this Klaviyo list.', 'founding-faces' ); ?></p>
-				</td>
-			</tr>
-		</table>
+			<?php
+			/**
+			 * Each installed connector add-on prints its own key fields here.
+			 */
+			do_action( 'ff_settings_connectors' );
+			?>
+		<?php endif; ?>
 
 		<?php if ( is_array( $last_error ) && ! empty( $last_error['message'] ) ) : ?>
 			<div class="notice notice-warning inline">

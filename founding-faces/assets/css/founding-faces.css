@@ -624,6 +624,33 @@
 	background: #f2f3f4;
 }
 
+/* Map legend (optional, drawn by Leaflet as a control). */
+.ff-map-legend {
+	font-family: var(--ff-font);
+	background: rgba(255, 255, 255, 0.9);
+	padding: 8px 10px;
+	border-radius: var(--ff-radius);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+	font-size: 0.8rem;
+	color: var(--ff-ink);
+	line-height: 1.6;
+}
+
+.ff-map-legend-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.ff-map-legend-item i {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	opacity: 0.85;
+}
+
 /* ==========================================================================
  * Account settings page.
  * ========================================================================== */
