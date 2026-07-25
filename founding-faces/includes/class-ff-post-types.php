@@ -44,6 +44,10 @@ class FF_Post_Types {
 	const META_NOTE_GALLERY = 'ff_note_gallery';
 	const META_NOTE_AUDIENCE = 'ff_note_audience';
 
+	// Post meta keys for a product's own fields (used by the product header).
+	const META_PRODUCT_STAGE  = 'ff_product_stage';
+	const META_PRODUCT_STATUS = 'ff_product_status';
+
 	/**
 	 * Register everything this class owns.
 	 *
@@ -278,6 +282,22 @@ class FF_Post_Types {
 			'sanitize_callback' => 'sanitize_key',
 			'auth_callback'     => $edit,
 		) );
+
+		// Product's own fields for the header.
+		register_post_meta( self::PRODUCT_CPT, self::META_PRODUCT_STAGE, array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => false,
+			'sanitize_callback' => 'sanitize_key',
+			'auth_callback'     => $edit,
+		) );
+		register_post_meta( self::PRODUCT_CPT, self::META_PRODUCT_STATUS, array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => false,
+			'sanitize_callback' => 'sanitize_text_field',
+			'auth_callback'     => $edit,
+		) );
 	}
 
 	/**
@@ -304,7 +324,9 @@ class FF_Post_Types {
 	 */
 	public static function register_admin() {
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_note_metabox' ) );
+		add_action( 'add_meta_boxes', array( __CLASS__, 'add_product_metabox' ) );
 		add_action( 'save_post_' . self::NOTE_CPT, array( __CLASS__, 'save_note_meta' ), 10, 2 );
+		add_action( 'save_post_' . self::PRODUCT_CPT, array( __CLASS__, 'save_product_meta' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_note_admin' ) );
 	}
 
@@ -320,6 +342,72 @@ class FF_Post_Types {
 			'normal',
 			'high'
 		);
+	}
+
+	/**
+	 * Add the "Product details" metabox to the product edit screen.
+	 */
+	public static function add_product_metabox() {
+		add_meta_box(
+			'ff_product_details',
+			__( 'Product details', 'founding-faces' ),
+			array( __CLASS__, 'render_product_metabox' ),
+			self::PRODUCT_CPT,
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render the product metabox: the current stage and a short status line.
+	 *
+	 * @param WP_Post $post The product being edited.
+	 */
+	public static function render_product_metabox( $post ) {
+		wp_nonce_field( 'ff_save_product', 'ff_product_nonce' );
+
+		$stage  = get_post_meta( $post->ID, self::META_PRODUCT_STAGE, true );
+		$status = get_post_meta( $post->ID, self::META_PRODUCT_STATUS, true );
+		?>
+		<p>
+			<label for="ff_product_stage"><strong><?php esc_html_e( 'Current stage', 'founding-faces' ); ?></strong></label><br />
+			<select name="ff_product_stage" id="ff_product_stage" style="width:100%;">
+				<option value=""><?php esc_html_e( '— None —', 'founding-faces' ); ?></option>
+				<?php foreach ( self::note_stages() as $key => $label ) : ?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $stage, $key ); ?>><?php echo esc_html( $label ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</p>
+		<p>
+			<label for="ff_product_status"><strong><?php esc_html_e( 'Where it\'s up to', 'founding-faces' ); ?></strong></label><br />
+			<input type="text" name="ff_product_status" id="ff_product_status" style="width:100%;" value="<?php echo esc_attr( $status ); ?>" placeholder="<?php esc_attr_e( 'e.g. Third trial in stability testing', 'founding-faces' ); ?>" />
+		</p>
+		<?php
+	}
+
+	/**
+	 * Save the product metabox fields.
+	 *
+	 * @param int     $post_id The product id.
+	 * @param WP_Post $post    The product object.
+	 */
+	public static function save_product_meta( $post_id, $post ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		if ( ! isset( $_POST['ff_product_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['ff_product_nonce'] ), 'ff_save_product' ) ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		$stage = isset( $_POST['ff_product_stage'] ) ? sanitize_key( wp_unslash( $_POST['ff_product_stage'] ) ) : '';
+		if ( '' !== $stage && ! array_key_exists( $stage, self::note_stages() ) ) {
+			$stage = '';
+		}
+		update_post_meta( $post_id, self::META_PRODUCT_STAGE, $stage );
+		update_post_meta( $post_id, self::META_PRODUCT_STATUS, isset( $_POST['ff_product_status'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_product_status'] ) ) : '' );
 	}
 
 	/**

@@ -66,6 +66,9 @@ require_once FF_PATH . 'includes/class-ff-interactions.php';
 // Content gating: the server-side role check and the Elementor condition.
 require_once FF_PATH . 'includes/class-ff-gating.php';
 
+// The frontend display layer: the note template, renderer and components.
+require_once FF_PATH . 'includes/class-ff-display.php';
+
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
@@ -118,6 +121,7 @@ function ff_init() {
 	FF_Emails::register();
 	FF_Connectors::register();
 	FF_Gating::register();
+	FF_Display::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {

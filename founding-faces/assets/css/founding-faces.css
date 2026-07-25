@@ -137,3 +137,225 @@
 	border-color: #e6c3c3;
 	color: var(--ff-error-ink);
 }
+
+/* ==========================================================================
+ * Frontend display: notes, products, home. Apotheca brand tokens baked in.
+ * ========================================================================== */
+
+.ff-notes-single,
+.ff-notes-list,
+.ff-home,
+.ff-product-header {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+	max-width: 760px;
+	margin: 0 auto;
+}
+
+/* Note card ---------------------------------------------------------------- */
+.ff-note {
+	background: #fff;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 1.4rem 1.5rem;
+	margin-bottom: 1.25rem;
+}
+
+.ff-note-head {
+	margin-bottom: 0.8rem;
+}
+
+.ff-note-title {
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin: 0 0 0.5rem;
+	color: var(--ff-ink);
+}
+
+.ff-note-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.ff-note-trial,
+.ff-note-date {
+	font-size: 0.82rem;
+	color: var(--ff-muted);
+}
+
+.ff-note-vault {
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #7a5c00;
+	background: #fff3d6;
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+
+.ff-note-body {
+	line-height: 1.6;
+}
+
+.ff-note-body p {
+	margin: 0 0 0.9rem;
+}
+
+/* Stage badges ------------------------------------------------------------- */
+.ff-badge.ff-stage {
+	display: inline-block;
+	padding: 3px 11px;
+	border-radius: 11px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	background: #eceef0;
+	color: #3a3d44;
+}
+
+.ff-stage--in_development {
+	background: #eceef0;
+	color: #3a3d44;
+}
+
+.ff-stage--stability_testing {
+	background: #fff3d6;
+	color: #8a6d1f;
+}
+
+.ff-stage--passed {
+	background: #e6f4ea;
+	color: #1e5631;
+}
+
+.ff-stage--failed {
+	background: #fbeaea;
+	color: #8a1f1f;
+}
+
+/* Gallery ------------------------------------------------------------------ */
+.ff-note-gallery {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 8px;
+	margin-top: 1rem;
+}
+
+.ff-gallery-item {
+	display: block;
+	border-radius: var(--ff-radius);
+	overflow: hidden;
+	line-height: 0;
+}
+
+.ff-gallery-img {
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+	display: block;
+}
+
+/* Stage filter chips ------------------------------------------------------- */
+.ff-stage-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 1.25rem;
+}
+
+.ff-chip {
+	display: inline-block;
+	padding: 5px 14px;
+	border-radius: 999px;
+	border: 1px solid var(--ff-line);
+	background: #fff;
+	color: var(--ff-ink);
+	font-size: 0.82rem;
+	text-decoration: none;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ff-chip:hover {
+	background: var(--ff-bg);
+}
+
+.ff-chip.is-active {
+	background: var(--ff-accent);
+	border-color: var(--ff-accent);
+	color: var(--ff-accent-ink);
+}
+
+/* Product header ----------------------------------------------------------- */
+.ff-product-header {
+	margin-bottom: 1.5rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--ff-line);
+}
+
+.ff-product-name {
+	font-size: 1.7rem;
+	font-weight: 700;
+	margin: 0 0 0.5rem;
+}
+
+.ff-product-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	align-items: center;
+}
+
+.ff-product-status {
+	font-size: 0.9rem;
+	color: var(--ff-muted);
+}
+
+.ff-product-intro {
+	margin-top: 0.8rem;
+	line-height: 1.6;
+}
+
+/* Home screen -------------------------------------------------------------- */
+.ff-home-heading {
+	font-size: 1.15rem;
+	font-weight: 700;
+	margin: 0 0 1rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 2px solid var(--ff-accent);
+	display: inline-block;
+}
+
+.ff-home-products {
+	margin-top: 2.5rem;
+}
+
+.ff-products {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ff-product-item {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--ff-line);
+}
+
+.ff-product-item-name {
+	font-weight: 600;
+}
+
+.ff-empty-note {
+	color: var(--ff-muted);
+	font-style: italic;
+}
+
+.ff-members-only,
+.ff-vault {
+	text-align: center;
+}

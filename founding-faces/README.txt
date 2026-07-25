@@ -77,7 +77,7 @@ Stage 5 — Email connector + Campaign Monitor:
 * API key and list ID on the Settings page; the Group and Number custom fields
   are created on the list automatically. Uses WordPress's HTTP API, no SDK.
 
-Stage 6 (this release) — Products & notes with gating:
+Stage 6 — Products & notes with gating:
 * Notes (ff_note) are structured records: linked product, date, trial number,
   development stage (in development / stability testing / passed / failed),
   image gallery and a per-note audience flag (everyone / the-35-only), all
@@ -90,6 +90,21 @@ Stage 6 (this release) — Products & notes with gating:
   so gated content is never produced or sent to the browser.
 * Notes and Products kept out of the REST API to close any path around the gate.
 
+Stage 7 (this release) — Frontend display:
+* A note is designed once and rendered automatically: every note (single or in
+  a list) goes through one render_note_card() template, so publishing note 30
+  is just filling in fields — it appears already styled and on-brand.
+* Components as shortcodes (Elementor-compatible): [ff_note], [ff_notes]
+  (newest first, filterable by stage with filter chips), [ff_product_header],
+  and [ff_home] (a hybrid home: latest-notes feed above a products list).
+* Product metabox adds a current stage and a "where it's up to" line.
+* Apotheca brand tokens baked into the components; the note markup is
+  filterable (ff_render_note) so Elementor Pro Theme Builder can override it.
+* Every component runs the 35-only gate server-side: gated notes are filtered
+  out before any markup exists, so unauthorised members never receive them.
+* First views recorded to the interaction spine (note_viewed) for the later
+  personal-history page.
+
 == Changelog ==
 
 = 1.0.0 =
@@ -99,3 +114,4 @@ Stage 6 (this release) — Products & notes with gating:
 * Stage 4: templated welcome emails, secure set-password token, login screens.
 * Stage 5: email-connector interface and Campaign Monitor add-on (consent-gated).
 * Stage 6: structured notes, per-note gating, Elementor visibility condition.
+* Stage 7: designed-once note template, display components, hybrid home screen.
