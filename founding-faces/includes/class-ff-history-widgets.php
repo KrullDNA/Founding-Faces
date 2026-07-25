@@ -39,23 +39,32 @@ abstract class FF_Activity_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Guard: run $callback with the member id, or show a notice/placeholder.
+	 * Render either the member's real data, on-brand sample data (in the
+	 * Elementor editor, so it can be styled), or the members-only prompt.
 	 *
-	 * @param callable $callback Receives the member id and returns HTML.
+	 * @param callable $real   Receives the member id and returns HTML.
+	 * @param callable $sample Returns sample HTML for the editor.
 	 * @return void
 	 */
-	protected function guarded( $callback ) {
+	protected function render_variants( $real, $sample ) {
 		FF_History::enqueue();
 
 		// A real, logged-in member: show their own data.
 		if ( FF_Gating::is_member() ) {
-			echo $callback( get_current_user_id() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $real( get_current_user_id() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
-		// An admin building the page: show a neutral placeholder.
+		// In the Elementor editor / preview: show sample data so it can be
+		// styled on-brand before there are any real members.
+		if ( FF_History::is_editor() ) {
+			echo $sample(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return;
+		}
+
+		// An admin viewing the live page (not editing): a neutral note.
 		if ( current_user_can( 'manage_options' ) ) {
-			echo '<div class="ff-notice">' . esc_html__( 'This shows the signed-in member\'s own activity. (Placeholder shown to you as an editor.)', 'founding-faces' ) . '</div>';
+			echo '<div class="ff-notice">' . esc_html__( 'Each member sees their own activity here.', 'founding-faces' ) . '</div>';
 			return;
 		}
 
@@ -133,7 +142,8 @@ class FF_My_Activity_Widget extends FF_Activity_Widget_Base {
 
 	protected function render() {
 		$s = $this->get_settings_for_display();
-		$this->guarded( function ( $member_id ) use ( $s ) {
+
+		$real = function ( $member_id ) use ( $s ) {
 			$out = '<div class="ff-history">';
 			if ( 'yes' === $s['show_header'] ) {
 				$out .= FF_History::render_header( $member_id );
@@ -149,7 +159,27 @@ class FF_My_Activity_Widget extends FF_Activity_Widget_Base {
 			}
 			$out .= '</div>';
 			return $out;
-		} );
+		};
+
+		$sample = function () use ( $s ) {
+			$out = '<div class="ff-history">';
+			if ( 'yes' === $s['show_header'] ) {
+				$out .= FF_History::sample_header();
+			}
+			if ( 'yes' === $s['show_votes'] ) {
+				$out .= FF_History::sample_votes( isset( $s['votes_heading'] ) ? $s['votes_heading'] : '' );
+			}
+			if ( 'yes' === $s['show_notes'] ) {
+				$out .= FF_History::sample_notes( isset( $s['notes_heading'] ) ? $s['notes_heading'] : '' );
+			}
+			if ( 'yes' === $s['show_feedback'] ) {
+				$out .= FF_History::sample_feedback( isset( $s['feedback_heading'] ) ? $s['feedback_heading'] : '' );
+			}
+			$out .= '</div>';
+			return $out;
+		};
+
+		$this->render_variants( $real, $sample );
 	}
 }
 
@@ -183,9 +213,14 @@ class FF_My_Votes_Widget extends FF_Activity_Widget_Base {
 
 	protected function render() {
 		$s = $this->get_settings_for_display();
-		$this->guarded( function ( $member_id ) use ( $s ) {
-			return '<div class="ff-history">' . FF_History::render_votes( $member_id, isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
-		} );
+		$this->render_variants(
+			function ( $member_id ) use ( $s ) {
+				return '<div class="ff-history">' . FF_History::render_votes( $member_id, isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
+			},
+			function () use ( $s ) {
+				return '<div class="ff-history">' . FF_History::sample_votes( isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
+			}
+		);
 	}
 }
 
@@ -219,9 +254,14 @@ class FF_My_Notes_Widget extends FF_Activity_Widget_Base {
 
 	protected function render() {
 		$s = $this->get_settings_for_display();
-		$this->guarded( function ( $member_id ) use ( $s ) {
-			return '<div class="ff-history">' . FF_History::render_notes( $member_id, isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
-		} );
+		$this->render_variants(
+			function ( $member_id ) use ( $s ) {
+				return '<div class="ff-history">' . FF_History::render_notes( $member_id, isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
+			},
+			function () use ( $s ) {
+				return '<div class="ff-history">' . FF_History::sample_notes( isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
+			}
+		);
 	}
 }
 
@@ -255,8 +295,13 @@ class FF_My_Feedback_Widget extends FF_Activity_Widget_Base {
 
 	protected function render() {
 		$s = $this->get_settings_for_display();
-		$this->guarded( function ( $member_id ) use ( $s ) {
-			return '<div class="ff-history">' . FF_History::render_feedback( $member_id, isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
-		} );
+		$this->render_variants(
+			function ( $member_id ) use ( $s ) {
+				return '<div class="ff-history">' . FF_History::render_feedback( $member_id, isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
+			},
+			function () use ( $s ) {
+				return '<div class="ff-history">' . FF_History::sample_feedback( isset( $s['heading'] ) ? $s['heading'] : '' ) . '</div>';
+			}
+		);
 	}
 }

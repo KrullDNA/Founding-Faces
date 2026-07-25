@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.11 =
+* New: the member-activity widgets (My Activity / My Votes / My Notes / My
+  Feedback) show on-brand sample data in the Elementor editor, so they can be
+  styled before there are any members. The live front end still shows each
+  member their own real data (or the login prompt).
 
 = 1.0.10 =
 * New: "Note — First image" dynamic tag (single image) for the Elementor Image
