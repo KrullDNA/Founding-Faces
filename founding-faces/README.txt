@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.13 =
+* Change: the date now sits as a small right-hand column at the bottom of each
+  item, instead of on its own row (no more big gap under the left column).
+* Change: removed the default line under the number & group header; added a
+  "Show intro line under header" toggle (off by default).
+* Change: feedback items redesigned — the product/where-it's-for is a linked
+  heading with the date on the right, and the member's feedback text runs full
+  width beneath (supports long text). New "Feedback text" style controls.
+  (Feedback text is supplied via the ff_feedback_text filter by the feedback-
+  capture feature, added later.)
 
 = 1.0.12 =
 * Change: the four activity widgets are replaced by ONE "Founding Faces Member

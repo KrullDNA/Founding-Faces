@@ -88,13 +88,16 @@ class FF_History {
 	/**
 	 * Sample header markup.
 	 *
+	 * @param bool $show_intro Whether to include the intro line.
 	 * @return string
 	 */
-	public static function sample_header() {
+	public static function sample_header( $show_intro = true ) {
 		$out  = '<header class="ff-history-header">';
 		$out .= '<div class="ff-history-number">' . sprintf( esc_html__( 'Founding Face %d', 'founding-faces' ), 7 ) . '</div>';
 		$out .= '<div class="ff-history-group">' . esc_html__( 'The 35', 'founding-faces' ) . '</div>';
-		$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		if ( $show_intro ) {
+			$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		}
 		$out .= '</header>';
 		return $out;
 	}
@@ -118,8 +121,10 @@ class FF_History {
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $rows as $i => $row ) {
 			$out .= '<li class="ff-history-item">';
+			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . esc_html( $row[0] ) . '</span>';
 			$out .= '<span class="ff-history-item-detail">' . sprintf( esc_html__( 'You chose: %s', 'founding-faces' ), esc_html( $row[1] ) ) . '</span>';
+			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
 		}
@@ -148,7 +153,9 @@ class FF_History {
 		foreach ( $titles as $i => $title ) {
 			$main = $link ? '<a href="#">' . esc_html( $title ) . '</a>' : esc_html( $title );
 			$out .= '<li class="ff-history-item">';
+			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . $main . '</span>';
+			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
 		}
@@ -164,14 +171,29 @@ class FF_History {
 	 */
 	public static function sample_feedback( $heading = '' ) {
 		$heading = '' !== $heading ? $heading : __( 'Feedback you\'ve shared', 'founding-faces' );
+		$items   = array(
+			array(
+				__( 'The Serum', 'founding-faces' ),
+				__( 'I found the texture a touch tacky on application, but it settled after a minute and the finish was lovely. The scent is subtle, which I really appreciate. For daytime I\'d personally prefer something a little lighter, but overall I\'m genuinely excited about where this one is heading.', 'founding-faces' ),
+				1,
+			),
+			array(
+				__( 'The Cleanser', 'founding-faces' ),
+				__( 'Gentle and never stripping — my skin felt calm and comfortable afterwards, even on the days it\'s a bit reactive. If anything, the pump dispenses a little more than I need per push.', 'founding-faces' ),
+				3,
+			),
+		);
 
 		$out  = '<section class="ff-history-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 		$out .= '<ul class="ff-history-list">';
-		foreach ( array( 1, 3 ) as $weeks ) {
-			$out .= '<li class="ff-history-item">';
-			$out .= '<span class="ff-history-item-main">' . esc_html__( 'Feedback submitted', 'founding-faces' ) . '</span>';
-			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $weeks ) ) . '</span>';
+		foreach ( $items as $item ) {
+			$out .= '<li class="ff-history-item ff-history-item--feedback">';
+			$out .= '<div class="ff-history-feedback-head">';
+			$out .= '<span class="ff-history-item-main"><a href="#">' . esc_html( $item[0] ) . '</a></span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $item[2] ) ) . '</span>';
+			$out .= '</div>';
+			$out .= '<div class="ff-history-feedback-text"><p>' . esc_html( $item[1] ) . '</p></div>';
 			$out .= '</li>';
 		}
 		$out .= '</ul></section>';
@@ -225,7 +247,7 @@ class FF_History {
 	 * @param int $member_id The current member's id.
 	 * @return string
 	 */
-	public static function render_header( $member_id ) {
+	public static function render_header( $member_id, $show_intro = true ) {
 		$number = get_user_meta( $member_id, FF_Members::META_NUMBER, true );
 		$group  = FF_Gating::is_the_35( $member_id ) ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' );
 
@@ -238,7 +260,9 @@ class FF_History {
 			) . '</div>';
 		}
 		$out .= '<div class="ff-history-group">' . esc_html( $group ) . '</div>';
-		$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		if ( $show_intro ) {
+			$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		}
 		$out .= '</header>';
 
 		return $out;
@@ -269,6 +293,7 @@ class FF_History {
 			$choice   = FF_Polls::option_label( (int) $vote->poll_id, (int) $vote->option_id );
 
 			$out .= '<li class="ff-history-item">';
+			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . esc_html( $question ? $question : __( '(poll removed)', 'founding-faces' ) ) . '</span>';
 			if ( '' !== $choice ) {
 				$out .= '<span class="ff-history-item-detail">' . sprintf(
@@ -277,6 +302,7 @@ class FF_History {
 					esc_html( $choice )
 				) . '</span>';
 			}
+			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $vote->voted_at ) ) . '</span>';
 			$out .= '</li>';
 		}
@@ -321,7 +347,9 @@ class FF_History {
 			}
 
 			$out .= '<li class="ff-history-item">';
+			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . $main . '</span>';
+			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
 			$out .= '</li>';
 		}
@@ -359,9 +387,24 @@ class FF_History {
 
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $rows as $row ) {
-			$out .= '<li class="ff-history-item">';
-			$out .= '<span class="ff-history-item-main">' . esc_html__( 'Feedback submitted', 'founding-faces' ) . '</span>';
+			$ref   = (int) $row->reference_id;
+			$title = get_the_title( $ref );
+			$title = $title ? $title : __( 'Feedback', 'founding-faces' );
+			$url   = $ref ? get_permalink( $ref ) : '';
+			$head  = $url ? '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title );
+
+			// The feedback text is supplied by the feedback-capture feature
+			// (added later) through this filter; empty until then.
+			$text = apply_filters( 'ff_feedback_text', '', $row );
+
+			$out .= '<li class="ff-history-item ff-history-item--feedback">';
+			$out .= '<div class="ff-history-feedback-head">';
+			$out .= '<span class="ff-history-item-main">' . $head . '</span>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
+			$out .= '</div>';
+			if ( '' !== trim( (string) $text ) ) {
+				$out .= '<div class="ff-history-feedback-text">' . wpautop( wp_kses_post( $text ) ) . '</div>';
+			}
 			$out .= '</li>';
 		}
 		$out .= '</ul>';
