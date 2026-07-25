@@ -148,7 +148,7 @@ Bundled data attribution: Australian postcode coordinates derived from the
 Matthew Proctor Australian postcodes dataset (matthewproctor.com), deduplicated
 to one centroid per postcode.
 
-Stage 11 (this release) — Account settings:
+Stage 11 — Account settings:
 * [ff_account] page: change email (with a confirmation link sent to the new
   address), change password (secure token reset, the same mechanism as the
   welcome link), and edit name.
@@ -160,6 +160,17 @@ Stage 11 (this release) — Account settings:
   number, and anonymises/deactivates the account.
 * Number, group and standing are shown read-only — Nick's to control, never the
   member's to edit.
+
+Stage 12 (this release) — Privacy & admin tools:
+* Privacy & Tools admin page: per-member CSV export, delete-with-number-
+  retention (personal data removed, number retired never reused), and a consent
+  audit (who consented and when) in one members table.
+* Test mode: create test members (they take real numbers to exercise the whole
+  flow; consent off so they never sync to the email platform).
+* Guarded reset: deletes ALL test accounts, zeroes the numbering sequence and
+  clears the retired list — together — so the next real The 35 member is 01.
+  Refuses to run if any real numbered member exists, and requires typing the
+  word RESET, not a single click.
 
 == Changelog ==
 
@@ -175,3 +186,4 @@ Stage 11 (this release) — Account settings:
 * Stage 9: personal history page reading only the member's own spine rows.
 * Stage 10: anonymous members map (bundled postcodes, Leaflet, postcode-only).
 * Stage 11: account settings, consent write-back, self-service export/delete.
+* Stage 12: privacy admin tools, consent audit, guarded test-mode reset.

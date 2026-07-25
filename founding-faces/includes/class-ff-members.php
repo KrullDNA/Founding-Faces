@@ -471,6 +471,149 @@ class FF_Members {
 	 * -----------------------------------------------------------------------
 	 */
 
+	/*
+	 * -----------------------------------------------------------------------
+	 * Test mode and numbering reset.
+	 * Test accounts take real numbers, so a clean reset must zero the sequence
+	 * AND clear the retired list together, or testing quietly poisons the launch.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * Whether any real (non-test) numbered member exists.
+	 *
+	 * The guarded reset refuses to run if this is true, so it physically cannot
+	 * disturb a real Founding Face even if mis-clicked.
+	 *
+	 * @return bool
+	 */
+	public static function has_real_numbered_member() {
+		$ids = get_users( array(
+			'meta_key'     => self::META_NUMBER, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_compare' => 'EXISTS',
+			'fields'       => 'ID',
+		) );
+		foreach ( $ids as $uid ) {
+			if ( ! get_user_meta( $uid, self::META_IS_TEST, true ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Reset the numbering sequence to zero and clear the retired-numbers list.
+	 *
+	 * Both together: numbers retire and never reuse, so testing leaves retired
+	 * numbers behind. Zeroing the sequence alone would still skip those, so the
+	 * retired list must be cleared too for a true clean slate.
+	 *
+	 * @return void
+	 */
+	public static function reset_numbering() {
+		update_option( self::OPT_SEQUENCE, 0 );
+		update_option( self::OPT_RETIRED, array() );
+	}
+
+	/**
+	 * Create a test member: a test-flagged application, approved into a group.
+	 *
+	 * Test accounts take real numbers (just like real ones), so this exercises
+	 * the whole flow — numbering, welcome email, map — without touching real
+	 * data. Consent is off, so a test account never syncs to the email platform.
+	 *
+	 * @param string $group_slug Either 'the-35' or 'the-circle'.
+	 * @return int|WP_Error The new user id, or an error.
+	 */
+	public static function create_test_member( $group_slug ) {
+		global $wpdb;
+
+		$host  = wp_parse_url( home_url(), PHP_URL_HOST );
+		$host  = $host ? $host : 'example.com';
+		$token = uniqid();
+
+		// A spread of real postcodes so the map has something to show.
+		$postcodes = array( '2000', '3000', '4000', '5000', '6000', '7000', '0800', '2600' );
+		$postcode  = $postcodes[ array_rand( $postcodes ) ];
+
+		$now = current_time( 'mysql' );
+
+		$wpdb->insert(
+			$wpdb->prefix . 'ff_applications',
+			array(
+				'created_at'    => $now,
+				'name'          => 'Test ' . $token,
+				'email'         => 'ff-test-' . $token . '@' . $host,
+				'postcode'      => $postcode,
+				'instagram'     => '',
+				'skin_concerns' => '',
+				'answers'       => 'Test account',
+				'consent'       => 0,
+				'consent_at'    => null,
+				'status'        => 'pending',
+				'assigned_number' => null,
+				'user_id'       => null,
+				'is_test'       => 1,
+			),
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%d' )
+		);
+
+		$app_id = (int) $wpdb->insert_id;
+		if ( ! $app_id ) {
+			return new WP_Error( 'ff_test_failed', __( 'Could not create the test application.', 'founding-faces' ) );
+		}
+
+		// Approve it just like a real one, so it takes a real number.
+		return self::approve( $app_id, $group_slug );
+	}
+
+	/**
+	 * Run the guarded test reset: delete test accounts and reset numbering.
+	 *
+	 * Deletes every test-flagged account (and any leftover test applications),
+	 * then zeroes the sequence and clears the retired list — all together, so
+	 * the next approved member of The 35 becomes 01 with no gaps. Refuses to run
+	 * if any real numbered member exists.
+	 *
+	 * @return int|WP_Error The number of test accounts removed, or an error.
+	 */
+	public static function run_test_reset() {
+		global $wpdb;
+
+		// Hard guard: never touch anything if a real numbered member exists.
+		if ( self::has_real_numbered_member() ) {
+			return new WP_Error( 'ff_real_exists', __( 'A real numbered member exists — the reset was refused.', 'founding-faces' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		// Every test-flagged member account.
+		$test_ids = get_users( array(
+			'meta_key'   => self::META_IS_TEST, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_value' => '1', // phpcs:ignore WordPress.DB.SlowDBQuery
+			'fields'     => 'ID',
+		) );
+
+		$count = 0;
+		foreach ( $test_ids as $uid ) {
+			$uid = (int) $uid;
+			// Remove the test account's rows across the plugin's tables.
+			$wpdb->delete( $wpdb->prefix . 'ff_applications', array( 'user_id' => $uid ), array( '%d' ) );
+			$wpdb->delete( $wpdb->prefix . 'ff_poll_votes', array( 'member_id' => $uid ), array( '%d' ) );
+			$wpdb->delete( $wpdb->prefix . 'ff_interactions', array( 'member_id' => $uid ), array( '%d' ) );
+			wp_delete_user( $uid );
+			$count++;
+		}
+
+		// Remove any leftover test applications that never became members.
+		$wpdb->delete( $wpdb->prefix . 'ff_applications', array( 'is_test' => 1 ), array( '%d' ) );
+
+		// Zero the sequence and clear the retired list together — true clean slate.
+		self::reset_numbering();
+
+		return $count;
+	}
+
 	/**
 	 * Pull a first name out of a full name, for The Circle's public identity.
 	 *

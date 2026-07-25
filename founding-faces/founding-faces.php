@@ -102,6 +102,7 @@ require_once FF_PATH . 'add-ons/campaign-monitor/class-ff-cm-connector.php';
 if ( is_admin() ) {
 	require_once FF_PATH . 'admin/admin-applications.php';
 	require_once FF_PATH . 'admin/admin-settings.php';
+	require_once FF_PATH . 'admin/admin-privacy.php';
 }
 
 /*
@@ -149,6 +150,7 @@ function ff_init() {
 		FF_Polls::register_admin();
 		FF_Admin_Applications::register();
 		FF_Settings::register();
+		FF_Admin_Privacy::register();
 	}
 }
 add_action( 'init', 'ff_init' );
