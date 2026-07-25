@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.7 =
+* New: JetEngine integration. Note meta is available to JetEngine Dynamic Field
+  widgets via the "Post Meta" source (keys: ff_note_product, ff_note_date,
+  ff_note_trial, ff_note_stage, ff_note_gallery, ff_note_audience), plus
+  Founding Faces callbacks in the Dynamic Field Callback dropdown to render a
+  stage label/badge, the audience label, the product name, and the image
+  gallery. 35-only notes stay gated in JetEngine listings (see 1.0.4).
 
 = 1.0.6 =
 * Change (map): removed the "Leaflet" attribution prefix (not legally required).
