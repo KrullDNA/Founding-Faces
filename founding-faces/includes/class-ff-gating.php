@@ -101,6 +101,18 @@ class FF_Gating {
 		return self::is_member( $user_id ) && 'the-circle' === self::group_of( $user_id );
 	}
 
+	/**
+	 * Whether the current viewer may see the members area at all.
+	 *
+	 * Members can; so can administrators, so Nick can preview and build the
+	 * pages (and, per the governing principle, always see everything).
+	 *
+	 * @return bool
+	 */
+	public static function can_view_members_area() {
+		return self::is_member() || current_user_can( 'manage_options' );
+	}
+
 	/*
 	 * -----------------------------------------------------------------------
 	 * The note gate.
@@ -119,6 +131,13 @@ class FF_Gating {
 	 * @return bool
 	 */
 	public static function can_view_note( $note_id, $user_id = null ) {
+		// Administrators always see everything (they build the pages and, per
+		// the governing principle, can always see the full record).
+		$check_user = $user_id ? $user_id : get_current_user_id();
+		if ( user_can( $check_user, 'manage_options' ) ) {
+			return true;
+		}
+
 		// Only members see notes at all.
 		if ( ! self::is_member( $user_id ) ) {
 			return false;

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,13 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.3 =
+* New: native Elementor widgets for the note display — Founding Faces Notes
+  (notes by product, stage filter), Single Note, Product Header, and Home. The
+  [ff_note]/[ff_notes]/[ff_product_header]/[ff_home] shortcodes still work.
+* Change: administrators can now preview members-area content (notes, home) on
+  the front end and in the Elementor editor, so pages can be built.
 
 = 1.0.2 =
 * Fix: when there are no members with postcodes yet, the map now frames the
