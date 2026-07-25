@@ -83,12 +83,13 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition'    => array( 'section' => array( 'all', 'notes' ) ),
 		) );
 
-		$this->add_control( 'show_intro', array(
-			'label'        => __( 'Show intro line under header', 'founding-faces' ),
-			'type'         => \Elementor\Controls_Manager::SWITCHER,
-			'default'      => '',
-			'return_value' => 'yes',
-			'condition'    => array( 'section' => array( 'all', 'header' ) ),
+		$this->add_control( 'header_subheading', array(
+			'label'       => __( 'Header subheading', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXTAREA,
+			'rows'        => 2,
+			'default'     => FF_History::default_subheading(),
+			'placeholder' => __( 'Leave blank to hide the subheading', 'founding-faces' ),
+			'condition'   => array( 'section' => array( 'all', 'header' ) ),
 		) );
 
 		$this->end_controls_section();
@@ -137,11 +138,11 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
 			'name'     => 'intro_typo',
-			'label'    => __( 'Intro text', 'founding-faces' ),
+			'label'    => __( 'Subheading text', 'founding-faces' ),
 			'selector' => '{{WRAPPER}} .ff-history-intro',
 		) );
 		$this->add_control( 'intro_color', array(
-			'label'     => __( 'Intro colour', 'founding-faces' ),
+			'label'     => __( 'Subheading colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-intro' => 'color: {{VALUE}};' ),
 		) );
@@ -384,12 +385,12 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$section    = isset( $s['section'] ) ? $s['section'] : 'all';
 		$heading    = isset( $s['heading'] ) ? $s['heading'] : '';
 		$link       = ! isset( $s['link_notes'] ) || 'yes' === $s['link_notes'];
-		$show_intro = isset( $s['show_intro'] ) && 'yes' === $s['show_intro'];
+		$subheading = isset( $s['header_subheading'] ) ? $s['header_subheading'] : null;
 
 		$out = '<div class="ff-history">';
 
 		if ( 'all' === $section || 'header' === $section ) {
-			$out .= $sample ? FF_History::sample_header( $show_intro ) : FF_History::render_header( $mid, $show_intro );
+			$out .= $sample ? FF_History::sample_header( $subheading ) : FF_History::render_header( $mid, $subheading );
 		}
 		if ( 'all' === $section || 'votes' === $section ) {
 			$h    = ( 'votes' === $section ) ? $heading : '';

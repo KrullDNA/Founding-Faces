@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.14
+Stable tag: 1.0.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,11 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.15 =
+* Change: the header subheading is now an editable text field (blank hides it),
+  replacing the show/hide toggle; the matching style control is labelled
+  "Subheading".
 
 = 1.0.14 =
 * New: "Line under header" controls (thickness, colour, spacing) so a divider

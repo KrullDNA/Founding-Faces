@@ -88,15 +88,16 @@ class FF_History {
 	/**
 	 * Sample header markup.
 	 *
-	 * @param bool $show_intro Whether to include the intro line.
+	 * @param string|null $subheading The subheading text (null = default, '' = hide).
 	 * @return string
 	 */
-	public static function sample_header( $show_intro = true ) {
+	public static function sample_header( $subheading = null ) {
+		$sub  = ( null === $subheading ) ? self::default_subheading() : $subheading;
 		$out  = '<header class="ff-history-header">';
 		$out .= '<div class="ff-history-number">' . sprintf( esc_html__( 'Founding Face %d', 'founding-faces' ), 7 ) . '</div>';
 		$out .= '<div class="ff-history-group">' . esc_html__( 'The 35', 'founding-faces' ) . '</div>';
-		if ( $show_intro ) {
-			$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		if ( '' !== trim( (string) $sub ) ) {
+			$out .= '<p class="ff-history-intro">' . esc_html( $sub ) . '</p>';
 		}
 		$out .= '</header>';
 		return $out;
@@ -247,9 +248,10 @@ class FF_History {
 	 * @param int $member_id The current member's id.
 	 * @return string
 	 */
-	public static function render_header( $member_id, $show_intro = true ) {
+	public static function render_header( $member_id, $subheading = null ) {
 		$number = get_user_meta( $member_id, FF_Members::META_NUMBER, true );
 		$group  = FF_Gating::is_the_35( $member_id ) ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' );
+		$sub    = ( null === $subheading ) ? self::default_subheading() : $subheading;
 
 		$out  = '<header class="ff-history-header">';
 		if ( $number ) {
@@ -260,12 +262,21 @@ class FF_History {
 			) . '</div>';
 		}
 		$out .= '<div class="ff-history-group">' . esc_html( $group ) . '</div>';
-		if ( $show_intro ) {
-			$out .= '<p class="ff-history-intro">' . esc_html__( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' ) . '</p>';
+		if ( '' !== trim( (string) $sub ) ) {
+			$out .= '<p class="ff-history-intro">' . esc_html( $sub ) . '</p>';
 		}
 		$out .= '</header>';
 
 		return $out;
+	}
+
+	/**
+	 * The default header subheading sentence.
+	 *
+	 * @return string
+	 */
+	public static function default_subheading() {
+		return __( 'Your history — everything you\'ve taken part in, and yours alone.', 'founding-faces' );
 	}
 
 	/**
