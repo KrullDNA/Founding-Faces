@@ -41,7 +41,11 @@ class FF_Polls {
 	 * Wire up the post type, shortcode and voting endpoint.
 	 */
 	public static function register() {
-		add_action( 'init', array( __CLASS__, 'register_cpt' ) );
+		// Register the poll post type now. This runs on 'init' (register() is
+		// called from the plugin's own init handler), so we register directly
+		// rather than nesting another 'init' hook — a nested same-priority hook
+		// added mid-'init' isn't reliably run, which could hide the Polls menu.
+		self::register_cpt();
 		add_shortcode( 'ff_poll', array( __CLASS__, 'shortcode' ) );
 
 		// Voting is by logged-in members only, so only the priv handler is used.
