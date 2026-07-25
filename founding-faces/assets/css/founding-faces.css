@@ -599,3 +599,27 @@
 	font-size: 0.82rem;
 	margin-left: auto;
 }
+
+/* ==========================================================================
+ * Members map.
+ * ========================================================================== */
+
+.ff-map-wrap {
+	max-width: 960px;
+	margin: 0 auto;
+}
+
+.ff-members-map {
+	width: 100%;
+	min-height: 320px;
+	border-radius: var(--ff-radius);
+	overflow: hidden;
+	border: 1px solid var(--ff-line);
+	background: var(--ff-bg);
+}
+
+/* Keep the base map muted and unobtrusive under the data dots. */
+.ff-members-map .leaflet-container {
+	font-family: var(--ff-font);
+	background: #f2f3f4;
+}

@@ -93,6 +93,14 @@ class FF_Settings {
 			FF_CM_Connector::OPT_LIST_ID,
 			array( 'sanitize_callback' => 'sanitize_text_field' )
 		);
+
+		// Members map settings: tile source, and per-tier dot colour and size.
+		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		register_setting( self::GROUP, FF_Map::OPT_TILE_ATTRIBUTION, array( 'sanitize_callback' => 'wp_kses_post' ) );
+		register_setting( self::GROUP, FF_Map::OPT_35_COLOR, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Map::OPT_35_SIZE, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Map::OPT_CIRCLE_COLOR, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Map::OPT_CIRCLE_SIZE, array( 'sanitize_callback' => 'absint' ) );
 	}
 
 	/**
@@ -170,9 +178,61 @@ class FF_Settings {
 					</tr>
 				</table>
 
+				<?php self::render_map_section(); ?>
+
 				<?php submit_button(); ?>
 			</form>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render the members-map section of the settings form.
+	 *
+	 * The tile source is a single field so the map can be repointed to another
+	 * provider later without any code change; plus per-tier dot colour and size.
+	 */
+	private static function render_map_section() {
+		$s = FF_Map::settings();
+		?>
+		<h2><?php esc_html_e( 'Members map', 'founding-faces' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'The map places one anonymous dot per member from their postcode. It never reads the postal address, and shows no names, labels or clickable dots.', 'founding-faces' ); ?></p>
+
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Map::OPT_TILE_URL ); ?>"><?php esc_html_e( 'Base map tile URL', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Map::OPT_TILE_URL ); ?>" id="<?php echo esc_attr( FF_Map::OPT_TILE_URL ); ?>" type="text" class="large-text code" value="<?php echo esc_attr( $s['tile_url'] ); ?>" />
+					<p class="description"><?php esc_html_e( 'Defaults to the pale grey Positron style (no key). Set once here; repoint to another provider (e.g. Stadia) later without touching code.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Map::OPT_TILE_ATTRIBUTION ); ?>"><?php esc_html_e( 'Tile attribution', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Map::OPT_TILE_ATTRIBUTION ); ?>" id="<?php echo esc_attr( FF_Map::OPT_TILE_ATTRIBUTION ); ?>" type="text" class="large-text" value="<?php echo esc_attr( $s['attribution'] ); ?>" />
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'The 35 dots', 'founding-faces' ); ?></th>
+				<td>
+					<label><?php esc_html_e( 'Colour', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Map::OPT_35_COLOR ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $s['c35_color'] ); ?>" placeholder="#2b2d33" /></label>
+					&nbsp;&nbsp;
+					<label><?php esc_html_e( 'Size (px)', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Map::OPT_35_SIZE ); ?>" type="number" min="2" max="30" value="<?php echo esc_attr( $s['c35_size'] ); ?>" style="width:70px;" /></label>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'The Circle dots', 'founding-faces' ); ?></th>
+				<td>
+					<label><?php esc_html_e( 'Colour', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Map::OPT_CIRCLE_COLOR ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $s['circle_color'] ); ?>" placeholder="#9aa0a6" /></label>
+					&nbsp;&nbsp;
+					<label><?php esc_html_e( 'Size (px)', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Map::OPT_CIRCLE_SIZE ); ?>" type="number" min="2" max="30" value="<?php echo esc_attr( $s['circle_size'] ); ?>" style="width:70px;" /></label>
+				</td>
+			</tr>
+		</table>
 		<?php
 	}
 

@@ -120,7 +120,7 @@ Stage 8 — Poll widget:
 * Admin "who voted for what" view on the poll screen: each option's count and
   the members (real name + number) who chose it. Never exposed on the frontend.
 
-Stage 9 (this release) — Personal history page:
+Stage 9 — Personal history page:
 * [ff_history] shortcode: a logged-in member sees their number and group, the
   polls they voted in and how they voted, the notes they've read, and any
   feedback they've shared.
@@ -129,6 +129,24 @@ Stage 9 (this release) — Personal history page:
   request, so no other member's data is ever visible.
 * This is the seed of the launch "fingerprint" — the same data, later made
   presentable and optionally public with consent.
+
+Stage 10 (this release) — The members map:
+* [ff_members_map] shortcode: an anonymous dot per member, placed from their
+  postcode via a bundled Australian postcode-to-coordinates table (3,170
+  postcodes) — no external API call.
+* Leaflet (bundled locally, no CDN) with the pale grey Positron OpenStreetMap
+  style as the base map, from a no-key provider. The tile URL is a single
+  setting so it can be repointed later.
+* Settings for per-tier dot colour and size (The 35 vs The Circle); dots are
+  semi-transparent so dense areas glow, with a tiny stable jitter so shared
+  postcodes spread into a soft cluster.
+* Reads postcode only (mirrored to user meta on approval), never the postal
+  address; no names, no labels, nothing clickable. Deactivated and test
+  accounts are excluded. Only coordinates and tier reach the browser.
+
+Bundled data attribution: Australian postcode coordinates derived from the
+Matthew Proctor Australian postcodes dataset (matthewproctor.com), deduplicated
+to one centroid per postcode.
 
 == Changelog ==
 
@@ -142,3 +160,4 @@ Stage 9 (this release) — Personal history page:
 * Stage 7: designed-once note template, display components, hybrid home screen.
 * Stage 8: interactive poll widget, aggregate results, admin who-voted view.
 * Stage 9: personal history page reading only the member's own spine rows.
+* Stage 10: anonymous members map (bundled postcodes, Leaflet, postcode-only).

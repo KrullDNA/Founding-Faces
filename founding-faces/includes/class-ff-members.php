@@ -50,6 +50,11 @@ class FF_Members {
 	// the application). This is the precondition for any external email sync.
 	const META_CONSENT = 'ff_email_consent';
 
+	// User meta: the member's four-digit postcode (mirrored from the
+	// application). This is the ONLY location field the members map ever reads;
+	// the postal address is a separate, admin-only field the map never touches.
+	const META_POSTCODE = 'ff_postcode';
+
 	// Option: the last Founding number issued. Next number is always this + 1.
 	const OPT_SEQUENCE = 'ff_number_sequence';
 
@@ -194,6 +199,9 @@ class FF_Members {
 		// Mirror the stored consent flag onto the member, so the email-sync
 		// gate and the account-page toggle both read from one place.
 		update_user_meta( $user_id, self::META_CONSENT, (int) $app->consent );
+		// Mirror the postcode so the map can read it without ever touching the
+		// sensitive application table or the postal address.
+		update_user_meta( $user_id, self::META_POSTCODE, $app->postcode );
 		if ( $is_35 ) {
 			update_user_meta( $user_id, self::META_NUMBER, $number );
 		}

@@ -75,6 +75,9 @@ require_once FF_PATH . 'includes/class-ff-polls.php';
 // The personal history page: a member's own record, and only their own.
 require_once FF_PATH . 'includes/class-ff-history.php';
 
+// The anonymous members map (Leaflet, bundled; postcode-only, nothing clickable).
+require_once FF_PATH . 'includes/class-ff-map.php';
+
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
@@ -130,6 +133,7 @@ function ff_init() {
 	FF_Display::register();
 	FF_Polls::register();
 	FF_History::register();
+	FF_Map::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {
