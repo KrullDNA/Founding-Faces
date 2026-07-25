@@ -189,8 +189,9 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		/* =========================== HEADING STYLE ========================== */
 		$this->start_controls_section( 'ff_ma_heading_style', array(
-			'label' => __( 'Section headings', 'founding-faces' ),
-			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			'label'     => __( 'Section headings', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'votes', 'notes', 'feedback' ) ),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
 			'name'     => 'heading_typo',
@@ -216,8 +217,9 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		/* =========================== SECTION BOX =========================== */
 		$this->start_controls_section( 'ff_ma_section_style', array(
-			'label' => __( 'Section box', 'founding-faces' ),
-			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			'label'     => __( 'Section box', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'votes', 'notes', 'feedback' ) ),
 		) );
 		$this->add_control( 'section_bg', array(
 			'label'     => __( 'Background', 'founding-faces' ),
@@ -250,8 +252,9 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		/* ============================== ITEMS ============================== */
 		$this->start_controls_section( 'ff_ma_item_style', array(
-			'label' => __( 'Items', 'founding-faces' ),
-			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			'label'     => __( 'Items', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'votes', 'notes', 'feedback' ) ),
 		) );
 		$this->add_control( 'item_bg', array(
 			'label'     => __( 'Item background', 'founding-faces' ),
@@ -291,8 +294,9 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		/* ============================ ITEM TEXT ============================ */
 		$this->start_controls_section( 'ff_ma_text_style', array(
-			'label' => __( 'Item text', 'founding-faces' ),
-			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			'label'     => __( 'Item text', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'votes', 'notes', 'feedback' ) ),
 		) );
 
 		$this->add_control( 'main_h', array(
@@ -313,15 +317,18 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'label'     => __( 'Sub text (e.g. "You chose…")', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
 			'separator' => 'before',
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
-			'name'     => 'detail_typo',
-			'selector' => '{{WRAPPER}} .ff-history-item-detail',
+			'name'      => 'detail_typo',
+			'selector'  => '{{WRAPPER}} .ff-history-item-detail',
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
 		) );
 		$this->add_control( 'detail_color', array(
 			'label'     => __( 'Colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-item-detail' => 'color: {{VALUE}};' ),
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
 		) );
 
 		$this->add_control( 'date_h', array(
@@ -343,31 +350,37 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'label'     => __( 'Feedback text', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
 			'separator' => 'before',
+			'condition' => array( 'section' => array( 'all', 'feedback' ) ),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
-			'name'     => 'fbtext_typo',
-			'selector' => '{{WRAPPER}} .ff-history-feedback-text',
+			'name'      => 'fbtext_typo',
+			'selector'  => '{{WRAPPER}} .ff-history-feedback-text',
+			'condition' => array( 'section' => array( 'all', 'feedback' ) ),
 		) );
 		$this->add_control( 'fbtext_color', array(
 			'label'     => __( 'Colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-feedback-text' => 'color: {{VALUE}};' ),
+			'condition' => array( 'section' => array( 'all', 'feedback' ) ),
 		) );
 
 		$this->add_control( 'link_h', array(
 			'label'     => __( 'Note & feedback links', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
 			'separator' => 'before',
+			'condition' => array( 'section' => array( 'all', 'notes', 'feedback' ) ),
 		) );
 		$this->add_control( 'link_color', array(
 			'label'     => __( 'Link colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-item-main a' => 'color: {{VALUE}};' ),
+			'condition' => array( 'section' => array( 'all', 'notes', 'feedback' ) ),
 		) );
 		$this->add_control( 'link_hover', array(
 			'label'     => __( 'Link hover colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-item-main a:hover' => 'color: {{VALUE}};' ),
+			'condition' => array( 'section' => array( 'all', 'notes', 'feedback' ) ),
 		) );
 
 		$this->end_controls_section();

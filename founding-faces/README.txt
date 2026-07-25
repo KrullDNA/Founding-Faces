@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.15
+Stable tag: 1.0.16
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.16 =
+* Change: Style-tab controls now match the selected Section — pick "Header" and
+  you only see header styles; pick a list section and you see its styles; "Full
+  record" shows everything. Votes-only, feedback-only and link controls appear
+  only when relevant.
 
 = 1.0.15 =
 * Change: the header subheading is now an editable text field (blank hides it),
