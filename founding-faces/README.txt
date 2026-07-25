@@ -27,14 +27,24 @@ Governing principles:
 
 == Build progress ==
 
-Stage 1 (this release) — Foundation & data layer:
+Stage 1 — Foundation & data layer:
 * Plugin activates cleanly.
 * Three custom tables created: ff_applications, ff_poll_votes, ff_interactions.
 * Products (ff_product) and Notes (ff_note) post types registered.
 * Group taxonomy (ff_group) registered on users, seeded with the two terms
   "The 35" and "The Circle".
 
+Stage 2 (this release) — Application form & status lookup:
+* Front-end application form via [ff_application_form] shortcode (works in
+  Elementor too), storing submissions to ff_applications as pending with the
+  consent flag and a timestamp.
+* Four-digit Australian postcode field, validated server-side, for the map.
+* Logged-out status lookup via [ff_status_lookup] — enter your email, see
+  pending or decided, without exposing group or number.
+* All input sanitised, all output escaped, every submission nonce-protected.
+
 == Changelog ==
 
 = 1.0.0 =
 * Stage 1: foundation and data layer.
+* Stage 2: front-end application form and logged-out status lookup.

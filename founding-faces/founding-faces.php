@@ -57,6 +57,9 @@ require_once FF_PATH . 'includes/class-ff-activator.php';
 // Registers the Products and Notes post types and the Group taxonomy.
 require_once FF_PATH . 'includes/class-ff-post-types.php';
 
+// The front-end application form, submission handling and status lookup.
+require_once FF_PATH . 'includes/class-ff-application.php';
+
 /*
  * ---------------------------------------------------------------------------
  * Activation.
@@ -85,6 +88,7 @@ register_activation_hook( FF_FILE, array( 'FF_Activator', 'activate' ) );
  */
 function ff_init() {
 	FF_Post_Types::register();
+	FF_Application::register();
 }
 add_action( 'init', 'ff_init' );
 
