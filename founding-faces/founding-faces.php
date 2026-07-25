@@ -92,12 +92,11 @@ require_once FF_PATH . 'includes/class-ff-members.php';
 // Loaded always: the login page and its screens are not the admin area.
 require_once FF_PATH . 'includes/class-ff-emails.php';
 
-// The email-platform connector interface and manager, plus the Campaign
-// Monitor add-on. Loaded always so a member can be synced on approval and
-// re-synced from the front-end account page later.
+// The email-platform connector interface and manager. The connectors
+// themselves (Campaign Monitor, Klaviyo) are separate add-on plugins that
+// register through the 'ff_register_connectors' hook, so the core never
+// depends on them being installed.
 require_once FF_PATH . 'includes/class-ff-connector.php';
-require_once FF_PATH . 'add-ons/campaign-monitor/class-ff-cm-connector.php';
-require_once FF_PATH . 'add-ons/klaviyo/class-ff-klaviyo-connector.php';
 
 // Admin-only screens: the moderation queue and the settings page.
 if ( is_admin() ) {

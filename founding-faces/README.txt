@@ -172,16 +172,27 @@ Stage 12 — Privacy & admin tools:
   Refuses to run if any real numbered member exists, and requires typing the
   word RESET, not a single click.
 
-Stage 13 (this release) — Klaviyo add-on:
+Stage 13 — Klaviyo add-on:
 * Second connector implementing the same FF_Connector contract, for when
-  Klaviyo is purchased. Select it as the active platform on the Settings page;
-  only one connector is ever active at a time.
-* Syncs name, email, number and group; the group is sent as BOTH a profile
-  property and a tag (a "tags" array property Klaviyo can segment on).
-* Upserts the profile (create, or update if it already exists) and optionally
-  adds it to a configured Klaviyo list. Consent toggle write-back unsubscribes
-  at Klaviyo too. Gated on consent, like Campaign Monitor. Private API key and
-  optional list ID in Settings. Uses WordPress's HTTP API, no SDK.
+  Klaviyo is purchased; group sent as BOTH a tag and a profile property.
+
+Stage 14 (this release) — Members map Elementor widget & add-on split:
+* The members map is now a native Elementor widget (Founding Faces Map, Atomic
+  architecture) wrapping the same renderer. The [ff_members_map] shortcode
+  still works as a fallback — the widget doesn't replace it.
+* Widget controls: centre point (defaults to the centre of Australia), default
+  zoom, min/max zoom, scroll-wheel zoom (default off), pan/drag with an option
+  to lock panning to Australia's bounds, zoom buttons on/off, map height; dot
+  colour/size per tier, dot opacity, optional dot border; base tile source
+  (defaults to the plugin Positron setting), container background/border/radius,
+  and an optional legend with position. All map behaviour options are standard
+  Leaflet options. Still reads postcode only, nothing clickable.
+* Leaflet and the widget assets load only where a map is present.
+* The connectors are now SEPARATE add-on plugins ("Founding Faces — Campaign
+  Monitor" and "Founding Faces — Klaviyo"), each in its own zip. The core
+  exposes an 'ff_register_connectors' hook they register through, so the core
+  no longer depends on any connector being installed. Install only the platform
+  you use; only one is active at a time.
 
 == Changelog ==
 
@@ -199,3 +210,4 @@ Stage 13 (this release) — Klaviyo add-on:
 * Stage 11: account settings, consent write-back, self-service export/delete.
 * Stage 12: privacy admin tools, consent audit, guarded test-mode reset.
 * Stage 13: Klaviyo add-on (group as tag + property), consent-gated.
+* Stage 14: members-map Elementor widget; connectors split into add-on plugins.

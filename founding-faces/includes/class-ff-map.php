@@ -5,7 +5,12 @@
  * A dot per member, placed from their postcode via a bundled Australian
  * postcode-to-coordinates table — no external API call, and the postcode is
  * the only location the map ever reads. No names, no labels, nothing clickable.
- * It shows the programme is real and national without exposing a single person.
+ *
+ * Delivered two ways over one shared renderer: the [ff_members_map] shortcode
+ * (the original, kept as a fallback) and a native Elementor Atomic widget that
+ * exposes the map's behaviour and styling as panel controls. Both call
+ * FF_Map::render_map(); the widget only gathers its controls into the same
+ * options array.
  *
  * @package FoundingFaces
  */
@@ -19,12 +24,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class FF_Map
  *
  * Builds the anonymised list of dots on the server (coordinates and tier only)
- * and hands it to Leaflet on the map page. Nothing that could identify a member
- * ever reaches the browser.
+ * and hands it, plus a per-instance options set, to Leaflet on the map page.
+ * Nothing that could identify a member ever reaches the browser.
  */
 class FF_Map {
 
-	// Settings option keys for the map.
+	// Settings option keys for the map (plugin-level defaults).
 	const OPT_TILE_URL         = 'ff_map_tile_url';
 	const OPT_TILE_ATTRIBUTION = 'ff_map_tile_attribution';
 	const OPT_35_COLOR         = 'ff_map_35_color';
@@ -32,21 +37,44 @@ class FF_Map {
 	const OPT_CIRCLE_COLOR     = 'ff_map_circle_color';
 	const OPT_CIRCLE_SIZE      = 'ff_map_circle_size';
 
+	// The geographic centre of Australia, the default map centre.
+	const AU_CENTER_LAT = -25.2744;
+	const AU_CENTER_LNG = 133.7751;
+
 	// Cached postcode lookup table, loaded once per request.
 	private static $lookup = null;
 
+	// Counter so each map instance on a page gets a unique id.
+	private static $instance = 0;
+
 	/**
-	 * Register the map shortcode.
+	 * Register the shortcode, the Elementor widget, and the asset handles.
 	 */
 	public static function register() {
 		add_shortcode( 'ff_members_map', array( __CLASS__, 'shortcode' ) );
+
+		// Register the asset handles so the widget can declare them as
+		// dependencies (Elementor then loads them in the editor too).
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
+		add_action( 'elementor/frontend/after_register_scripts', array( __CLASS__, 'register_assets' ) );
+
+		// The Elementor widget (harmless if Elementor isn't installed).
+		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widget' ) );
+	}
+
+	/**
+	 * Register the widget with Elementor.
+	 *
+	 * @param object $widgets_manager Elementor's widgets manager.
+	 */
+	public static function register_widget( $widgets_manager ) {
+		require_once FF_PATH . 'includes/class-ff-map-widget.php';
+		$widgets_manager->register( new FF_Map_Widget() );
 	}
 
 	/*
 	 * -----------------------------------------------------------------------
-	 * Setting defaults.
-	 * The tile source is a single setting so it can be repointed later (e.g. to
-	 * a higher-reliability provider) without touching the rest of the build.
+	 * Setting defaults (plugin-level).
 	 * -----------------------------------------------------------------------
 	 */
 
@@ -61,7 +89,7 @@ class FF_Map {
 	}
 
 	/**
-	 * Get the map settings, each falling back to its default.
+	 * Get the plugin-level map settings, each falling back to its default.
 	 *
 	 * @return array
 	 */
@@ -126,11 +154,10 @@ class FF_Map {
 	 * @return array A list of [lat, lng, tier] where tier is 35 or 0.
 	 */
 	public static function build_points() {
-		// Active members only (skip deactivated and test accounts).
 		$users = get_users( array(
-			'meta_key'   => FF_Members::META_GROUP, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_key'     => FF_Members::META_GROUP, // phpcs:ignore WordPress.DB.SlowDBQuery
 			'meta_compare' => 'EXISTS',
-			'fields'     => array( 'ID' ),
+			'fields'       => array( 'ID' ),
 		) );
 
 		$points = array();
@@ -155,9 +182,6 @@ class FF_Map {
 				continue;
 			}
 
-			// A small, stable jitter seeded from the member id, so a shared
-			// postcode reads as a cluster of soft dots, not one hard dot. This
-			// is cosmetic only and never reveals a real location.
 			list( $jlat, $jlng ) = self::jitter( $uid );
 
 			$is_35 = ( 'the-35' === get_user_meta( $uid, FF_Members::META_GROUP, true ) );
@@ -179,13 +203,9 @@ class FF_Map {
 	 * @return array [lat_offset, lng_offset], roughly within +/- 0.03 degrees.
 	 */
 	private static function jitter( $seed ) {
-		// Two independent pseudo-random values from the id, no randomness so the
-		// map is stable between loads.
-		$a = ( ( $seed * 2654435761 ) % 1000 ) / 1000; // 0..1
-		$b = ( ( $seed * 40503 ) % 1000 ) / 1000;       // 0..1
-		$lat = ( $a - 0.5 ) * 0.06;
-		$lng = ( $b - 0.5 ) * 0.06;
-		return array( $lat, $lng );
+		$a = ( ( $seed * 2654435761 ) % 1000 ) / 1000;
+		$b = ( ( $seed * 40503 ) % 1000 ) / 1000;
+		return array( ( $a - 0.5 ) * 0.06, ( $b - 0.5 ) * 0.06 );
 	}
 
 	/*
@@ -195,57 +215,157 @@ class FF_Map {
 	 */
 
 	/**
-	 * The [ff_members_map] shortcode.
+	 * The [ff_members_map] shortcode (kept as a fallback).
 	 *
 	 * @param array $atts Shortcode attributes (height in px, optional).
 	 * @return string
 	 */
 	public static function shortcode( $atts ) {
 		$atts = shortcode_atts( array( 'height' => 520 ), $atts, 'ff_members_map' );
-
-		// The map is part of the members area, so it's members-only too.
-		if ( ! FF_Gating::is_member() ) {
-			return FF_Display::members_only_notice();
-		}
-
-		self::enqueue();
-
-		$height = absint( $atts['height'] );
-
-		return '<div class="ff-map-wrap"><div id="ff-members-map" class="ff-members-map" style="height:' . esc_attr( $height ) . 'px;"></div></div>';
+		return self::render_map( array( 'height' => absint( $atts['height'] ) ) );
 	}
 
 	/**
-	 * Enqueue Leaflet (bundled locally) and the map script, only on this page.
+	 * Render one map instance from an options array.
 	 *
-	 * Passes the anonymous points and the style settings to the script. Leaflet
-	 * is the one deliberate external library, and it loads solely here.
+	 * Shared by the shortcode and the Elementor widget. Any option not supplied
+	 * falls back to a sensible default (the plugin-level settings for tiles and
+	 * tier colours, the centre of Australia for the view). The behaviour options
+	 * are standard Leaflet options passed straight through to the map.
+	 *
+	 * @param array $args Options (see the defaults below).
+	 * @return string
 	 */
-	private static function enqueue() {
-		wp_enqueue_style( 'founding-faces', FF_URL . 'assets/css/founding-faces.css', array(), FF_VERSION );
+	public static function render_map( $args = array() ) {
+		$s = self::settings();
 
-		// Leaflet, bundled with the plugin — no CDN, no external JS dependency.
-		wp_enqueue_style( 'leaflet', FF_URL . 'assets/vendor/leaflet/leaflet.css', array(), '1.9.4' );
-		wp_enqueue_script( 'leaflet', FF_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true );
-
-		wp_enqueue_script( 'ff-map', FF_URL . 'assets/js/map.js', array( 'leaflet' ), FF_VERSION, true );
-
-		$settings = self::settings();
-
-		wp_localize_script( 'ff-map', 'ffMap', array(
-			'points'      => self::build_points(),
-			'tileUrl'     => $settings['tile_url'],
-			'attribution' => $settings['attribution'],
-			'tiers'       => array(
-				'35'     => array(
-					'color' => $settings['c35_color'],
-					'size'  => $settings['c35_size'],
-				),
-				'circle' => array(
-					'color' => $settings['circle_color'],
-					'size'  => $settings['circle_size'],
-				),
+		$defaults = array(
+			'center'       => array( self::AU_CENTER_LAT, self::AU_CENTER_LNG ),
+			'zoom'         => 4,
+			'min_zoom'     => 3,
+			'max_zoom'     => 12,
+			'scroll_zoom'  => false,
+			'dragging'     => true,
+			'lock_bounds'  => false,
+			'zoom_control' => true,
+			'height'       => 520,
+			'tile_url'     => $s['tile_url'],
+			'attribution'  => $s['attribution'],
+			'tiers'        => array(
+				'35'     => array( 'color' => $s['c35_color'], 'size' => $s['c35_size'] ),
+				'circle' => array( 'color' => $s['circle_color'], 'size' => $s['circle_size'] ),
 			),
-		) );
+			'opacity'      => 0.45,
+			'stroke'       => array( 'on' => false, 'color' => '#ffffff', 'width' => 1 ),
+			'legend'       => array(
+				'on'           => false,
+				'position'     => 'bottomright',
+				'label_35'     => __( 'The 35', 'founding-faces' ),
+				'label_circle' => __( 'The Circle', 'founding-faces' ),
+			),
+		);
+
+		$args = wp_parse_args( $args, $defaults );
+
+		// Members-only on the front end, but always visible inside the Elementor
+		// builder so the page can be designed.
+		if ( ! FF_Gating::is_member() && ! self::is_builder() ) {
+			return FF_Display::members_only_notice();
+		}
+
+		self::enqueue_assets();
+
+		self::$instance++;
+		$id     = 'ff-members-map-' . self::$instance;
+		$height = absint( $args['height'] );
+
+		// The config handed to Leaflet. It carries display options only — never
+		// any member data. The dots themselves come from ffMapData (coords/tier).
+		$config = array(
+			'center'      => array( (float) $args['center'][0], (float) $args['center'][1] ),
+			'zoom'        => (int) $args['zoom'],
+			'minZoom'     => (int) $args['min_zoom'],
+			'maxZoom'     => (int) $args['max_zoom'],
+			'scrollZoom'  => (bool) $args['scroll_zoom'],
+			'dragging'    => (bool) $args['dragging'],
+			'lockBounds'  => (bool) $args['lock_bounds'],
+			'zoomControl' => (bool) $args['zoom_control'],
+			'tileUrl'     => $args['tile_url'],
+			'attribution' => $args['attribution'],
+			'tiers'       => array(
+				'35'     => array( 'color' => $args['tiers']['35']['color'], 'size' => (int) $args['tiers']['35']['size'] ),
+				'circle' => array( 'color' => $args['tiers']['circle']['color'], 'size' => (int) $args['tiers']['circle']['size'] ),
+			),
+			'opacity'     => (float) $args['opacity'],
+			'stroke'      => array(
+				'on'    => (bool) $args['stroke']['on'],
+				'color' => $args['stroke']['color'],
+				'width' => (int) $args['stroke']['width'],
+			),
+			'legend'      => array(
+				'on'          => (bool) $args['legend']['on'],
+				'position'    => $args['legend']['position'],
+				'label35'     => $args['legend']['label_35'],
+				'labelCircle' => $args['legend']['label_circle'],
+			),
+		);
+
+		return '<div id="' . esc_attr( $id ) . '" class="ff-members-map" data-ffmap="'
+			. esc_attr( wp_json_encode( $config ) ) . '" style="height:' . $height . 'px;"></div>';
+	}
+
+	/**
+	 * Register the map asset handles (so the widget can depend on them).
+	 */
+	public static function register_assets() {
+		if ( ! wp_style_is( 'leaflet', 'registered' ) ) {
+			wp_register_style( 'leaflet', FF_URL . 'assets/vendor/leaflet/leaflet.css', array(), '1.9.4' );
+		}
+		if ( ! wp_style_is( 'founding-faces', 'registered' ) ) {
+			wp_register_style( 'founding-faces', FF_URL . 'assets/css/founding-faces.css', array(), FF_VERSION );
+		}
+		if ( ! wp_script_is( 'leaflet', 'registered' ) ) {
+			wp_register_script( 'leaflet', FF_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true );
+		}
+		if ( ! wp_script_is( 'ff-map', 'registered' ) ) {
+			wp_register_script( 'ff-map', FF_URL . 'assets/js/map.js', array( 'leaflet' ), FF_VERSION, true );
+		}
+	}
+
+	/**
+	 * Enqueue Leaflet (bundled locally) and the map script — only when a map is
+	 * actually rendered, so nothing loads on pages without one.
+	 *
+	 * The anonymous points are localised once per page and shared by every map
+	 * instance; per-instance display options travel in each map's data attribute.
+	 */
+	private static function enqueue_assets() {
+		self::register_assets();
+
+		wp_enqueue_style( 'founding-faces' );
+		wp_enqueue_style( 'leaflet' );
+		wp_enqueue_script( 'leaflet' );
+		wp_enqueue_script( 'ff-map' );
+
+		static $localized = false;
+		if ( ! $localized ) {
+			wp_localize_script( 'ff-map', 'ffMapData', array( 'points' => self::build_points() ) );
+			$localized = true;
+		}
+	}
+
+	/**
+	 * Whether we're rendering inside the Elementor builder or its preview.
+	 *
+	 * @return bool
+	 */
+	private static function is_builder() {
+		if ( ! class_exists( '\Elementor\Plugin' ) ) {
+			return false;
+		}
+		$p    = \Elementor\Plugin::$instance;
+		$edit = isset( $p->editor ) && $p->editor->is_edit_mode();
+		$prev = isset( $p->preview ) && method_exists( $p->preview, 'is_preview_mode' ) && $p->preview->is_preview_mode();
+		return $edit || $prev;
 	}
 }

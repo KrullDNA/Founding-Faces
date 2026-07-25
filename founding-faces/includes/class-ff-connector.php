@@ -91,19 +91,25 @@ class FF_Connectors {
 	protected static $connectors = array();
 
 	/**
-	 * Register the built-in connectors and hook member approval.
+	 * Let the installed add-on plugins register their connectors, and hook
+	 * member approval.
+	 *
+	 * The connectors are shipped as separate plugins now, so the core doesn't
+	 * reference them directly. Each add-on hooks 'ff_register_connectors' and
+	 * calls FF_Connectors::add(). Only one connector is active at a time (chosen
+	 * on the settings page); the core doesn't care which — or whether any are
+	 * installed at all.
 	 *
 	 * Called once on plugin load.
 	 */
 	public static function register() {
-		// Register each available add-on. Only one is active at a time (chosen
-		// on the settings page); the core doesn't care which.
-		if ( class_exists( 'FF_CM_Connector' ) ) {
-			self::add( new FF_CM_Connector() );
-		}
-		if ( class_exists( 'FF_Klaviyo_Connector' ) ) {
-			self::add( new FF_Klaviyo_Connector() );
-		}
+		/**
+		 * Fires so connector add-on plugins can register themselves.
+		 *
+		 * An add-on hooks this, requires its connector class (which extends
+		 * FF_Connector, now guaranteed to exist), and calls FF_Connectors::add().
+		 */
+		do_action( 'ff_register_connectors' );
 
 		// Sync a member to the active platform the moment they're approved.
 		add_action( 'ff_member_approved', array( __CLASS__, 'sync_member' ), 10, 1 );
