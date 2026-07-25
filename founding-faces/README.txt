@@ -34,7 +34,7 @@ Stage 1 — Foundation & data layer:
 * Group taxonomy (ff_group) registered on users, seeded with the two terms
   "The 35" and "The Circle".
 
-Stage 2 (this release) — Application form & status lookup:
+Stage 2 — Application form & status lookup:
 * Front-end application form via [ff_application_form] shortcode (works in
   Elementor too), storing submissions to ff_applications as pending with the
   consent flag and a timestamp.
@@ -43,8 +43,23 @@ Stage 2 (this release) — Application form & status lookup:
   pending or decided, without exposing group or number.
 * All input sanitised, all output escaped, every submission nonce-protected.
 
+Stage 3 (this release) — Moderation & member creation:
+* Admin "Founding Faces" menu with a moderation queue (pending count bubble),
+  tabbed by status, showing each application's details.
+* Approve into The 35 or The Circle; The 35 gets the next sequential Founding
+  number from a monotonic sequence, so a withdrawn number is retired and never
+  reused.
+* Automatic WordPress user creation on approval, with the real name stored as
+  private user meta and the public identity (number, or first name) as the
+  display name. Application and member stay two linked records.
+* Withdraw deactivates the account (never deletes) and retires the number;
+  deactivated members can't log in.
+* Resend-welcome-email button. Every action nonce- and capability-checked.
+* Interaction-log spine helper (FF_Interactions) in use from approval onward.
+
 == Changelog ==
 
 = 1.0.0 =
 * Stage 1: foundation and data layer.
 * Stage 2: front-end application form and logged-out status lookup.
+* Stage 3: admin moderation queue, member creation, numbering, resend.

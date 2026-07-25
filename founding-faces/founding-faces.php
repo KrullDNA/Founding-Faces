@@ -60,6 +60,17 @@ require_once FF_PATH . 'includes/class-ff-post-types.php';
 // The front-end application form, submission handling and status lookup.
 require_once FF_PATH . 'includes/class-ff-application.php';
 
+// The interaction-log spine: one small helper for recording member actions.
+require_once FF_PATH . 'includes/class-ff-interactions.php';
+
+// Membership: approval, user creation, numbering, withdrawal, welcome email.
+require_once FF_PATH . 'includes/class-ff-members.php';
+
+// The admin moderation queue (loaded only in the admin area).
+if ( is_admin() ) {
+	require_once FF_PATH . 'admin/admin-applications.php';
+}
+
 /*
  * ---------------------------------------------------------------------------
  * Activation.
@@ -89,6 +100,12 @@ register_activation_hook( FF_FILE, array( 'FF_Activator', 'activate' ) );
 function ff_init() {
 	FF_Post_Types::register();
 	FF_Application::register();
+	FF_Members::register();
+
+	// The moderation queue's admin screens, only in the admin area.
+	if ( is_admin() ) {
+		FF_Admin_Applications::register();
+	}
 }
 add_action( 'init', 'ff_init' );
 

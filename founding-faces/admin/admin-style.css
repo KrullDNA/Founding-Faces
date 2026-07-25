@@ -1,0 +1,102 @@
+/**
+ * Founding Faces — admin styles.
+ *
+ * Scoped to the plugin's admin screens (.ff-admin) and loaded only on those
+ * pages. Small and utilitarian: this is a working queue, not a marketing page.
+ */
+
+.ff-admin .ff-tabs {
+	margin: 0.5em 0 1em;
+}
+
+/* Queue table -------------------------------------------------------------- */
+.ff-admin .ff-queue {
+	margin-top: 0.5em;
+}
+
+.ff-admin .ff-queue th,
+.ff-admin .ff-queue td {
+	vertical-align: top;
+	padding: 12px;
+}
+
+.ff-admin .ff-applicant strong {
+	font-size: 1.02em;
+}
+
+.ff-admin .ff-number {
+	display: inline-block;
+	margin-top: 4px;
+	font-weight: 600;
+	color: #3a3d44;
+}
+
+.ff-admin .ff-details div {
+	margin-bottom: 4px;
+	font-size: 0.92em;
+	line-height: 1.4;
+}
+
+.ff-admin .ff-label {
+	font-weight: 600;
+	color: #50575e;
+}
+
+.ff-admin .ff-consent {
+	margin-top: 6px;
+	color: #6b7280;
+	font-size: 0.85em;
+}
+
+/* Status badges ------------------------------------------------------------ */
+.ff-admin .ff-badge {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 10px;
+	font-size: 0.82em;
+	font-weight: 600;
+	white-space: nowrap;
+	background: #eceef0;
+	color: #3a3d44;
+}
+
+.ff-admin .ff-badge--pending {
+	background: #fff3d6;
+	color: #8a6d1f;
+}
+
+.ff-admin .ff-badge--approved-35 {
+	background: #e3ecff;
+	color: #1f3f8a;
+}
+
+.ff-admin .ff-badge--approved-circle {
+	background: #e6f4ea;
+	color: #1e5631;
+}
+
+.ff-admin .ff-badge--declined,
+.ff-admin .ff-badge--withdrawn {
+	background: #f1f1f1;
+	color: #787878;
+}
+
+/* Action buttons ----------------------------------------------------------- */
+.ff-admin .ff-actions {
+	white-space: nowrap;
+}
+
+.ff-admin .ff-action-form {
+	display: block;
+	margin-bottom: 6px;
+}
+
+.ff-admin .ff-muted {
+	color: #a0a5aa;
+}
+
+.ff-admin .ff-empty {
+	padding: 16px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+}
