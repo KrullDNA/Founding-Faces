@@ -32,13 +32,82 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FF_Display {
 
 	/**
-	 * Register the display shortcodes.
+	 * Register the display shortcodes and the Elementor widgets.
 	 */
 	public static function register() {
 		add_shortcode( 'ff_note', array( __CLASS__, 'sc_note' ) );
 		add_shortcode( 'ff_notes', array( __CLASS__, 'sc_notes' ) );
 		add_shortcode( 'ff_product_header', array( __CLASS__, 'sc_product_header' ) );
 		add_shortcode( 'ff_home', array( __CLASS__, 'sc_home' ) );
+
+		// Native Elementor widgets that wrap the same components (harmless if
+		// Elementor isn't installed).
+		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
+	}
+
+	/**
+	 * Register the display widgets with Elementor.
+	 *
+	 * @param object $widgets_manager Elementor's widgets manager.
+	 */
+	public static function register_widgets( $widgets_manager ) {
+		require_once FF_PATH . 'includes/class-ff-display-widgets.php';
+		$widgets_manager->register( new FF_Notes_Widget() );
+		$widgets_manager->register( new FF_Note_Widget() );
+		$widgets_manager->register( new FF_Product_Header_Widget() );
+		$widgets_manager->register( new FF_Home_Widget() );
+	}
+
+	/**
+	 * Products as id => title, for a widget dropdown.
+	 *
+	 * @param bool $with_placeholder Whether to prepend a "choose" option.
+	 * @return array
+	 */
+	public static function product_choices( $with_placeholder = true ) {
+		$choices  = $with_placeholder ? array( 0 => __( '— Select a product —', 'founding-faces' ) ) : array();
+		$products = get_posts( array(
+			'post_type'      => FF_Post_Types::PRODUCT_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		) );
+		foreach ( $products as $product ) {
+			$choices[ $product->ID ] = $product->post_title ? $product->post_title : sprintf( __( 'Product #%d', 'founding-faces' ), $product->ID );
+		}
+		return $choices;
+	}
+
+	/**
+	 * Notes as id => "Product — Title", for a widget dropdown.
+	 *
+	 * @return array
+	 */
+	public static function note_choices() {
+		$choices = array( 0 => __( '— Select a note —', 'founding-faces' ) );
+		$notes   = get_posts( array(
+			'post_type'      => FF_Post_Types::NOTE_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		) );
+		foreach ( $notes as $note ) {
+			$product_id = (int) get_post_meta( $note->ID, FF_Post_Types::META_NOTE_PRODUCT, true );
+			$prefix     = $product_id ? ( get_the_title( $product_id ) . ' — ' ) : '';
+			$choices[ $note->ID ] = $prefix . ( $note->post_title ? $note->post_title : sprintf( __( 'Note #%d', 'founding-faces' ), $note->ID ) );
+		}
+		return $choices;
+	}
+
+	/**
+	 * The stage choices for a widget dropdown (with an "all" option).
+	 *
+	 * @return array
+	 */
+	public static function stage_choices() {
+		return array( '' => __( 'All stages', 'founding-faces' ) ) + FF_Post_Types::note_stages();
 	}
 
 	/**
@@ -71,7 +140,7 @@ class FF_Display {
 		$id   = absint( $atts['id'] );
 
 		// Everything here is members-only.
-		if ( ! FF_Gating::is_member() ) {
+		if ( ! FF_Gating::can_view_members_area() ) {
 			return self::members_only_notice();
 		}
 
@@ -116,7 +185,7 @@ class FF_Display {
 			'ff_notes'
 		);
 
-		if ( ! FF_Gating::is_member() ) {
+		if ( ! FF_Gating::can_view_members_area() ) {
 			return self::members_only_notice();
 		}
 
@@ -166,7 +235,7 @@ class FF_Display {
 
 		$atts = shortcode_atts( array( 'product' => 0 ), $atts, 'ff_product_header' );
 
-		if ( ! FF_Gating::is_member() ) {
+		if ( ! FF_Gating::can_view_members_area() ) {
 			return self::members_only_notice();
 		}
 
@@ -213,7 +282,7 @@ class FF_Display {
 
 		$atts = shortcode_atts( array( 'latest' => 8 ), $atts, 'ff_home' );
 
-		if ( ! FF_Gating::is_member() ) {
+		if ( ! FF_Gating::can_view_members_area() ) {
 			return self::members_only_notice();
 		}
 

@@ -92,7 +92,9 @@ class FF_Settings {
 		);
 
 		// Members map settings: tile source, and per-tier dot colour and size.
-		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		// The tile URL uses a custom sanitiser because esc_url_raw() strips the
+		// {z}/{x}/{y} placeholders Leaflet needs.
+		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_tile_url' ) ) );
 		register_setting( self::GROUP, FF_Map::OPT_TILE_ATTRIBUTION, array( 'sanitize_callback' => 'wp_kses_post' ) );
 		register_setting( self::GROUP, FF_Map::OPT_35_COLOR, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
 		register_setting( self::GROUP, FF_Map::OPT_35_SIZE, array( 'sanitize_callback' => 'absint' ) );
@@ -183,6 +185,35 @@ class FF_Settings {
 			</form>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Sanitise a map tile URL while preserving Leaflet's {…} placeholders.
+	 *
+	 * esc_url_raw() strips characters like { and }, which would destroy the
+	 * {z}/{x}/{y}/{s}/{r} tokens Leaflet needs. So the tokens are protected,
+	 * the URL is sanitised, then the tokens are restored.
+	 *
+	 * @param string $url The submitted tile URL.
+	 * @return string
+	 */
+	public static function sanitize_tile_url( $url ) {
+		$url = trim( wp_strip_all_tags( (string) $url ) );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		$tokens  = array( '{z}', '{x}', '{y}', '{s}', '{r}', '{ratio}' );
+		$protect = array();
+		foreach ( $tokens as $i => $token ) {
+			$protect[ $token ] = '__FFTILE' . $i . '__';
+		}
+
+		$safe = strtr( $url, $protect );      // Hide the placeholders.
+		$safe = esc_url_raw( $safe );          // Sanitise the rest.
+		$safe = strtr( $safe, array_flip( $protect ) ); // Restore the placeholders.
+
+		return $safe;
 	}
 
 	/**

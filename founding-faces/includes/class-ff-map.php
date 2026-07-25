@@ -94,9 +94,20 @@ class FF_Map {
 	 * @return array
 	 */
 	public static function settings() {
+		// Fall back to the default if the stored value is empty OR looks broken
+		// (missing the {z}/{x}/{y} placeholders — e.g. mangled by an old save).
+		$tile = trim( (string) get_option( self::OPT_TILE_URL, '' ) );
+		if ( '' === $tile || false === strpos( $tile, '{z}' ) || false === strpos( $tile, '{x}' ) || false === strpos( $tile, '{y}' ) ) {
+			$tile = self::default_tile_url();
+		}
+		$attribution = get_option( self::OPT_TILE_ATTRIBUTION, self::default_tile_attribution() );
+		if ( '' === trim( (string) $attribution ) ) {
+			$attribution = self::default_tile_attribution();
+		}
+
 		return array(
-			'tile_url'     => get_option( self::OPT_TILE_URL, self::default_tile_url() ),
-			'attribution'  => get_option( self::OPT_TILE_ATTRIBUTION, self::default_tile_attribution() ),
+			'tile_url'     => $tile,
+			'attribution'  => $attribution,
 			'c35_color'    => get_option( self::OPT_35_COLOR, '#2b2d33' ),
 			'c35_size'     => (int) get_option( self::OPT_35_SIZE, 8 ),
 			'circle_color' => get_option( self::OPT_CIRCLE_COLOR, '#9aa0a6' ),

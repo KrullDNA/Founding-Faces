@@ -32,6 +32,12 @@ class FF_Gating {
 	 * simply never fire.
 	 */
 	public static function register() {
+		// Gate note queries at the source, so ANY loop tool that queries notes
+		// (JetEngine Listing Grid, Elementor Pro Loop, a native WP_Query, our
+		// own components) automatically hides 35-only notes from anyone who
+		// isn't in The 35. This is what keeps the vault safe in a JetEngine grid.
+		add_action( 'pre_get_posts', array( __CLASS__, 'gate_note_queries' ) );
+
 		// Add the "Show to" control to the Advanced tab of every element.
 		add_action( 'elementor/element/after_section_end', array( __CLASS__, 'add_visibility_control' ), 10, 3 );
 
@@ -101,6 +107,68 @@ class FF_Gating {
 		return self::is_member( $user_id ) && 'the-circle' === self::group_of( $user_id );
 	}
 
+	/**
+	 * Whether the current viewer may see the members area at all.
+	 *
+	 * Members can; so can administrators, so Nick can preview and build the
+	 * pages (and, per the governing principle, always see everything).
+	 *
+	 * @return bool
+	 */
+	public static function can_view_members_area() {
+		return self::is_member() || current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Exclude 35-only notes from front-end note queries for anyone not in The 35.
+	 *
+	 * Runs on every query. It leaves admin screens and members of The 35 (and
+	 * administrators) untouched — they see everything — and for everyone else it
+	 * appends a meta condition that drops notes flagged the-35-only. Because it
+	 * works at the query level, a JetEngine Listing Grid or any other loop over
+	 * ff_note stays gated with no extra work.
+	 *
+	 * @param WP_Query $query The query being prepared.
+	 * @return void
+	 */
+	public static function gate_note_queries( $query ) {
+		// Never touch real admin-screen queries (but DO gate front-end AJAX,
+		// e.g. a JetEngine "load more", where is_admin() is also true).
+		if ( is_admin() && ! wp_doing_ajax() ) {
+			return;
+		}
+
+		// Only note queries.
+		$post_type = $query->get( 'post_type' );
+		$is_note   = ( FF_Post_Types::NOTE_CPT === $post_type )
+			|| ( is_array( $post_type ) && in_array( FF_Post_Types::NOTE_CPT, $post_type, true ) );
+		if ( ! $is_note ) {
+			return;
+		}
+
+		// Administrators and The 35 see every note.
+		if ( current_user_can( 'manage_options' ) || self::is_the_35() ) {
+			return;
+		}
+
+		// Everyone else: exclude notes flagged the-35-only.
+		$meta_query   = $query->get( 'meta_query' );
+		$meta_query   = is_array( $meta_query ) ? $meta_query : array();
+		$meta_query[] = array(
+			'relation' => 'OR',
+			array(
+				'key'     => FF_Post_Types::META_NOTE_AUDIENCE,
+				'value'   => 'the-35-only',
+				'compare' => '!=',
+			),
+			array(
+				'key'     => FF_Post_Types::META_NOTE_AUDIENCE,
+				'compare' => 'NOT EXISTS',
+			),
+		);
+		$query->set( 'meta_query', $meta_query );
+	}
+
 	/*
 	 * -----------------------------------------------------------------------
 	 * The note gate.
@@ -119,6 +187,13 @@ class FF_Gating {
 	 * @return bool
 	 */
 	public static function can_view_note( $note_id, $user_id = null ) {
+		// Administrators always see everything (they build the pages and, per
+		// the governing principle, can always see the full record).
+		$check_user = $user_id ? $user_id : get_current_user_id();
+		if ( user_can( $check_user, 'manage_options' ) ) {
+			return true;
+		}
+
 		// Only members see notes at all.
 		if ( ! self::is_member( $user_id ) ) {
 			return false;
