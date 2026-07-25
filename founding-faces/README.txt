@@ -43,7 +43,7 @@ Stage 2 — Application form & status lookup:
   pending or decided, without exposing group or number.
 * All input sanitised, all output escaped, every submission nonce-protected.
 
-Stage 3 (this release) — Moderation & member creation:
+Stage 3 — Moderation & member creation:
 * Admin "Founding Faces" menu with a moderation queue (pending count bubble),
   tabbed by status, showing each application's details.
 * Approve into The 35 or The Circle; The 35 gets the next sequential Founding
@@ -57,9 +57,20 @@ Stage 3 (this release) — Moderation & member creation:
 * Resend-welcome-email button. Every action nonce- and capability-checked.
 * Interaction-log spine helper (FF_Interactions) in use from approval onward.
 
+Stage 4 (this release) — Welcome emails & account access:
+* Group-specific welcome emails on approval, from editable templates on a new
+  Settings page (placeholders for name, number, group, links, etc.).
+* The 35 email states the assigned Founding number; The Circle email welcomes
+  them to the Apotheca community.
+* Secure set-password link — a one-time token (SHA-256 hashed, 7-day expiry).
+  Members set their own password; a plain-text password is never emailed.
+* Set-password and "resend my set-up link" screens live on the WordPress login
+  page, so an expired link is never a dead end and no page needs creating.
+
 == Changelog ==
 
 = 1.0.0 =
 * Stage 1: foundation and data layer.
 * Stage 2: front-end application form and logged-out status lookup.
 * Stage 3: admin moderation queue, member creation, numbering, resend.
+* Stage 4: templated welcome emails, secure set-password token, login screens.

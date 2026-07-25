@@ -66,9 +66,14 @@ require_once FF_PATH . 'includes/class-ff-interactions.php';
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
-// The admin moderation queue (loaded only in the admin area).
+// Welcome emails, the set-password token, and the login-page access screens.
+// Loaded always: the login page and its screens are not the admin area.
+require_once FF_PATH . 'includes/class-ff-emails.php';
+
+// Admin-only screens: the moderation queue and the settings page.
 if ( is_admin() ) {
 	require_once FF_PATH . 'admin/admin-applications.php';
+	require_once FF_PATH . 'admin/admin-settings.php';
 }
 
 /*
@@ -101,10 +106,12 @@ function ff_init() {
 	FF_Post_Types::register();
 	FF_Application::register();
 	FF_Members::register();
+	FF_Emails::register();
 
-	// The moderation queue's admin screens, only in the admin area.
+	// The admin screens, only in the admin area.
 	if ( is_admin() ) {
 		FF_Admin_Applications::register();
+		FF_Settings::register();
 	}
 }
 add_action( 'init', 'ff_init' );
