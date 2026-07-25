@@ -70,6 +70,12 @@ require_once FF_PATH . 'includes/class-ff-members.php';
 // Loaded always: the login page and its screens are not the admin area.
 require_once FF_PATH . 'includes/class-ff-emails.php';
 
+// The email-platform connector interface and manager, plus the Campaign
+// Monitor add-on. Loaded always so a member can be synced on approval and
+// re-synced from the front-end account page later.
+require_once FF_PATH . 'includes/class-ff-connector.php';
+require_once FF_PATH . 'add-ons/campaign-monitor/class-ff-cm-connector.php';
+
 // Admin-only screens: the moderation queue and the settings page.
 if ( is_admin() ) {
 	require_once FF_PATH . 'admin/admin-applications.php';
@@ -107,6 +113,7 @@ function ff_init() {
 	FF_Application::register();
 	FF_Members::register();
 	FF_Emails::register();
+	FF_Connectors::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {

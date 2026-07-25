@@ -57,7 +57,7 @@ Stage 3 — Moderation & member creation:
 * Resend-welcome-email button. Every action nonce- and capability-checked.
 * Interaction-log spine helper (FF_Interactions) in use from approval onward.
 
-Stage 4 (this release) — Welcome emails & account access:
+Stage 4 — Welcome emails & account access:
 * Group-specific welcome emails on approval, from editable templates on a new
   Settings page (placeholders for name, number, group, links, etc.).
 * The 35 email states the assigned Founding number; The Circle email welcomes
@@ -67,6 +67,16 @@ Stage 4 (this release) — Welcome emails & account access:
 * Set-password and "resend my set-up link" screens live on the WordPress login
   page, so an expired link is never a dead end and no page needs creating.
 
+Stage 5 (this release) — Email connector + Campaign Monitor:
+* Abstract FF_Connector contract with a manager that holds the one active
+  connector (only one at a time), plus the Campaign Monitor add-on.
+* On approval a consented member is synced with name, email, group and number;
+  group and number travel as custom fields (Campaign Monitor has no tags).
+* Consent is enforced: nothing syncs unless the stored consent flag is true.
+  Test accounts are never synced to the live list.
+* API key and list ID on the Settings page; the Group and Number custom fields
+  are created on the list automatically. Uses WordPress's HTTP API, no SDK.
+
 == Changelog ==
 
 = 1.0.0 =
@@ -74,3 +84,4 @@ Stage 4 (this release) — Welcome emails & account access:
 * Stage 2: front-end application form and logged-out status lookup.
 * Stage 3: admin moderation queue, member creation, numbering, resend.
 * Stage 4: templated welcome emails, secure set-password token, login screens.
+* Stage 5: email-connector interface and Campaign Monitor add-on (consent-gated).

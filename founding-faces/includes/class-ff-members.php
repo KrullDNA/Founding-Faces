@@ -46,6 +46,10 @@ class FF_Members {
 	// User meta: set when a member is deactivated so their number stays reserved.
 	const META_DEACTIVATED = 'ff_deactivated';
 
+	// User meta: whether the member consents to programme emails (mirrored from
+	// the application). This is the precondition for any external email sync.
+	const META_CONSENT = 'ff_email_consent';
+
 	// Option: the last Founding number issued. Next number is always this + 1.
 	const OPT_SEQUENCE = 'ff_number_sequence';
 
@@ -187,6 +191,9 @@ class FF_Members {
 		update_user_meta( $user_id, self::META_GROUP, $group_slug );
 		update_user_meta( $user_id, self::META_APP_ID, (int) $app->id );
 		update_user_meta( $user_id, self::META_IS_TEST, (int) $app->is_test );
+		// Mirror the stored consent flag onto the member, so the email-sync
+		// gate and the account-page toggle both read from one place.
+		update_user_meta( $user_id, self::META_CONSENT, (int) $app->consent );
 		if ( $is_35 ) {
 			update_user_meta( $user_id, self::META_NUMBER, $number );
 		}
@@ -213,6 +220,10 @@ class FF_Members {
 
 		// Send the group-specific welcome email.
 		self::send_welcome_email( $user_id );
+
+		// Let other parts of the plugin react to a new member — the email
+		// connector uses this to sync the member to the active platform.
+		do_action( 'ff_member_approved', $user_id );
 
 		return $user_id;
 	}
