@@ -63,6 +63,9 @@ require_once FF_PATH . 'includes/class-ff-application.php';
 // The interaction-log spine: one small helper for recording member actions.
 require_once FF_PATH . 'includes/class-ff-interactions.php';
 
+// Content gating: the server-side role check and the Elementor condition.
+require_once FF_PATH . 'includes/class-ff-gating.php';
+
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
 
@@ -114,9 +117,11 @@ function ff_init() {
 	FF_Members::register();
 	FF_Emails::register();
 	FF_Connectors::register();
+	FF_Gating::register();
 
 	// The admin screens, only in the admin area.
 	if ( is_admin() ) {
+		FF_Post_Types::register_admin();
 		FF_Admin_Applications::register();
 		FF_Settings::register();
 	}

@@ -100,3 +100,20 @@
 	background: #fff;
 	border: 1px solid #dcdcde;
 }
+
+/* Note metabox gallery preview -------------------------------------------- */
+.ff-gallery-preview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.ff-gallery-thumb img {
+	display: block;
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
