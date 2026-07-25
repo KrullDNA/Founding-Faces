@@ -521,8 +521,6 @@
 .ff-history {
 	font-family: var(--ff-font);
 	color: var(--ff-ink);
-	max-width: 680px;
-	margin: 0 auto;
 }
 
 .ff-history-header {
