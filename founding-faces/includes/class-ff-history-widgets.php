@@ -83,6 +83,14 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition'    => array( 'section' => array( 'all', 'notes' ) ),
 		) );
 
+		$this->add_control( 'show_intro', array(
+			'label'        => __( 'Show intro line under header', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => '',
+			'return_value' => 'yes',
+			'condition'    => array( 'section' => array( 'all', 'header' ) ),
+		) );
+
 		$this->end_controls_section();
 
 		/* ============================ HEADER STYLE ========================== */
@@ -303,8 +311,23 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .ff-history-item-date' => 'color: {{VALUE}};' ),
 		) );
 
+		$this->add_control( 'fbtext_h', array(
+			'label'     => __( 'Feedback text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'fbtext_typo',
+			'selector' => '{{WRAPPER}} .ff-history-feedback-text',
+		) );
+		$this->add_control( 'fbtext_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-history-feedback-text' => 'color: {{VALUE}};' ),
+		) );
+
 		$this->add_control( 'link_h', array(
-			'label'     => __( 'Note links', 'founding-faces' ),
+			'label'     => __( 'Note & feedback links', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
 			'separator' => 'before',
 		) );
@@ -331,14 +354,15 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 	 * @return string
 	 */
 	private function build( $s, $mid, $sample ) {
-		$section = isset( $s['section'] ) ? $s['section'] : 'all';
-		$heading = isset( $s['heading'] ) ? $s['heading'] : '';
-		$link    = ! isset( $s['link_notes'] ) || 'yes' === $s['link_notes'];
+		$section    = isset( $s['section'] ) ? $s['section'] : 'all';
+		$heading    = isset( $s['heading'] ) ? $s['heading'] : '';
+		$link       = ! isset( $s['link_notes'] ) || 'yes' === $s['link_notes'];
+		$show_intro = isset( $s['show_intro'] ) && 'yes' === $s['show_intro'];
 
 		$out = '<div class="ff-history">';
 
 		if ( 'all' === $section || 'header' === $section ) {
-			$out .= $sample ? FF_History::sample_header() : FF_History::render_header( $mid );
+			$out .= $sample ? FF_History::sample_header( $show_intro ) : FF_History::render_header( $mid, $show_intro );
 		}
 		if ( 'all' === $section || 'votes' === $section ) {
 			$h    = ( 'votes' === $section ) ? $heading : '';

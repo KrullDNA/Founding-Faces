@@ -524,10 +524,7 @@
 }
 
 .ff-history-header {
-	text-align: center;
-	padding: 1.5rem 1rem 2rem;
-	border-bottom: 1px solid var(--ff-line);
-	margin-bottom: 1.5rem;
+	margin-bottom: 1.25rem;
 }
 
 .ff-history-number {
@@ -574,28 +571,57 @@
 
 .ff-history-item {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 0.3rem 1rem;
+	justify-content: space-between;
+	align-items: flex-end;
+	gap: 1rem;
 	padding: 0.8rem 0;
 	border-bottom: 1px solid var(--ff-line);
 }
 
+.ff-history-item-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	min-width: 0;
+}
+
 .ff-history-item-main {
 	font-weight: 600;
-	flex: 1 1 60%;
 }
 
 .ff-history-item-detail {
 	color: var(--ff-accent);
 	font-size: 0.9rem;
-	flex: 1 1 100%;
 }
 
+/* The date is a small right-hand column, sitting at the bottom of the item. */
 .ff-history-item-date {
+	flex: 0 0 auto;
 	color: var(--ff-muted);
 	font-size: 0.82rem;
-	margin-left: auto;
+	white-space: nowrap;
+}
+
+/* Feedback items stack: a heading + date row, then full-width feedback text. */
+.ff-history-item--feedback {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.4rem;
+}
+
+.ff-history-feedback-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 1rem;
+}
+
+.ff-history-feedback-text {
+	line-height: 1.6;
+}
+
+.ff-history-feedback-text p {
+	margin: 0 0 0.6rem;
 }
 
 /* ==========================================================================
