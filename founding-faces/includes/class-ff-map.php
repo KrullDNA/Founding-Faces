@@ -279,9 +279,12 @@ class FF_Map {
 		$id     = 'ff-members-map-' . self::$instance;
 		$height = absint( $args['height'] );
 
-		// The config handed to Leaflet. It carries display options only — never
-		// any member data. The dots themselves come from ffMapData (coords/tier).
+		// The config handed to Leaflet. Points are coordinates and tier only —
+		// no names, ids or postcodes. They travel in this instance's own data
+		// attribute (rather than a shared global) so the map initialises the
+		// same way on the front end and inside the Elementor editor.
 		$config = array(
+			'points'      => self::build_points(),
 			'center'      => array( (float) $args['center'][0], (float) $args['center'][1] ),
 			'zoom'        => (int) $args['zoom'],
 			'minZoom'     => (int) $args['min_zoom'],
@@ -336,8 +339,8 @@ class FF_Map {
 	 * Enqueue Leaflet (bundled locally) and the map script — only when a map is
 	 * actually rendered, so nothing loads on pages without one.
 	 *
-	 * The anonymous points are localised once per page and shared by every map
-	 * instance; per-instance display options travel in each map's data attribute.
+	 * Each map's data (points and options) travels in its own data attribute, so
+	 * there's nothing to localise here.
 	 */
 	private static function enqueue_assets() {
 		self::register_assets();
@@ -346,12 +349,6 @@ class FF_Map {
 		wp_enqueue_style( 'leaflet' );
 		wp_enqueue_script( 'leaflet' );
 		wp_enqueue_script( 'ff-map' );
-
-		static $localized = false;
-		if ( ! $localized ) {
-			wp_localize_script( 'ff-map', 'ffMapData', array( 'points' => self::build_points() ) );
-			$localized = true;
-		}
 	}
 
 	/**
