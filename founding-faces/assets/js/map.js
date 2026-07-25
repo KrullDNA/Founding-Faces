@@ -88,9 +88,13 @@
 			latlngs.push( [ p[ 0 ], p[ 1 ] ] );
 		} );
 
-		// Frame all the dots if we have any; otherwise use the configured view.
+		// Frame all the dots if we have any; otherwise frame the whole of
+		// Australia, so an empty map still shows the country rather than sitting
+		// zoomed in on empty desert.
 		if ( latlngs.length > 0 ) {
 			map.fitBounds( latlngs, { padding: [ 40, 40 ], maxZoom: Math.min( 7, cfg.maxZoom ) } );
+		} else {
+			map.fitBounds( AU_BOUNDS, { padding: [ 20, 20 ] } );
 		}
 
 		// Optional legend.

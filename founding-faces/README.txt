@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,10 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.2 =
+* Fix: when there are no members with postcodes yet, the map now frames the
+  whole of Australia instead of sitting zoomed in on the empty centre.
 
 = 1.0.1 =
 * Fix: the Polls admin menu now registers reliably (where polls are created).
