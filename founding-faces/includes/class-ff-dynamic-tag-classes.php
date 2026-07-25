@@ -220,3 +220,42 @@ class FF_Tag_Note_Gallery extends \Elementor\Core\DynamicTags\Data_Tag {
 		return $gallery;
 	}
 }
+
+/**
+ * Note — First image (a single-image data tag for the Image widget).
+ *
+ * The gallery tag only appears on widgets that take a set of images. This gives
+ * a single image (the first in the note's gallery) for a plain Image widget.
+ */
+class FF_Tag_Note_Image extends \Elementor\Core\DynamicTags\Data_Tag {
+
+	public function get_name() {
+		return 'ff-note-image';
+	}
+	public function get_title() {
+		return __( 'Note — First image', 'founding-faces' );
+	}
+	public function get_group() {
+		return 'founding-faces';
+	}
+	public function get_categories() {
+		return array( \Elementor\Modules\DynamicTags\Module::IMAGE_CATEGORY );
+	}
+
+	/**
+	 * Return the first gallery image as Elementor expects: {id, url}.
+	 *
+	 * @param array $options Unused.
+	 * @return array
+	 */
+	public function get_value( array $options = array() ) {
+		$csv = get_post_meta( get_the_ID(), FF_Post_Types::META_NOTE_GALLERY, true );
+		$ids = array_filter( array_map( 'absint', explode( ',', (string) $csv ) ) );
+		$id  = ! empty( $ids ) ? reset( $ids ) : 0;
+
+		return array(
+			'id'  => $id,
+			'url' => $id ? wp_get_attachment_url( $id ) : '',
+		);
+	}
+}

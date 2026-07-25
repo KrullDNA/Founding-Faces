@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,11 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.10 =
+* New: "Note — First image" dynamic tag (single image) for the Elementor Image
+  widget. The existing "Note — Image gallery" tag is for gallery/carousel
+  widgets; a single Image widget needs this single-image tag.
 
 = 1.0.9 =
 * New: member-activity Elementor widgets — "My Activity" (with section toggles
