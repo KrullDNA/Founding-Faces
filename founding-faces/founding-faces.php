@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.25
+ * Version:           1.0.26
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,12 +28,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.25' );
+define( 'FF_VERSION', '1.0.26' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
-// The tables are unchanged since 1.0.0, so this stays put.
-define( 'FF_DB_VERSION', '1.0.0' );
+// 1.1.0 adds the ff_messages table (the private member<->admin channel).
+define( 'FF_DB_VERSION', '1.1.0' );
 
 // Absolute path to this plugin's folder, with a trailing slash.
 define( 'FF_PATH', plugin_dir_path( __FILE__ ) );
@@ -88,6 +88,9 @@ require_once FF_PATH . 'includes/class-ff-polls.php';
 // The personal history page: a member's own record, and only their own.
 require_once FF_PATH . 'includes/class-ff-history.php';
 
+// The private member<->admin concierge channel: feedback, questions, replies.
+require_once FF_PATH . 'includes/class-ff-messages.php';
+
 // The anonymous members map (Leaflet, bundled; postcode-only, nothing clickable).
 require_once FF_PATH . 'includes/class-ff-map.php';
 
@@ -119,6 +122,7 @@ if ( is_admin() ) {
 	require_once FF_PATH . 'admin/admin-applications.php';
 	require_once FF_PATH . 'admin/admin-settings.php';
 	require_once FF_PATH . 'admin/admin-privacy.php';
+	require_once FF_PATH . 'admin/admin-messages.php';
 }
 
 /*
@@ -161,6 +165,7 @@ function ff_init() {
 	FF_Dynamic_Tags::register();
 	FF_Polls::register();
 	FF_History::register();
+	FF_Messages::register();
 	FF_Map::register();
 	FF_Account::register();
 
@@ -171,6 +176,7 @@ function ff_init() {
 		FF_Admin_Applications::register();
 		FF_Settings::register();
 		FF_Admin_Privacy::register();
+		FF_Admin_Messages::register();
 	}
 
 	// Notes gained a single URL (rewrite slug) in 1.0.9, so flush the rewrite

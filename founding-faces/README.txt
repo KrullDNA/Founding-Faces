@@ -196,6 +196,20 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.26 =
+* New: a private member <-> admin concierge channel. Members can give feedback
+  on a note or ask a private question; Nick reads and replies from a new
+  "Messages" admin screen; the member is emailed the reply (branded) and sees a
+  "New message" flag in their portal, where they can read and reply. Strictly
+  private and one relationship deep -- always a member and Nick, never
+  member-to-member, never public -- so it keeps the "publication, not
+  conversation" principle. Adds three widgets/shortcodes: "Founding Faces
+  Feedback" [ff_feedback], "Founding Faces Ask a Question" [ff_ask] and
+  "Founding Faces Messages" [ff_messages] (place on the portal homepage).
+  Feedback also fills the personal-history "Feedback you've shared" section.
+* Database: adds the ff_messages table (schema 1.1.0). Created automatically on
+  update -- no reactivation needed.
+
 = 1.0.25 =
 * New: display-name preference for The 35, on the account-settings page. A
   member can choose how they appear in the members portal across three tiers,
