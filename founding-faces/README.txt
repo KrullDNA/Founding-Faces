@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.19 =
+* Fix: removed the empty gap that appeared under the Member Archive header's
+  background colour. The subheading paragraph's default bottom margin was
+  collapsing through the header's bottom edge; it is now zeroed so the
+  background ends flush with the content.
+
 = 1.0.18 =
 * New: per-menu-item visibility. Appearance -> Menus now has a "Founding Faces
   visibility" dropdown on each item (Everyone / Logged-out / All members / The

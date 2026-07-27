@@ -545,7 +545,10 @@
 }
 
 .ff-history-intro {
-	margin-top: 0.9rem;
+	/* Bottom margin is zeroed: as the header's last child, a default <p>
+	 * bottom margin would collapse through the header's bottom edge and show
+	 * as a gap below the header background. */
+	margin: 0.9rem 0 0;
 	color: var(--ff-muted);
 	font-size: 0.92rem;
 }
