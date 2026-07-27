@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.24 =
+* Fix: the plugin's Elementor widgets now fill their container on the FRONT END,
+  not just in the editor. In optimized-markup (Atomic) mode the widget's inner
+  wrapper is stripped, so inside a horizontal (row) flex container the widget
+  shrank to its content width and looked half-width even at "Max width: 100%".
+  The widget wrappers are now forced to width:100%, so the container governs the
+  width as intended. Affects the Application Form, Status Lookup, Account and
+  Member Archive widgets.
+
 = 1.0.23 =
 * Fix: the Application Form and Status Lookup widgets now fill their Elementor
   container instead of being capped at 560px, so the front end matches the
