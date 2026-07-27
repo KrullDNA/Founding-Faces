@@ -30,6 +30,10 @@ class FF_Messages {
 	// The largest attachment allowed on a message.
 	const MAX_UPLOAD_BYTES = 8388608; // 8 MB.
 
+	// Option: the page that hosts the member portal (the [ff_messages] centre).
+	// Stored as a page ID, so it resolves to the right URL on staging and live.
+	const OPT_PORTAL_PAGE = 'ff_portal_page';
+
 	/**
 	 * The only file types allowed on a message: images and PDF.
 	 *
@@ -284,7 +288,12 @@ class FF_Messages {
 	 * @return string
 	 */
 	public static function portal_url() {
-		return apply_filters( 'ff_portal_url', home_url( '/' ) );
+		$page = (int) get_option( self::OPT_PORTAL_PAGE, 0 );
+		$url  = $page ? get_permalink( $page ) : '';
+		if ( ! $url ) {
+			$url = home_url( '/' );
+		}
+		return apply_filters( 'ff_portal_url', $url );
 	}
 
 	/*

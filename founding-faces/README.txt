@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.29 =
+* New: a "Members portal page" setting (Founding Faces -> Settings -> Members
+  access). Choose the page that hosts the Messages widget; the "Open my portal"
+  button in reply emails points there. It's stored as a page (not a URL), so it
+  resolves to the correct address on staging and live automatically.
+
 = 1.0.28 =
 * Security: message attachments are now private. New uploads are stored in a
   protected directory (uploads/founding-faces-private, with a deny .htaccess and

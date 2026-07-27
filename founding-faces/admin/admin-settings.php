@@ -93,6 +93,9 @@ class FF_Settings {
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
 		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
 
+		// The page that hosts the members portal (used by message reply emails).
+		register_setting( self::GROUP, FF_Messages::OPT_PORTAL_PAGE, array( 'sanitize_callback' => 'absint' ) );
+
 		// Which connector is active (core). The connector add-on plugins register
 		// their own API-key settings against this same group via 'admin_init'.
 		register_setting(
@@ -320,6 +323,21 @@ class FF_Settings {
 					) );
 					?>
 					<p class="description"><?php esc_html_e( 'Logged-out visitors always go to the login page and back. This only affects logged-in members in the wrong group.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Messages::OPT_PORTAL_PAGE ); ?>"><?php esc_html_e( 'Members portal page', 'founding-faces' ); ?></label></th>
+				<td>
+					<?php
+					wp_dropdown_pages( array(
+						'name'              => FF_Messages::OPT_PORTAL_PAGE,
+						'id'                => FF_Messages::OPT_PORTAL_PAGE,
+						'selected'          => (int) get_option( FF_Messages::OPT_PORTAL_PAGE, 0 ),
+						'show_option_none'  => __( '— Home page —', 'founding-faces' ),
+						'option_none_value' => 0,
+					) );
+					?>
+					<p class="description"><?php esc_html_e( 'The page where members read their messages (the one with the Messages widget). The "Open my portal" button in reply emails points here. Stored as a page, so it resolves to the correct address on staging and live automatically.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>
