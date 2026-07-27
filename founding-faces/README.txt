@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.16
+Stable tag: 1.0.17
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,11 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.17 =
+* Change: header has no bottom gap by default (removed the residual margin).
+  A Content toggle "Line under header" (default Remove) turns the divider on;
+  its thickness, colour and spacing controls appear only when it is on.
 
 = 1.0.16 =
 * Change: Style-tab controls now match the selected Section — pick "Header" and

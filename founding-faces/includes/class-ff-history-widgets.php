@@ -92,6 +92,16 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition'   => array( 'section' => array( 'all', 'header' ) ),
 		) );
 
+		$this->add_control( 'show_line', array(
+			'label'        => __( 'Line under header', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'label_on'     => __( 'Show', 'founding-faces' ),
+			'label_off'    => __( 'Remove', 'founding-faces' ),
+			'default'      => '',
+			'return_value' => 'yes',
+			'condition'    => array( 'section' => array( 'all', 'header' ) ),
+		) );
+
 		$this->end_controls_section();
 
 		/* ============================ HEADER STYLE ========================== */
@@ -158,31 +168,35 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'background-color: {{VALUE}};' ),
 		) );
 
-		// A line under the header — off by default; set a width to show it.
+		// A line under the header — only shown when the Content toggle is on.
 		$this->add_control( 'header_divider_h', array(
 			'label'     => __( 'Line under header', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
 			'separator' => 'before',
+			'condition' => array( 'show_line' => 'yes' ),
 		) );
 		$this->add_control( 'header_divider_width', array(
-			'label'       => __( 'Line thickness', 'founding-faces' ),
-			'type'        => \Elementor\Controls_Manager::SLIDER,
-			'range'       => array( 'px' => array( 'min' => 0, 'max' => 10 ) ),
-			'default'     => array( 'size' => 0 ),
-			'description' => __( 'Set above 0 to show a line under the header.', 'founding-faces' ),
-			'selectors'   => array( '{{WRAPPER}} .ff-history-header' => 'border-bottom-width: {{SIZE}}{{UNIT}}; border-bottom-style: solid;' ),
+			'label'     => __( 'Line thickness', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 1, 'max' => 10 ) ),
+			'default'   => array( 'size' => 1 ),
+			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'border-bottom-width: {{SIZE}}{{UNIT}}; border-bottom-style: solid;' ),
+			'condition' => array( 'show_line' => 'yes' ),
 		) );
 		$this->add_control( 'header_divider_color', array(
 			'label'     => __( 'Line colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'default'   => '#d5d8dd',
 			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'border-bottom-color: {{VALUE}};' ),
+			'condition' => array( 'show_line' => 'yes' ),
 		) );
 		$this->add_responsive_control( 'header_divider_gap', array(
 			'label'     => __( 'Space above the line', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SLIDER,
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'default'   => array( 'size' => 12 ),
 			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'padding-bottom: {{SIZE}}{{UNIT}};' ),
+			'condition' => array( 'show_line' => 'yes' ),
 		) );
 
 		$this->end_controls_section();
