@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.23 =
+* Fix: the Application Form and Status Lookup widgets now fill their Elementor
+  container instead of being capped at 560px, so the front end matches the
+  editor. The widget's "Form box -> Max width" control still lets you cap it.
+* New: a reassurance note under the Instagram field ("Optional, and only used
+  privately to review your application -- it's never shown to other members or
+  on the map"), so the optional handle never appears to conflict with the
+  anonymity promise. The handle remains private: admin-only, never public.
+
 = 1.0.22 =
 * New: promote a Circle member into The 35. Approved-into-Circle rows now have
   a "Promote -> The 35" button that assigns their Founding number, moves them to

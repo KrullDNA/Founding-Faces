@@ -31,6 +31,15 @@
 	margin: 0 auto;
 }
 
+/* When rendered by an Elementor widget, let the container govern the width
+ * instead of the 560px cap (the widget's "Max width" control still overrides
+ * this if set). Placed after .ff-form so it wins on equal specificity. */
+.ff-form--full {
+	max-width: none;
+	margin-left: 0;
+	margin-right: 0;
+}
+
 .ff-field {
 	display: flex;
 	flex-direction: column;

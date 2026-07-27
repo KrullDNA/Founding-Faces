@@ -185,6 +185,13 @@ class FF_Application {
 			? $atts['button_label']
 			: __( 'Submit application', 'founding-faces' );
 
+		// The Elementor widget passes a modifier class so the form fills its
+		// container (the container then governs width) instead of the 560px cap.
+		$form_class = 'ff-form ff-application-form';
+		if ( ! empty( $atts['form_class'] ) ) {
+			$form_class .= ' ' . sanitize_html_class( $atts['form_class'] );
+		}
+
 		$output = '';
 
 		// After a submission we are redirected back with an ff_app flag.
@@ -235,7 +242,7 @@ class FF_Application {
 
 		ob_start();
 		?>
-		<form class="ff-form ff-application-form" method="post" action="<?php echo $action; ?>" novalidate>
+		<form class="<?php echo esc_attr( $form_class ); ?>" method="post" action="<?php echo $action; ?>" novalidate>
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::SUBMIT_ACTION ); ?>" />
 			<?php wp_nonce_field( self::SUBMIT_ACTION, 'ff_application_nonce' ); ?>
 			<input type="hidden" name="ff_redirect" value="<?php echo esc_url( self::current_url() ); ?>" />
@@ -273,6 +280,7 @@ class FF_Application {
 				<label for="ff-instagram"><?php esc_html_e( 'Instagram handle', 'founding-faces' ); ?></label>
 				<input type="text" id="ff-instagram" name="ff_instagram" value="<?php echo $val( 'instagram' ); ?>"
 					placeholder="<?php esc_attr_e( '@yourhandle', 'founding-faces' ); ?>" />
+				<span class="ff-hint"><?php esc_html_e( 'Optional, and only used privately to review your application — it\'s never shown to other members or on the map.', 'founding-faces' ); ?></span>
 			</p>
 
 			<p class="ff-field">
@@ -506,6 +514,11 @@ class FF_Application {
 		$label        = ! empty( $atts['label'] ) ? $atts['label'] : __( 'Check your application status', 'founding-faces' );
 		$button_label = ! empty( $atts['button_label'] ) ? $atts['button_label'] : __( 'Check status', 'founding-faces' );
 
+		$form_class = 'ff-form ff-status-form';
+		if ( ! empty( $atts['form_class'] ) ) {
+			$form_class .= ' ' . sanitize_html_class( $atts['form_class'] );
+		}
+
 		$result_html = '';
 		$email       = '';
 
@@ -525,7 +538,7 @@ class FF_Application {
 
 		ob_start();
 		?>
-		<form class="ff-form ff-status-form" method="post" action="<?php echo esc_url( self::current_url() ); ?>" novalidate>
+		<form class="<?php echo esc_attr( $form_class ); ?>" method="post" action="<?php echo esc_url( self::current_url() ); ?>" novalidate>
 			<?php wp_nonce_field( 'ff_status_lookup', 'ff_status_nonce' ); ?>
 			<p class="ff-field">
 				<label for="ff-status-email"><?php echo esc_html( $label ); ?></label>
