@@ -196,6 +196,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.31 =
+* Fix (important): the "Founding Faces Visibility / Show to" control was calling
+  Elementor's get_settings_for_display() inside the should_render filter, which
+  fires for EVERY container, section and widget on the page. That prematurely
+  finalised each element's display settings, so containers lost their applied
+  width/flex values on the front end and collapsed to content width — a page-
+  wide layout bug that only appeared with the plugin active (and not in the
+  editor). It now reads the raw setting with get_settings(), so element widths
+  render exactly as designed. This fixes forms/columns rendering too narrow.
+
 = 1.0.30 =
 * Privacy: deleting a member now also removes their private messages and every
   attachment file (from the protected directory, and any legacy public upload) —

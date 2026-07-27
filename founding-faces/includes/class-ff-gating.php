@@ -345,7 +345,15 @@ class FF_Gating {
 			return false;
 		}
 
-		$rule = $element->get_settings_for_display( 'ff_visibility' );
+		// IMPORTANT: read the RAW setting here, never get_settings_for_display().
+		// should_render() fires before each element sets up its own render, and
+		// get_settings_for_display() would prematurely finalise and cache the
+		// element's display settings — which makes every container lose its
+		// applied width/flex values and collapse to content width on the front
+		// end (a page-wide layout bug). get_settings() reads the stored value
+		// without any of that side effect.
+		$settings = $element->get_settings();
+		$rule     = isset( $settings['ff_visibility'] ) ? $settings['ff_visibility'] : '';
 		if ( empty( $rule ) ) {
 			return $should_render;
 		}
