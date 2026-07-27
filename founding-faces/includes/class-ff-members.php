@@ -783,6 +783,23 @@ class FF_Members {
 	}
 
 	/**
+	 * The label to show Nick for a member in admin screens.
+	 *
+	 * Governing principle 1: Nick always sees who someone is. So this returns the
+	 * private real name, falling back to the portal identity, then the number.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return string
+	 */
+	public static function admin_label( $user_id ) {
+		$real = trim( (string) get_user_meta( $user_id, self::META_REAL_NAME, true ) );
+		if ( '' !== $real ) {
+			return $real;
+		}
+		return self::portal_display_name( $user_id );
+	}
+
+	/**
 	 * Recompute and store a The 35 member's portal identity from their tier.
 	 *
 	 * Keeps the stored public name and WordPress display name in step with the

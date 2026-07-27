@@ -196,6 +196,61 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.30 =
+* Privacy: deleting a member now also removes their private messages and every
+  attachment file (from the protected directory, and any legacy public upload) —
+  so no personal words or files are left behind. This runs only on a data
+  delete (self-service "Delete my data" or the admin privacy tool); withdrawal
+  still just deactivates and keeps the record.
+* Privacy: a member's data export (CSV) now includes a "Private messages" block
+  with their full conversation history, so an export is genuinely complete.
+
+= 1.0.29 =
+* New: a "Members portal page" setting (Founding Faces -> Settings -> Members
+  access). Choose the page that hosts the Messages widget; the "Open my portal"
+  button in reply emails points there. It's stored as a page (not a URL), so it
+  resolves to the correct address on staging and live automatically.
+
+= 1.0.28 =
+* Security: message attachments are now private. New uploads are stored in a
+  protected directory (uploads/founding-faces-private, with a deny .htaccess and
+  no directory listing) instead of the public uploads folder, under a random
+  name. Every attachment is served only through a gated endpoint that checks the
+  viewer is the thread's own member or an administrator — direct URL access is
+  denied. Notification-email attachment links require signing in.
+  Note for NGINX hosts: .htaccess is ignored by NGINX, so also deny web access
+  to /wp-content/uploads/founding-faces-private/ in your server config; the
+  gated endpoint still enforces access either way, and file paths are random and
+  never exposed.
+* Database: adds attachment_path to ff_messages (schema 1.1.2), applied on
+  update. Any attachment from 1.0.27 keeps working via its stored link.
+
+= 1.0.27 =
+* New: messages can carry an attachment — an image or PDF (JPG, PNG, GIF or PDF,
+  up to 8 MB). The type is validated by real content, not just the file name.
+  Attachments show inline in the conversation (image thumbnail or a file link),
+  both in the member's portal and in Nick's admin reply view, and are linked in
+  the notification emails. Nick can attach files to his replies too.
+* New: the Member Archive widget gains a "Private messages (conversations)"
+  section, so a member's own conversations with Nick can be shown on any page
+  built from that widget, with its own style controls (badge, links, bubbles).
+* Database: adds attachment columns to ff_messages (schema 1.1.1), applied
+  automatically on update.
+
+= 1.0.26 =
+* New: a private member <-> admin concierge channel. Members can give feedback
+  on a note or ask a private question; Nick reads and replies from a new
+  "Messages" admin screen; the member is emailed the reply (branded) and sees a
+  "New message" flag in their portal, where they can read and reply. Strictly
+  private and one relationship deep -- always a member and Nick, never
+  member-to-member, never public -- so it keeps the "publication, not
+  conversation" principle. Adds three widgets/shortcodes: "Founding Faces
+  Feedback" [ff_feedback], "Founding Faces Ask a Question" [ff_ask] and
+  "Founding Faces Messages" [ff_messages] (place on the portal homepage).
+  Feedback also fills the personal-history "Feedback you've shared" section.
+* Database: adds the ff_messages table (schema 1.1.0). Created automatically on
+  update -- no reactivation needed.
+
 = 1.0.25 =
 * New: display-name preference for The 35, on the account-settings page. A
   member can choose how they appear in the members portal across three tiers,

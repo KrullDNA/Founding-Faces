@@ -132,6 +132,35 @@ class FF_Activator {
 			KEY type (type)
 		) {$charset_collate};";
 		dbDelta( $sql_interactions );
+
+		/*
+		 * ff_messages — the private member<->admin concierge channel.
+		 * A member's feedback on a note, or a question to Nick, starts a thread;
+		 * Nick's reply (and any further member reply) are rows in the same thread.
+		 * Strictly private and admin-only: never member-to-member, never public.
+		 * member_read / admin_read drive the "new message" indicators on each side.
+		 */
+		$messages = $wpdb->prefix . 'ff_messages';
+		$sql_messages = "CREATE TABLE {$messages} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			member_id BIGINT UNSIGNED NOT NULL,
+			thread_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+			sender VARCHAR(10) NOT NULL DEFAULT 'member',
+			context VARCHAR(20) NOT NULL DEFAULT 'question',
+			reference_id BIGINT UNSIGNED NULL,
+			subject VARCHAR(200) NOT NULL DEFAULT '',
+			body TEXT NULL,
+			attachment_url VARCHAR(255) NULL,
+			attachment_path VARCHAR(255) NULL,
+			attachment_name VARCHAR(191) NULL,
+			member_read TINYINT(1) NOT NULL DEFAULT 1,
+			admin_read TINYINT(1) NOT NULL DEFAULT 1,
+			created_at DATETIME NOT NULL,
+			PRIMARY KEY  (id),
+			KEY member_id (member_id),
+			KEY thread_id (thread_id)
+		) {$charset_collate};";
+		dbDelta( $sql_messages );
 	}
 
 	/**

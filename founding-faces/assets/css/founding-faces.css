@@ -660,6 +660,119 @@
 }
 
 /* ==========================================================================
+ * Private messages (member <-> admin concierge channel).
+ * ========================================================================== */
+
+.ff-messages {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+}
+
+/* The "New message" flag on an unread thread. */
+.ff-message-badge {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 2px 9px;
+	border-radius: 999px;
+	background: var(--ff-accent);
+	color: var(--ff-accent-ink);
+	font-size: 0.68rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	vertical-align: middle;
+}
+
+.ff-message-thread.is-unread .ff-history-item-main a {
+	font-weight: 700;
+}
+
+.ff-message-back {
+	margin: 0 0 0.6rem;
+	font-size: 0.9rem;
+}
+
+/* The conversation view: stacked message bubbles. */
+.ff-message-thread-view {
+	display: flex;
+	flex-direction: column;
+	gap: 0.8rem;
+	margin-bottom: 1.5rem;
+}
+
+.ff-message {
+	padding: 0.8rem 1rem;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	max-width: 85%;
+}
+
+/* The member's own messages sit right; replies from Nick sit left. */
+.ff-message--member {
+	align-self: flex-end;
+	background: var(--ff-bg);
+}
+
+.ff-message--admin {
+	align-self: flex-start;
+	background: #fff;
+}
+
+.ff-message-meta {
+	font-size: 0.75rem;
+	color: var(--ff-muted);
+	margin-bottom: 0.3rem;
+}
+
+.ff-message-body {
+	line-height: 1.55;
+}
+
+.ff-message-reply {
+	margin-top: 0.5rem;
+}
+
+/* Message attachments: image thumbnail, or a file/PDF chip. */
+.ff-message-attach {
+	display: inline-block;
+	margin-top: 0.5rem;
+	text-decoration: none;
+	color: var(--ff-accent);
+}
+
+.ff-message-attach--image img {
+	max-width: 220px;
+	max-height: 220px;
+	height: auto;
+	border-radius: var(--ff-radius);
+	border: 1px solid var(--ff-line);
+	display: block;
+}
+
+.ff-message-attach--file {
+	padding: 6px 12px;
+	border: 1px solid var(--ff-line);
+	border-radius: 999px;
+	background: var(--ff-bg);
+	font-size: 0.85rem;
+}
+
+.ff-message-attach-icon {
+	margin-right: 4px;
+}
+
+.ff-summary + .ff-message-threads,
+.ff-message-summary {
+	margin: 0 0 0.8rem;
+}
+
+/* The file field on the message forms. */
+.ff-field--file input[type="file"] {
+	font-family: inherit;
+	font-size: 0.9rem;
+}
+
+/* ==========================================================================
  * Members map.
  * ========================================================================== */
 

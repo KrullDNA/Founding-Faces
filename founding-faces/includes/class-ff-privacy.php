@@ -110,6 +110,22 @@ class FF_Privacy {
 		foreach ( FF_Interactions::get_for_member( $user_id, null, 1000 ) as $row ) {
 			fputcsv( $handle, array( $row->type, $row->reference_id, $row->created_at ) );
 		}
+		fputcsv( $handle, array() );
+
+		// Private messages block: their conversations with Nick.
+		if ( class_exists( 'FF_Messages' ) ) {
+			fputcsv( $handle, array( 'Private messages' ) );
+			fputcsv( $handle, array( 'When', 'From', 'Topic', 'Message', 'Attachment' ) );
+			foreach ( FF_Messages::member_messages_for_export( $user_id ) as $m ) {
+				fputcsv( $handle, array(
+					$m->created_at,
+					'admin' === $m->sender ? 'Apotheca' : 'Member',
+					FF_Messages::thread_title( $m ),
+					$m->body,
+					$m->attachment_name,
+				) );
+			}
+		}
 
 		rewind( $handle );
 		$csv = stream_get_contents( $handle );
@@ -175,6 +191,12 @@ class FF_Privacy {
 
 		// Remove the sensitive application record entirely.
 		$wpdb->delete( $wpdb->prefix . 'ff_applications', array( 'user_id' => $user_id ), array( '%d' ) );
+
+		// Remove the member's private messages and their attachment files: their
+		// own words and files are personal, so they go with the rest.
+		if ( class_exists( 'FF_Messages' ) ) {
+			FF_Messages::delete_member_messages( $user_id );
+		}
 
 		// Strip the personal user meta.
 		delete_user_meta( $user_id, FF_Members::META_REAL_NAME );

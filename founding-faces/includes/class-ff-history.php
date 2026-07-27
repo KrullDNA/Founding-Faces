@@ -379,11 +379,9 @@ class FF_History {
 	 * @return string
 	 */
 	public static function render_feedback( $member_id, $heading = '' ) {
-		// Accept either spine label used for feedback.
-		$rows = array_merge(
-			FF_Interactions::get_for_member( $member_id, 'feedback_submitted' ),
-			FF_Interactions::get_for_member( $member_id, 'feedback' )
-		);
+		// Read the feedback the member has submitted through the private channel,
+		// so it shows in one consistent place.
+		$rows    = class_exists( 'FF_Messages' ) ? FF_Messages::feedback_threads_for_member( $member_id ) : array();
 		$heading = '' !== $heading ? $heading : __( 'Feedback you\'ve shared', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
@@ -397,22 +395,19 @@ class FF_History {
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $rows as $row ) {
 			$ref   = (int) $row->reference_id;
-			$title = get_the_title( $ref );
+			$title = $ref ? get_the_title( $ref ) : '';
 			$title = $title ? $title : __( 'Feedback', 'founding-faces' );
 			$url   = $ref ? get_permalink( $ref ) : '';
 			$head  = $url ? '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title );
-
-			// The feedback text is supplied by the feedback-capture feature
-			// (added later) through this filter; empty until then.
-			$text = apply_filters( 'ff_feedback_text', '', $row );
+			$text  = (string) $row->body;
 
 			$out .= '<li class="ff-history-item ff-history-item--feedback">';
 			$out .= '<div class="ff-history-feedback-head">';
 			$out .= '<span class="ff-history-item-main">' . $head . '</span>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
 			$out .= '</div>';
-			if ( '' !== trim( (string) $text ) ) {
-				$out .= '<div class="ff-history-feedback-text">' . wpautop( wp_kses_post( $text ) ) . '</div>';
+			if ( '' !== trim( $text ) ) {
+				$out .= '<div class="ff-history-feedback-text">' . wpautop( esc_html( $text ) ) . '</div>';
 			}
 			$out .= '</li>';
 		}
