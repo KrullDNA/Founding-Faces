@@ -90,6 +90,15 @@ class FF_Account {
 					<input type="text" value="Ada Lovelace" />
 				</p>
 				<p class="ff-field">
+					<label><?php esc_html_e( 'How you appear in the portal', 'founding-faces' ); ?></label>
+					<select>
+						<option><?php esc_html_e( 'Founding Face 7', 'founding-faces' ); ?></option>
+						<option><?php esc_html_e( 'Ada, Founding Face 7', 'founding-faces' ); ?></option>
+						<option><?php esc_html_e( 'Ada Lovelace, Founding Face 7', 'founding-faces' ); ?></option>
+					</select>
+					<span class="ff-hint"><?php esc_html_e( 'Choose how your name appears on your member pages. Number only is the default. This never affects the members map, which always stays anonymous.', 'founding-faces' ); ?></span>
+				</p>
+				<p class="ff-field">
 					<label><?php esc_html_e( 'Email address', 'founding-faces' ); ?></label>
 					<input type="email" value="ada@example.com" />
 					<span class="ff-hint"><?php esc_html_e( 'Changing this sends a confirmation to the new address before it takes effect.', 'founding-faces' ); ?></span>
@@ -184,6 +193,35 @@ class FF_Account {
 					<label for="ff-acct-name"><?php esc_html_e( 'Your name', 'founding-faces' ); ?></label>
 					<input type="text" id="ff-acct-name" name="ff_name" value="<?php echo esc_attr( $real ); ?>" />
 				</p>
+
+				<?php
+				// Display preference: The 35 only. The Circle has no public
+				// display, so there is nothing for them to choose here.
+				if ( FF_Gating::is_the_35( $user_id ) ) :
+					$tier         = FF_Members::display_tier( $user_id );
+					$number_label = sprintf(
+						/* translators: %d is the member's Founding number. */
+						__( 'Founding Face %d', 'founding-faces' ),
+						(int) $number
+					);
+					$first        = $real ? preg_split( '/\s+/', trim( $real ) )[0] : '';
+					?>
+					<p class="ff-field">
+						<label for="ff-display-tier"><?php esc_html_e( 'How you appear in the portal', 'founding-faces' ); ?></label>
+						<select id="ff-display-tier" name="ff_display_tier">
+							<option value="number" <?php selected( $tier, 'number' ); ?>>
+								<?php echo esc_html( $number_label ); ?>
+							</option>
+							<option value="first_number" <?php selected( $tier, 'first_number' ); ?>>
+								<?php echo esc_html( $first ? $first . ', ' . $number_label : __( 'First name and number', 'founding-faces' ) ); ?>
+							</option>
+							<option value="full_number" <?php selected( $tier, 'full_number' ); ?>>
+								<?php echo esc_html( $real ? $real . ', ' . $number_label : __( 'Full name and number', 'founding-faces' ) ); ?>
+							</option>
+						</select>
+						<span class="ff-hint"><?php esc_html_e( 'Choose how your name appears on your member pages. Number only is the default. This never affects the members map, which always stays anonymous.', 'founding-faces' ); ?></span>
+					</p>
+				<?php endif; ?>
 
 				<p class="ff-field">
 					<label for="ff-acct-email"><?php esc_html_e( 'Email address', 'founding-faces' ); ?></label>
@@ -315,14 +353,29 @@ class FF_Account {
 			if ( '' !== $name ) {
 				update_user_meta( $user_id, FF_Members::META_REAL_NAME, $name );
 
-				// The Circle's public identity is a first name, so keep it in
-				// step. The 35's public identity is their number and never changes.
+				// The Circle's public identity is a first name, so keep it in step.
 				if ( FF_Gating::is_the_circle( $user_id ) ) {
 					$first = preg_split( '/\s+/', $name )[0];
 					update_user_meta( $user_id, FF_Members::META_PUBLIC_NAME, $first );
 					wp_update_user( array( 'ID' => $user_id, 'display_name' => $first, 'nickname' => $first ) );
 				}
 			}
+		}
+
+		// --- Display preference (The 35 only) ---
+		// A member of The 35 may opt up from their number to also show their
+		// first or full name. Default (and any invalid value) is number-only.
+		// Recompute their stored identity afterwards so the whole portal updates,
+		// including when only the name above changed.
+		if ( FF_Gating::is_the_35( $user_id ) ) {
+			if ( isset( $_POST['ff_display_tier'] ) ) {
+				$tier = sanitize_key( wp_unslash( $_POST['ff_display_tier'] ) );
+				if ( ! array_key_exists( $tier, FF_Members::display_tiers() ) ) {
+					$tier = 'number';
+				}
+				update_user_meta( $user_id, FF_Members::META_DISPLAY_TIER, $tier );
+			}
+			FF_Members::sync_portal_identity( $user_id );
 		}
 
 		// --- Consent, with write-back to the email platform ---
