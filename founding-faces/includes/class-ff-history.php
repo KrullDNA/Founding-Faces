@@ -255,11 +255,9 @@ class FF_History {
 
 		$out  = '<header class="ff-history-header">';
 		if ( $number ) {
-			$out .= '<div class="ff-history-number">' . sprintf(
-				/* translators: %d is the member's Founding number. */
-				esc_html__( 'Founding Face %d', 'founding-faces' ),
-				(int) $number
-			) . '</div>';
+			// The 35's identity honours their portal display preference (number
+			// only by default; optionally first name or full name plus number).
+			$out .= '<div class="ff-history-number">' . esc_html( FF_Members::portal_display_name( $member_id ) ) . '</div>';
 		}
 		$out .= '<div class="ff-history-group">' . esc_html( $group ) . '</div>';
 		if ( '' !== trim( (string) $sub ) ) {

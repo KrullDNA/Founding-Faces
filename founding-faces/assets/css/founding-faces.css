@@ -38,6 +38,18 @@
 	max-width: none;
 	margin-left: 0;
 	margin-right: 0;
+	width: 100%;
+}
+
+/* Make the plugin's widgets fill their Elementor container even when that
+ * container is a horizontal (row) flexbox — where a widget would otherwise
+ * shrink to its content width and never reach 100%. This is the usual reason
+ * a form looks half-width no matter what "Max width" is set to. */
+.elementor-widget-ff_application_form,
+.elementor-widget-ff_status_lookup,
+.elementor-widget-ff_account,
+.elementor-widget-ff_member_archive {
+	width: 100%;
 }
 
 .ff-field {

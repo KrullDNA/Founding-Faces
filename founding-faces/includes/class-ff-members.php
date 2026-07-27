@@ -37,6 +37,12 @@ class FF_Members {
 	// User meta: the public identity (number for The 35, first name for Circle).
 	const META_PUBLIC_NAME = 'ff_public_name';
 
+	// User meta: how a member of The 35 chooses to appear in the members portal.
+	// One of 'number' | 'first_number' | 'full_number'. Defaults to 'number':
+	// showing a name is always a deliberate opt-up, never the reverse. The Circle
+	// never uses this (their login is access-only, with no public display).
+	const META_DISPLAY_TIER = 'ff_display_tier';
+
 	// User meta: the id of the application this member was approved from.
 	const META_APP_ID = 'ff_application_id';
 
@@ -692,6 +698,111 @@ class FF_Members {
 		self::reset_numbering();
 
 		return $count;
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Portal display identity (The 35 only).
+	 * A member of The 35 may opt up from their number to also show their first
+	 * name, or their full name. The Circle has no public display, so this never
+	 * applies to them. Everything member-facing resolves identity through
+	 * portal_display_name(), so one preference change updates the whole portal at
+	 * once. The members map never reads any of this — it stays anonymous.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * The three display tiers for The 35, most private first.
+	 *
+	 * @return array Map of tier key => human label.
+	 */
+	public static function display_tiers() {
+		return array(
+			'number'       => __( 'Number only', 'founding-faces' ),
+			'first_number' => __( 'First name and number', 'founding-faces' ),
+			'full_number'  => __( 'Full name and number', 'founding-faces' ),
+		);
+	}
+
+	/**
+	 * The member's chosen display tier, defaulting to the most private.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return string One of the display_tiers() keys.
+	 */
+	public static function display_tier( $user_id ) {
+		$tier = get_user_meta( $user_id, self::META_DISPLAY_TIER, true );
+		return array_key_exists( $tier, self::display_tiers() ) ? $tier : 'number';
+	}
+
+	/**
+	 * Resolve how a member's identity should read in the members portal.
+	 *
+	 * For The 35 this honours their chosen tier (number only by default; first
+	 * name and number; or full name and number). A name tier with no stored name
+	 * safely falls back to the number. For The Circle it returns their existing
+	 * public name (first name) unchanged. This is the single place portal
+	 * identity is computed, so changing the preference updates it everywhere.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return string
+	 */
+	public static function portal_display_name( $user_id ) {
+		$number = get_user_meta( $user_id, self::META_NUMBER, true );
+
+		// The Circle (no number): unchanged — their stored public name.
+		if ( ! $number ) {
+			$public = get_user_meta( $user_id, self::META_PUBLIC_NAME, true );
+			if ( $public ) {
+				return $public;
+			}
+			$user = get_userdata( $user_id );
+			return $user ? $user->display_name : '';
+		}
+
+		// The 35: the number is always present; a name is a deliberate opt-up.
+		$number_label = sprintf(
+			/* translators: %d is the member's Founding number. */
+			__( 'Founding Face %d', 'founding-faces' ),
+			(int) $number
+		);
+		$tier = self::display_tier( $user_id );
+		$real = trim( (string) get_user_meta( $user_id, self::META_REAL_NAME, true ) );
+
+		if ( '' !== $real && 'full_number' === $tier ) {
+			/* translators: 1: the member's name, 2: "Founding Face N". */
+			return sprintf( __( '%1$s, %2$s', 'founding-faces' ), $real, $number_label );
+		}
+		if ( '' !== $real && 'first_number' === $tier ) {
+			$first = preg_split( '/\s+/', $real )[0];
+			/* translators: 1: the member's name, 2: "Founding Face N". */
+			return sprintf( __( '%1$s, %2$s', 'founding-faces' ), $first, $number_label );
+		}
+
+		return $number_label;
+	}
+
+	/**
+	 * Recompute and store a The 35 member's portal identity from their tier.
+	 *
+	 * Keeps the stored public name and WordPress display name in step with the
+	 * resolved identity, so any consumer that reads those (not just the live
+	 * resolver) reflects the preference too. No effect for The Circle.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return void
+	 */
+	public static function sync_portal_identity( $user_id ) {
+		if ( ! get_user_meta( $user_id, self::META_NUMBER, true ) ) {
+			return;
+		}
+		$display = self::portal_display_name( $user_id );
+		update_user_meta( $user_id, self::META_PUBLIC_NAME, $display );
+		wp_update_user( array(
+			'ID'           => $user_id,
+			'display_name' => $display,
+			'nickname'     => $display,
+		) );
 	}
 
 	/**
