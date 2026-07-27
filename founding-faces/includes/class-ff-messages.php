@@ -251,6 +251,65 @@ class FF_Messages {
 	}
 
 	/**
+	 * Every message a member is part of, for the data export.
+	 *
+	 * @param int $member_id The member's user id.
+	 * @return array Message rows, oldest first, grouped by thread.
+	 */
+	public static function member_messages_for_export( $member_id ) {
+		global $wpdb;
+		return $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM " . self::table() . " WHERE member_id = %d ORDER BY thread_id ASC, id ASC",
+			(int) $member_id
+		) );
+	}
+
+	/**
+	 * Delete all of a member's messages and their attachment files.
+	 *
+	 * Called from the privacy delete routine: a member's messages are personal
+	 * (their own words, questions, feedback and any files), so they are removed
+	 * entirely when their data is deleted. The attachment files are unlinked from
+	 * the protected directory (and any legacy public upload is removed too).
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return void
+	 */
+	public static function delete_member_messages( $user_id ) {
+		global $wpdb;
+
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT attachment_path, attachment_url FROM " . self::table() . " WHERE member_id = %d",
+			(int) $user_id
+		) );
+
+		if ( ! empty( $rows ) ) {
+			$up       = wp_upload_dir();
+			$priv     = realpath( trailingslashit( $up['basedir'] ) . 'founding-faces-private' );
+			$basedir  = realpath( $up['basedir'] );
+
+			foreach ( $rows as $r ) {
+				// Protected attachment: unlink inside the private directory only.
+				if ( ! empty( $r->attachment_path ) && $priv ) {
+					$abs = realpath( trailingslashit( $priv ) . $r->attachment_path );
+					if ( $abs && 0 === strpos( $abs, $priv ) && is_file( $abs ) ) {
+						@unlink( $abs ); // phpcs:ignore WordPress.PHP.NoSilencedErrors, WordPress.WP.AlternativeFunctions
+					}
+				} elseif ( ! empty( $r->attachment_url ) && $basedir ) {
+					// Legacy (pre-1.1.2) public upload: map URL back to a path.
+					$path = str_replace( trailingslashit( $up['baseurl'] ), trailingslashit( $up['basedir'] ), $r->attachment_url );
+					$real = $path !== $r->attachment_url ? realpath( $path ) : false;
+					if ( $real && 0 === strpos( $real, $basedir ) && is_file( $real ) ) {
+						@unlink( $real ); // phpcs:ignore WordPress.PHP.NoSilencedErrors, WordPress.WP.AlternativeFunctions
+					}
+				}
+			}
+		}
+
+		$wpdb->delete( self::table(), array( 'member_id' => (int) $user_id ), array( '%d' ) );
+	}
+
+	/**
 	 * A member's feedback threads (roots), newest first.
 	 *
 	 * Used by the personal-history "Feedback you've shared" section, so feedback

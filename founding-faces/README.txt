@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.30 =
+* Privacy: deleting a member now also removes their private messages and every
+  attachment file (from the protected directory, and any legacy public upload) —
+  so no personal words or files are left behind. This runs only on a data
+  delete (self-service "Delete my data" or the admin privacy tool); withdrawal
+  still just deactivates and keeps the record.
+* Privacy: a member's data export (CSV) now includes a "Private messages" block
+  with their full conversation history, so an export is genuinely complete.
+
 = 1.0.29 =
 * New: a "Members portal page" setting (Founding Faces -> Settings -> Members
   access). Choose the page that hosts the Messages widget; the "Open my portal"
