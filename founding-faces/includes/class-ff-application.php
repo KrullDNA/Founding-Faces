@@ -48,6 +48,25 @@ class FF_Application {
 		// visitor types so the public (logged-out) submission is accepted.
 		add_action( 'admin_post_' . self::SUBMIT_ACTION, array( __CLASS__, 'handle_submit' ) );
 		add_action( 'admin_post_nopriv_' . self::SUBMIT_ACTION, array( __CLASS__, 'handle_submit' ) );
+
+		// The Elementor widget wrapper for the form, so it can be styled visually.
+		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
+	}
+
+	/**
+	 * Register the Application Form Elementor widget.
+	 *
+	 * The widget is a thin wrapper: it renders the very same form markup as the
+	 * shortcode (one source of truth) and adds a full Style tab that targets the
+	 * form's existing classes, scoped to the widget.
+	 *
+	 * @param object $widgets_manager Elementor's widgets manager.
+	 */
+	public static function register_widgets( $widgets_manager ) {
+		require_once FF_PATH . 'includes/class-ff-application-widget.php';
+		require_once FF_PATH . 'includes/class-ff-status-widget.php';
+		$widgets_manager->register( new FF_Application_Widget() );
+		$widgets_manager->register( new FF_Status_Widget() );
 	}
 
 	/*
@@ -139,10 +158,19 @@ class FF_Application {
 	 * failed one. Uses the Post/Redirect/Get pattern so a refresh never
 	 * resubmits the form.
 	 *
+	 * @param array $atts Optional overrides: 'button_label' for the submit
+	 *                    button text, 'success_message' for the thank-you notice.
 	 * @return string The form HTML.
 	 */
-	public static function render_form() {
+	public static function render_form( $atts = array() ) {
 		self::enqueue_assets();
+
+		// Shortcode hands atts as '' when none are given; normalise to an array.
+		$atts = is_array( $atts ) ? $atts : array();
+
+		$button_label = ! empty( $atts['button_label'] )
+			? $atts['button_label']
+			: __( 'Submit application', 'founding-faces' );
 
 		$output = '';
 
@@ -151,8 +179,11 @@ class FF_Application {
 
 		// A good submission: thank the applicant and stop, no form shown.
 		if ( 'success' === $state ) {
+			$success = ! empty( $atts['success_message'] )
+				? $atts['success_message']
+				: __( 'Thank you. Your application has been received and is now being reviewed. We\'ll be in touch by email.', 'founding-faces' );
 			return '<div class="ff-notice ff-notice--success">'
-				. esc_html__( 'Thank you. Your application has been received and is now being reviewed. We\'ll be in touch by email.', 'founding-faces' )
+				. esc_html( $success )
 				. '</div>';
 		}
 
@@ -238,7 +269,7 @@ class FF_Application {
 			</p>
 
 			<p class="ff-submit">
-				<button type="submit"><?php esc_html_e( 'Submit application', 'founding-faces' ); ?></button>
+				<button type="submit"><?php echo esc_html( $button_label ); ?></button>
 			</p>
 		</form>
 		<?php
@@ -385,10 +416,16 @@ class FF_Application {
 	 * coarse: pending, decided, or not found. It never reveals the group, the
 	 * assigned number, or any stored answer.
 	 *
+	 * @param array $atts Optional overrides: 'label' for the field label,
+	 *                    'button_label' for the submit button text.
 	 * @return string The lookup HTML.
 	 */
-	public static function render_status_lookup() {
+	public static function render_status_lookup( $atts = array() ) {
 		self::enqueue_assets();
+
+		$atts         = is_array( $atts ) ? $atts : array();
+		$label        = ! empty( $atts['label'] ) ? $atts['label'] : __( 'Check your application status', 'founding-faces' );
+		$button_label = ! empty( $atts['button_label'] ) ? $atts['button_label'] : __( 'Check status', 'founding-faces' );
 
 		$result_html = '';
 		$email       = '';
@@ -412,12 +449,12 @@ class FF_Application {
 		<form class="ff-form ff-status-form" method="post" action="<?php echo esc_url( self::current_url() ); ?>" novalidate>
 			<?php wp_nonce_field( 'ff_status_lookup', 'ff_status_nonce' ); ?>
 			<p class="ff-field">
-				<label for="ff-status-email"><?php esc_html_e( 'Check your application status', 'founding-faces' ); ?></label>
+				<label for="ff-status-email"><?php echo esc_html( $label ); ?></label>
 				<input type="email" id="ff-status-email" name="ff_status_email" value="<?php echo esc_attr( $email ); ?>"
 					placeholder="<?php esc_attr_e( 'The email you applied with', 'founding-faces' ); ?>" required />
 			</p>
 			<p class="ff-submit">
-				<button type="submit"><?php esc_html_e( 'Check status', 'founding-faces' ); ?></button>
+				<button type="submit"><?php echo esc_html( $button_label ); ?></button>
 			</p>
 		</form>
 		<?php

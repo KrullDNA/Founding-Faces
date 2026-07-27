@@ -196,6 +196,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.21 =
+* New: every shortcode now has a matching Elementor widget. Added three new
+  widgets with full, scoped Style tabs -- "Founding Faces Application Form" and
+  "Founding Faces Status Lookup" (form box, labels, fields, hints, submit
+  button with hover, and success/error messages), and "Founding Faces Account"
+  (page, title, standing box, section blocks, secondary buttons, plus the shared
+  form controls). The Account widget shows a styling sample in the Elementor
+  editor. Shared form controls live in a single trait so the two form widgets
+  stay consistent. The shortcodes still work unchanged.
+
 = 1.0.20 =
 * New: the Member Archive header's group pill ("The 35" / "The Circle") now has
   full styling controls -- border, corner radius, padding and margin -- on top

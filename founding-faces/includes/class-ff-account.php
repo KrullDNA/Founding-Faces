@@ -42,6 +42,85 @@ class FF_Account {
 		add_shortcode( 'ff_account', array( __CLASS__, 'render' ) );
 		add_action( 'admin_post_' . self::ACTION, array( __CLASS__, 'handle' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_confirm_email' ) );
+		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
+	}
+
+	/**
+	 * Register the Account Elementor widget.
+	 *
+	 * @param object $widgets_manager Elementor's widgets manager.
+	 */
+	public static function register_widgets( $widgets_manager ) {
+		require_once FF_PATH . 'includes/class-ff-account-widget.php';
+		$widgets_manager->register( new FF_Account_Widget() );
+	}
+
+	/**
+	 * A static sample of the account page for the Elementor editor.
+	 *
+	 * Nick (an administrator) usually isn't a member, so the real page would show
+	 * the members-only notice in the editor and leave nothing to style. This
+	 * mirrors the real markup and classes with placeholder values, so the whole
+	 * page can be designed before there are members. It contains no live data and
+	 * no working forms — it exists only for styling.
+	 *
+	 * @return string
+	 */
+	public static function sample() {
+		wp_enqueue_style( 'founding-faces', FF_URL . 'assets/css/founding-faces.css', array(), FF_VERSION );
+
+		ob_start();
+		?>
+		<div class="ff-account">
+			<h2 class="ff-account-title"><?php esc_html_e( 'Your account', 'founding-faces' ); ?></h2>
+
+			<div class="ff-account-standing">
+				<div><span class="ff-account-label"><?php esc_html_e( 'Founding number', 'founding-faces' ); ?></span>
+					<strong>7</strong></div>
+				<div><span class="ff-account-label"><?php esc_html_e( 'Group', 'founding-faces' ); ?></span>
+					<strong><?php esc_html_e( 'The 35', 'founding-faces' ); ?></strong></div>
+				<div><span class="ff-account-label"><?php esc_html_e( 'Standing', 'founding-faces' ); ?></span>
+					<strong><?php esc_html_e( 'Active member', 'founding-faces' ); ?></strong></div>
+				<p class="ff-account-standing-note"><?php esc_html_e( 'Your number, group and standing are set by Apotheca and can\'t be changed here.', 'founding-faces' ); ?></p>
+			</div>
+
+			<div class="ff-form ff-account-form">
+				<p class="ff-field">
+					<label><?php esc_html_e( 'Your name', 'founding-faces' ); ?></label>
+					<input type="text" value="Ada Lovelace" />
+				</p>
+				<p class="ff-field">
+					<label><?php esc_html_e( 'Email address', 'founding-faces' ); ?></label>
+					<input type="email" value="ada@example.com" />
+					<span class="ff-hint"><?php esc_html_e( 'Changing this sends a confirmation to the new address before it takes effect.', 'founding-faces' ); ?></span>
+				</p>
+				<p class="ff-field ff-field--checkbox">
+					<label>
+						<input type="checkbox" checked />
+						<?php esc_html_e( 'I\'d like to receive programme emails from Apotheca.', 'founding-faces' ); ?>
+					</label>
+				</p>
+				<p class="ff-submit">
+					<button type="button"><?php esc_html_e( 'Save changes', 'founding-faces' ); ?></button>
+				</p>
+			</div>
+
+			<div class="ff-account-block">
+				<h3><?php esc_html_e( 'Password', 'founding-faces' ); ?></h3>
+				<button type="button" class="button"><?php esc_html_e( 'Email me a password reset link', 'founding-faces' ); ?></button>
+			</div>
+
+			<div class="ff-account-block">
+				<h3><?php esc_html_e( 'Your data', 'founding-faces' ); ?></h3>
+				<div class="ff-account-data-actions">
+					<button type="button" class="button"><?php esc_html_e( 'Export my data (CSV)', 'founding-faces' ); ?></button>
+					<button type="button" class="button ff-danger"><?php esc_html_e( 'Delete my data', 'founding-faces' ); ?></button>
+				</div>
+				<p class="ff-hint"><?php esc_html_e( 'Deleting removes your personal details. Your Founding number is retired, never reused.', 'founding-faces' ); ?></p>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/*
