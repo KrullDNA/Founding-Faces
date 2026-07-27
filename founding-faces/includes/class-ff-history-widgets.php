@@ -64,6 +64,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 				'votes'    => __( 'Votes', 'founding-faces' ),
 				'notes'    => __( 'Notes you\'ve read', 'founding-faces' ),
 				'feedback' => __( 'Feedback', 'founding-faces' ),
+				'messages' => __( 'Private messages (conversations)', 'founding-faces' ),
 			),
 		) );
 
@@ -420,6 +421,48 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 
 		$this->end_controls_section();
+
+		/* ========================= PRIVATE MESSAGES ======================= */
+		$this->start_controls_section( 'ff_ma_messages_style', array(
+			'label'     => __( 'Private messages', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'messages' ) ),
+		) );
+		$this->add_control( 'msg_link_color', array(
+			'label'     => __( 'Conversation link colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-message-thread a' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'msg_badge_h', array(
+			'label' => __( '"New message" badge', 'founding-faces' ),
+			'type'  => \Elementor\Controls_Manager::HEADING,
+		) );
+		$this->add_control( 'msg_badge_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-message-badge' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'msg_badge_color', array(
+			'label'     => __( 'Text colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-message-badge' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'msg_bubble_h', array(
+			'label'     => __( 'Conversation bubbles', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'msg_bubble_member_bg', array(
+			'label'     => __( 'Your message background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-message--member' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'msg_bubble_admin_bg', array(
+			'label'     => __( 'Reply background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-message--admin' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->end_controls_section();
 	}
 
 	/**
@@ -452,6 +495,11 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		if ( 'all' === $section || 'feedback' === $section ) {
 			$h    = ( 'feedback' === $section ) ? $heading : '';
 			$out .= $sample ? FF_History::sample_feedback( $h ) : FF_History::render_feedback( $mid, $h );
+		}
+		if ( 'all' === $section || 'messages' === $section ) {
+			// The message centre self-detects the member (or shows a sample in
+			// the editor), so the same call is right for both.
+			$out .= FF_Messages::sc_messages();
 		}
 
 		$out .= '</div>';

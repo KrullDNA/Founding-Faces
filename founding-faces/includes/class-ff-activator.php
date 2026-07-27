@@ -150,6 +150,8 @@ class FF_Activator {
 			reference_id BIGINT UNSIGNED NULL,
 			subject VARCHAR(200) NOT NULL DEFAULT '',
 			body TEXT NULL,
+			attachment_url VARCHAR(255) NULL,
+			attachment_name VARCHAR(191) NULL,
 			member_read TINYINT(1) NOT NULL DEFAULT 1,
 			admin_read TINYINT(1) NOT NULL DEFAULT 1,
 			created_at DATETIME NOT NULL,

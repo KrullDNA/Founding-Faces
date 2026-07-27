@@ -27,6 +27,99 @@ class FF_Messages {
 	const ACTION_SUBMIT = 'ff_msg_submit';
 	const ACTION_REPLY  = 'ff_msg_reply';
 
+	// The largest attachment allowed on a message.
+	const MAX_UPLOAD_BYTES = 8388608; // 8 MB.
+
+	/**
+	 * The only file types allowed on a message: images and PDF.
+	 *
+	 * @return array Map of extension pattern => mime type, for wp_handle_upload.
+	 */
+	public static function allowed_upload_mimes() {
+		return array(
+			'jpg|jpeg' => 'image/jpeg',
+			'png'      => 'image/png',
+			'gif'      => 'image/gif',
+			'pdf'      => 'application/pdf',
+		);
+	}
+
+	/**
+	 * The accept attribute for the file input.
+	 *
+	 * @return string
+	 */
+	public static function upload_accept_attr() {
+		return '.jpg,.jpeg,.png,.gif,.pdf,image/jpeg,image/png,image/gif,application/pdf';
+	}
+
+	/**
+	 * Validate and store one uploaded file, restricted to JPG/PNG/GIF/PDF.
+	 *
+	 * @param string $field The $_FILES key.
+	 * @return array|null {url, name} on success, {error} on a bad file, or null
+	 *                    when no file was chosen.
+	 */
+	public static function handle_upload( $field = 'ff_file' ) {
+		if ( empty( $_FILES[ $field ] ) || empty( $_FILES[ $field ]['name'] ) ) {
+			return null; // Nothing attached — that's fine.
+		}
+		$file = $_FILES[ $field ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+
+		if ( ! empty( $file['error'] ) && UPLOAD_ERR_NO_FILE !== (int) $file['error'] ) {
+			return array( 'error' => __( 'The file could not be uploaded. Please try again.', 'founding-faces' ) );
+		}
+		if ( (int) $file['size'] > self::MAX_UPLOAD_BYTES ) {
+			return array( 'error' => __( 'That file is too large — the limit is 8 MB.', 'founding-faces' ) );
+		}
+
+		// Confirm the real type matches an allowed image/PDF, not just the name.
+		$check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'], self::allowed_upload_mimes() );
+		if ( empty( $check['type'] ) || ! in_array( $check['type'], self::allowed_upload_mimes(), true ) ) {
+			return array( 'error' => __( 'Only JPG, PNG, GIF or PDF files can be attached.', 'founding-faces' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		$moved = wp_handle_upload( $file, array(
+			'test_form' => false,
+			'mimes'     => self::allowed_upload_mimes(),
+		) );
+
+		if ( isset( $moved['error'] ) ) {
+			return array( 'error' => $moved['error'] );
+		}
+		if ( empty( $moved['url'] ) ) {
+			return null;
+		}
+		return array(
+			'url'  => $moved['url'],
+			'name' => sanitize_file_name( wp_basename( $file['name'] ) ),
+		);
+	}
+
+	/**
+	 * Render an attachment (image thumbnail or a PDF/file link).
+	 *
+	 * @param string $url  The stored file URL.
+	 * @param string $name The original file name.
+	 * @return string
+	 */
+	public static function attachment_html( $url, $name ) {
+		$url = (string) $url;
+		if ( '' === $url ) {
+			return '';
+		}
+		$name    = $name ? $name : wp_basename( $url );
+		$is_image = (bool) preg_match( '/\.(jpe?g|png|gif)$/i', $url );
+
+		if ( $is_image ) {
+			return '<a class="ff-message-attach ff-message-attach--image" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">'
+				. '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $name ) . '" /></a>';
+		}
+		return '<a class="ff-message-attach ff-message-attach--file" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">'
+			. '<span class="ff-message-attach-icon" aria-hidden="true">&#128206;</span> ' . esc_html( $name ) . '</a>';
+	}
+
 	/**
 	 * The messages table name.
 	 *
@@ -109,12 +202,16 @@ class FF_Messages {
 	 * @param string $body      The message text.
 	 * @return int|false The new message id, or false on failure.
 	 */
-	public static function start_thread( $member_id, $context, $reference_id, $subject, $body ) {
+	public static function start_thread( $member_id, $context, $reference_id, $subject, $body, $attachment = null ) {
 		global $wpdb;
 
 		$context = in_array( $context, array( 'feedback', 'question' ), true ) ? $context : 'question';
 		$body    = trim( (string) $body );
-		if ( '' === $body ) {
+		$att_url  = ( is_array( $attachment ) && ! empty( $attachment['url'] ) ) ? $attachment['url'] : null;
+		$att_name = ( is_array( $attachment ) && ! empty( $attachment['name'] ) ) ? $attachment['name'] : null;
+
+		// A message needs either text or an attachment.
+		if ( '' === $body && ! $att_url ) {
 			return false;
 		}
 
@@ -122,18 +219,20 @@ class FF_Messages {
 		$ok  = $wpdb->insert(
 			self::table(),
 			array(
-				'member_id'    => (int) $member_id,
-				'thread_id'    => 0,
-				'sender'       => 'member',
-				'context'      => $context,
-				'reference_id' => $reference_id ? (int) $reference_id : null,
-				'subject'      => mb_substr( $subject, 0, 200 ),
-				'body'         => $body,
-				'member_read'  => 1, // The member wrote it; they've seen it.
-				'admin_read'   => 0, // New for Nick.
-				'created_at'   => $now,
+				'member_id'       => (int) $member_id,
+				'thread_id'       => 0,
+				'sender'          => 'member',
+				'context'         => $context,
+				'reference_id'    => $reference_id ? (int) $reference_id : null,
+				'subject'         => mb_substr( $subject, 0, 200 ),
+				'body'            => $body,
+				'attachment_url'  => $att_url,
+				'attachment_name' => $att_name,
+				'member_read'     => 1, // The member wrote it; they've seen it.
+				'admin_read'      => 0, // New for Nick.
+				'created_at'      => $now,
 			),
-			array( '%d', '%d', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%s' )
+			array( '%d', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s' )
 		);
 
 		if ( ! $ok ) {
@@ -161,12 +260,15 @@ class FF_Messages {
 	 * @param string $body      The reply text.
 	 * @return int|false The new message id, or false on failure.
 	 */
-	public static function add_reply( $thread_id, $sender, $body ) {
+	public static function add_reply( $thread_id, $sender, $body, $attachment = null ) {
 		global $wpdb;
 
 		$root = self::thread_root( $thread_id );
 		$body = trim( (string) $body );
-		if ( ! $root || '' === $body ) {
+		$att_url  = ( is_array( $attachment ) && ! empty( $attachment['url'] ) ) ? $attachment['url'] : null;
+		$att_name = ( is_array( $attachment ) && ! empty( $attachment['name'] ) ) ? $attachment['name'] : null;
+
+		if ( ! $root || ( '' === $body && ! $att_url ) ) {
 			return false;
 		}
 
@@ -176,19 +278,21 @@ class FF_Messages {
 		$ok = $wpdb->insert(
 			self::table(),
 			array(
-				'member_id'    => (int) $root->member_id,
-				'thread_id'    => (int) $root->id,
-				'sender'       => $sender,
-				'context'      => $root->context,
-				'reference_id' => $root->reference_id ? (int) $root->reference_id : null,
-				'subject'      => '',
-				'body'         => $body,
+				'member_id'       => (int) $root->member_id,
+				'thread_id'       => (int) $root->id,
+				'sender'          => $sender,
+				'context'         => $root->context,
+				'reference_id'    => $root->reference_id ? (int) $root->reference_id : null,
+				'subject'         => '',
+				'body'            => $body,
+				'attachment_url'  => $att_url,
+				'attachment_name' => $att_name,
 				// If Nick replies, it's unread by the member (and vice-versa).
-				'member_read'  => ( 'admin' === $sender ) ? 0 : 1,
-				'admin_read'   => ( 'admin' === $sender ) ? 1 : 0,
-				'created_at'   => $now,
+				'member_read'     => ( 'admin' === $sender ) ? 0 : 1,
+				'admin_read'      => ( 'admin' === $sender ) ? 1 : 0,
+				'created_at'      => $now,
 			),
-			array( '%d', '%d', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%s' )
+			array( '%d', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s' )
 		);
 
 		if ( ! $ok ) {
@@ -343,7 +447,14 @@ class FF_Messages {
 		$subject   = isset( $_POST['ff_subject'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_subject'] ) ) : '';
 		$body      = isset( $_POST['ff_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ff_body'] ) ) : '';
 
-		$sent = self::start_thread( $member_id, $context, $reference, $subject, $body );
+		// Process any attached image/PDF; a bad file stops the whole submission.
+		$attachment = self::handle_upload();
+		if ( is_array( $attachment ) && isset( $attachment['error'] ) ) {
+			wp_safe_redirect( add_query_arg( 'ff_msg', 'filetype', $redirect ) );
+			exit;
+		}
+
+		$sent = self::start_thread( $member_id, $context, $reference, $subject, $body, $attachment );
 
 		wp_safe_redirect( add_query_arg( 'ff_msg', $sent ? 'sent' : 'error', $redirect ) );
 		exit;
@@ -369,8 +480,13 @@ class FF_Messages {
 
 		// A member may only reply within their own thread.
 		if ( $root && (int) $root->member_id === (int) $member_id ) {
-			$body = isset( $_POST['ff_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ff_body'] ) ) : '';
-			self::add_reply( $thread_id, 'member', $body );
+			$body       = isset( $_POST['ff_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ff_body'] ) ) : '';
+			$attachment = self::handle_upload();
+			if ( is_array( $attachment ) && isset( $attachment['error'] ) ) {
+				wp_safe_redirect( add_query_arg( 'ff_msg', 'filetype', $redirect ) );
+				exit;
+			}
+			self::add_reply( $thread_id, 'member', $body, $attachment );
 		}
 
 		wp_safe_redirect( add_query_arg( 'ff_msg', 'sent', $redirect ) );
@@ -412,6 +528,9 @@ class FF_Messages {
 			$body .= '<p><strong>' . esc_html__( 'On:', 'founding-faces' ) . '</strong> ' . esc_html( $ref ) . '</p>';
 		}
 		$body .= '<blockquote style="margin:0;padding:12px 16px;border-left:3px solid #d5d8dd;">' . nl2br( esc_html( $msg->body ) ) . '</blockquote>';
+		if ( ! empty( $msg->attachment_url ) ) {
+			$body .= '<p>' . esc_html__( 'Attachment:', 'founding-faces' ) . ' <a href="' . esc_url( $msg->attachment_url ) . '">' . esc_html( $msg->attachment_name ? $msg->attachment_name : __( 'view file', 'founding-faces' ) ) . '</a></p>';
+		}
 
 		$html = FF_Email_Template::build( array(
 			'heading'   => __( 'New member message', 'founding-faces' ),
@@ -447,6 +566,9 @@ class FF_Messages {
 
 		$body  = '<p>' . esc_html__( 'You have a new reply in your Founding Faces portal.', 'founding-faces' ) . '</p>';
 		$body .= '<blockquote style="margin:0;padding:12px 16px;border-left:3px solid #d5d8dd;">' . nl2br( esc_html( $msg->body ) ) . '</blockquote>';
+		if ( ! empty( $msg->attachment_url ) ) {
+			$body .= '<p>' . esc_html__( 'Attachment:', 'founding-faces' ) . ' <a href="' . esc_url( $msg->attachment_url ) . '">' . esc_html( $msg->attachment_name ? $msg->attachment_name : __( 'view file', 'founding-faces' ) ) . '</a></p>';
+		}
 		$body .= '<p>' . esc_html__( 'Sign in to read it in full and reply.', 'founding-faces' ) . '</p>';
 
 		$html = FF_Email_Template::build( array(
@@ -521,16 +643,18 @@ class FF_Messages {
 		}
 
 		$is_feedback = ( 'feedback' === $context );
-		$sent        = isset( $_GET['ff_msg'] ) && 'sent' === sanitize_key( wp_unslash( $_GET['ff_msg'] ) );
+		$state       = isset( $_GET['ff_msg'] ) ? sanitize_key( wp_unslash( $_GET['ff_msg'] ) ) : '';
 
 		ob_start();
-		if ( $sent ) {
+		if ( 'sent' === $state ) {
 			echo '<div class="ff-notice ff-notice--success">' . esc_html( $is_feedback
 				? __( 'Thank you — your feedback has been sent.', 'founding-faces' )
 				: __( 'Thank you — your message has been sent. We\'ll reply in your portal.', 'founding-faces' ) ) . '</div>';
+		} elseif ( 'filetype' === $state ) {
+			echo '<div class="ff-notice ff-notice--error">' . esc_html__( 'Your message wasn\'t sent: attachments must be a JPG, PNG, GIF or PDF under 8 MB. Please try again.', 'founding-faces' ) . '</div>';
 		}
 		?>
-		<form class="ff-form ff-form--full ff-message-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<form class="ff-form ff-form--full ff-message-form" method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_SUBMIT ); ?>" />
 			<input type="hidden" name="ff_context" value="<?php echo esc_attr( $context ); ?>" />
 			<input type="hidden" name="ff_reference" value="<?php echo esc_attr( $reference ); ?>" />
@@ -555,6 +679,12 @@ class FF_Messages {
 				<span class="ff-hint"><?php echo esc_html( $is_feedback
 					? __( 'Private — this goes to Nick only, never shown to other members.', 'founding-faces' )
 					: __( 'Private — this goes to Nick only. You\'ll get the reply in your portal and by email.', 'founding-faces' ) ); ?></span>
+			</p>
+
+			<p class="ff-field ff-field--file">
+				<label for="ff-msg-file"><?php esc_html_e( 'Attach an image or PDF', 'founding-faces' ); ?></label>
+				<input type="file" id="ff-msg-file" name="ff_file" accept="<?php echo esc_attr( self::upload_accept_attr() ); ?>" />
+				<span class="ff-hint"><?php esc_html_e( 'Optional. JPG, PNG, GIF or PDF, up to 8 MB.', 'founding-faces' ); ?></span>
 			</p>
 
 			<p class="ff-submit">
@@ -701,19 +831,24 @@ class FF_Messages {
 			$who  = $mine ? __( 'You', 'founding-faces' ) : get_bloginfo( 'name' );
 			$out .= '<div class="ff-message ff-message--' . ( $mine ? 'member' : 'admin' ) . '">';
 			$out .= '<div class="ff-message-meta"><strong>' . esc_html( $who ) . '</strong> · ' . esc_html( self::format_date( $m->created_at ) ) . '</div>';
-			$out .= '<div class="ff-message-body">' . nl2br( esc_html( $m->body ) ) . '</div>';
+			if ( '' !== trim( (string) $m->body ) ) {
+				$out .= '<div class="ff-message-body">' . nl2br( esc_html( $m->body ) ) . '</div>';
+			}
+			$out .= self::attachment_html( $m->attachment_url, $m->attachment_name );
 			$out .= '</div>';
 		}
 		$out .= '</div>';
 
 		// Reply box.
-		$out .= '<form class="ff-form ff-form--full ff-message-reply" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		$out .= '<form class="ff-form ff-form--full ff-message-reply" method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$out .= '<input type="hidden" name="action" value="' . esc_attr( self::ACTION_REPLY ) . '" />';
 		$out .= '<input type="hidden" name="ff_thread" value="' . esc_attr( $thread_id ) . '" />';
 		$out .= '<input type="hidden" name="ff_return" value="' . esc_url( add_query_arg( 'ff_thread', $thread_id, self::current_url() ) ) . '" />';
 		$out .= wp_nonce_field( self::ACTION_REPLY . '_' . $thread_id, '_wpnonce', true, false );
 		$out .= '<p class="ff-field"><label for="ff-reply-body">' . esc_html__( 'Reply', 'founding-faces' ) . '</label>';
-		$out .= '<textarea id="ff-reply-body" name="ff_body" rows="4" required></textarea></p>';
+		$out .= '<textarea id="ff-reply-body" name="ff_body" rows="4"></textarea></p>';
+		$out .= '<p class="ff-field ff-field--file"><label for="ff-reply-file">' . esc_html__( 'Attach an image or PDF', 'founding-faces' ) . '</label>';
+		$out .= '<input type="file" id="ff-reply-file" name="ff_file" accept="' . esc_attr( self::upload_accept_attr() ) . '" /></p>';
 		$out .= '<p class="ff-submit"><button type="submit">' . esc_html__( 'Send reply', 'founding-faces' ) . '</button></p>';
 		$out .= '</form>';
 

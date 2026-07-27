@@ -196,6 +196,18 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.27 =
+* New: messages can carry an attachment — an image or PDF (JPG, PNG, GIF or PDF,
+  up to 8 MB). The type is validated by real content, not just the file name.
+  Attachments show inline in the conversation (image thumbnail or a file link),
+  both in the member's portal and in Nick's admin reply view, and are linked in
+  the notification emails. Nick can attach files to his replies too.
+* New: the Member Archive widget gains a "Private messages (conversations)"
+  section, so a member's own conversations with Nick can be shown on any page
+  built from that widget, with its own style controls (badge, links, bubbles).
+* Database: adds attachment columns to ff_messages (schema 1.1.1), applied
+  automatically on update.
+
 = 1.0.26 =
 * New: a private member <-> admin concierge channel. Members can give feedback
   on a note or ask a private question; Nick reads and replies from a new

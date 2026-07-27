@@ -78,6 +78,9 @@ class FF_Admin_Messages {
 		if ( isset( $_GET['ff_sent'] ) ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Reply sent.', 'founding-faces' ) . '</p></div>';
 		}
+		if ( isset( $_GET['ff_err'] ) ) {
+			echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Reply not sent: attachments must be a JPG, PNG, GIF or PDF under 8 MB.', 'founding-faces' ) . '</p></div>';
+		}
 
 		if ( $thread ) {
 			self::render_thread( $thread );
@@ -157,18 +160,25 @@ class FF_Admin_Messages {
 			$label    = $is_admin ? __( 'You (Nick)', 'founding-faces' ) : $who;
 			echo '<div class="ff-admin-message ff-admin-message--' . ( $is_admin ? 'admin' : 'member' ) . '" style="margin:0 0 12px;padding:12px 14px;border:1px solid #dcdcde;border-radius:6px;' . ( $is_admin ? 'background:#f0f6fc;' : 'background:#fff;' ) . '">';
 			echo '<div style="font-size:12px;color:#646970;margin-bottom:4px;"><strong>' . esc_html( $label ) . '</strong> · ' . esc_html( mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $m->created_at ) ) . '</div>';
-			echo '<div>' . nl2br( esc_html( $m->body ) ) . '</div>';
+			if ( '' !== trim( (string) $m->body ) ) {
+				echo '<div>' . nl2br( esc_html( $m->body ) ) . '</div>';
+			}
+			if ( ! empty( $m->attachment_url ) ) {
+				echo '<p style="margin:6px 0 0;"><a href="' . esc_url( $m->attachment_url ) . '" target="_blank" rel="noopener">&#128206; ' . esc_html( $m->attachment_name ? $m->attachment_name : __( 'View attachment', 'founding-faces' ) ) . '</a></p>';
+			}
 			echo '</div>';
 		}
 		echo '</div>';
 
 		// Reply form.
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" style="max-width:640px;">';
+		echo '<form method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" style="max-width:640px;">';
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '" />';
 		echo '<input type="hidden" name="thread" value="' . esc_attr( $thread_id ) . '" />';
 		wp_nonce_field( self::ACTION . '_' . $thread_id );
 		echo '<p><label for="ff-admin-reply"><strong>' . esc_html__( 'Your reply', 'founding-faces' ) . '</strong></label></p>';
-		echo '<textarea id="ff-admin-reply" name="ff_body" rows="5" class="large-text" required></textarea>';
+		echo '<textarea id="ff-admin-reply" name="ff_body" rows="5" class="large-text"></textarea>';
+		echo '<p><label for="ff-admin-file">' . esc_html__( 'Attach an image or PDF (optional):', 'founding-faces' ) . '</label> ';
+		echo '<input type="file" id="ff-admin-file" name="ff_file" accept="' . esc_attr( FF_Messages::upload_accept_attr() ) . '" /></p>';
 		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Send reply', 'founding-faces' ) . '</button>';
 		echo ' <span class="description">' . esc_html__( 'Emails the member and shows in their portal.', 'founding-faces' ) . '</span></p>';
 		echo '</form>';
@@ -184,15 +194,18 @@ class FF_Admin_Messages {
 		$thread_id = isset( $_POST['thread'] ) ? absint( wp_unslash( $_POST['thread'] ) ) : 0;
 		check_admin_referer( self::ACTION . '_' . $thread_id );
 
-		$body = isset( $_POST['ff_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ff_body'] ) ) : '';
-		if ( $thread_id && '' !== trim( $body ) ) {
-			FF_Messages::add_reply( $thread_id, 'admin', $body );
+		$body       = isset( $_POST['ff_body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ff_body'] ) ) : '';
+		$attachment = FF_Messages::handle_upload();
+
+		$args = array( 'page' => self::PAGE_SLUG, 'thread' => $thread_id );
+		if ( is_array( $attachment ) && isset( $attachment['error'] ) ) {
+			$args['ff_err'] = 1;
+		} elseif ( $thread_id && ( '' !== trim( $body ) || is_array( $attachment ) ) ) {
+			FF_Messages::add_reply( $thread_id, 'admin', $body, $attachment );
+			$args['ff_sent'] = 1;
 		}
 
-		wp_safe_redirect( add_query_arg(
-			array( 'page' => self::PAGE_SLUG, 'thread' => $thread_id, 'ff_sent' => 1 ),
-			admin_url( 'admin.php' )
-		) );
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
 		exit;
 	}
 }

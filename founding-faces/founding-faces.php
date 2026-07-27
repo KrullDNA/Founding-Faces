@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.26
+ * Version:           1.0.27
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,12 +28,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.26' );
+define( 'FF_VERSION', '1.0.27' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
-// 1.1.0 adds the ff_messages table (the private member<->admin channel).
-define( 'FF_DB_VERSION', '1.1.0' );
+// 1.1.0 adds the ff_messages table (the private member<->admin channel);
+// 1.1.1 adds its attachment columns (image/PDF uploads on messages).
+define( 'FF_DB_VERSION', '1.1.1' );
 
 // Absolute path to this plugin's folder, with a trailing slash.
 define( 'FF_PATH', plugin_dir_path( __FILE__ ) );
