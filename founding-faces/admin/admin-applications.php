@@ -282,6 +282,10 @@ class FF_Admin_Applications {
 		}
 
 		if ( in_array( $app->status, array( 'approved-35', 'approved-circle' ), true ) ) {
+			// A Circle member can be elevated into The 35 at any time.
+			if ( 'approved-circle' === $app->status ) {
+				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', true );
+			}
 			self::action_button( $app->id, 'resend', __( 'Resend welcome', 'founding-faces' ) );
 			self::action_button( $app->id, 'withdraw', __( 'Withdraw', 'founding-faces' ), 'link-delete', true );
 			return;
@@ -353,17 +357,20 @@ class FF_Admin_Applications {
 		$success = array(
 			'approved_35'     => __( 'Approved into The 35 and the member was created.', 'founding-faces' ),
 			'approved_circle' => __( 'Approved into The Circle and the member was created.', 'founding-faces' ),
+			'promoted_35'     => __( 'Member promoted into The 35 and sent the congratulations email.', 'founding-faces' ),
 			'declined'        => __( 'Application declined.', 'founding-faces' ),
 			'withdrawn'       => __( 'Member withdrawn; their number has been retired.', 'founding-faces' ),
 			'resent'          => __( 'Welcome email resent.', 'founding-faces' ),
 		);
 
 		$errors = array(
-			'ff_not_found'    => __( 'That application could not be found.', 'founding-faces' ),
-			'ff_already'      => __( 'That application has already been approved.', 'founding-faces' ),
-			'ff_email_exists' => __( 'A WordPress user already exists with that email address.', 'founding-faces' ),
-			'ff_no_member'    => __( 'That application has no member yet.', 'founding-faces' ),
-			'error'           => __( 'Something went wrong. Please try again.', 'founding-faces' ),
+			'ff_not_found'        => __( 'That application could not be found.', 'founding-faces' ),
+			'ff_already'          => __( 'That application has already been approved.', 'founding-faces' ),
+			'ff_email_exists'     => __( 'A WordPress user already exists with that email address.', 'founding-faces' ),
+			'ff_no_member'        => __( 'That application has no member yet.', 'founding-faces' ),
+			'ff_already_35'       => __( 'That member is already one of The 35.', 'founding-faces' ),
+			'ff_deactivated_member' => __( 'That member is no longer active.', 'founding-faces' ),
+			'error'               => __( 'Something went wrong. Please try again.', 'founding-faces' ),
 		);
 
 		if ( isset( $success[ $code ] ) ) {

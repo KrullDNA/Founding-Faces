@@ -33,6 +33,19 @@ class FF_Application {
 	// The admin-post action name used when the application form is submitted.
 	const SUBMIT_ACTION = 'ff_submit_application';
 
+	// Option: when on, a valid application is accepted straight into The Circle
+	// (member created, welcome email sent) with no manual moderation. Nick turns
+	// this on once The 35 has been chosen, so Circle applications need no clicks.
+	const OPT_AUTO_ACCEPT = 'ff_auto_accept_circle';
+
+	// The name of the honeypot field. It is hidden from real people; only a bot
+	// fills it, so any submission with a value here is silently dropped.
+	const HONEYPOT_FIELD = 'ff_website';
+
+	// The shortest believable time (seconds) a human takes to fill the form. A
+	// submission faster than this was almost certainly scripted.
+	const MIN_FILL_SECONDS = 3;
+
 	/**
 	 * Wire up the shortcodes and the form handler.
 	 *
@@ -227,6 +240,17 @@ class FF_Application {
 			<?php wp_nonce_field( self::SUBMIT_ACTION, 'ff_application_nonce' ); ?>
 			<input type="hidden" name="ff_redirect" value="<?php echo esc_url( self::current_url() ); ?>" />
 
+			<?php // Spam trap: the timestamp catches instant (scripted) submits. ?>
+			<input type="hidden" name="ff_ts" value="<?php echo esc_attr( time() ); ?>" />
+
+			<?php // Honeypot: hidden from people, tempting to bots. Left empty by
+			// real applicants; any value here means the submission is a bot. ?>
+			<div class="ff-hp" aria-hidden="true">
+				<label for="ff-website"><?php esc_html_e( 'Website', 'founding-faces' ); ?></label>
+				<input type="text" id="ff-website" name="<?php echo esc_attr( self::HONEYPOT_FIELD ); ?>"
+					tabindex="-1" autocomplete="off" value="" />
+			</div>
+
 			<p class="ff-field">
 				<label for="ff-name"><?php esc_html_e( 'Full name', 'founding-faces' ); ?> <span class="ff-required">*</span></label>
 				<input type="text" id="ff-name" name="ff_name" value="<?php echo $val( 'name' ); ?>" required />
@@ -295,6 +319,16 @@ class FF_Application {
 			self::redirect_with_errors( $redirect, array( __( 'Your session expired. Please try submitting the form again.', 'founding-faces' ) ), array() );
 		}
 
+		// Spam trap. If the honeypot was filled, or the form was submitted
+		// impossibly fast, treat it as a bot: store nothing, send nothing, and
+		// quietly show the success page so the bot gets no useful signal. This
+		// matters most with auto-accept on, where a stored application would
+		// otherwise become a Circle member automatically.
+		if ( self::is_spam_submission() ) {
+			wp_safe_redirect( add_query_arg( 'ff_app', 'success', $redirect ) );
+			exit;
+		}
+
 		// Sanitise every field as it comes in.
 		$name          = isset( $_POST['ff_name'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_name'] ) ) : '';
 		$email         = isset( $_POST['ff_email'] ) ? sanitize_email( wp_unslash( $_POST['ff_email'] ) ) : '';
@@ -361,9 +395,54 @@ class FF_Application {
 			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%d' )
 		);
 
+		$app_id = (int) $wpdb->insert_id;
+
+		// What happens next depends on the "New applications" setting:
+		//  - Auto-accept on  → create the Circle member now; the welcome email is
+		//    their acknowledgement (so we don't also send the received email).
+		//  - Auto-accept off → leave it pending for manual review and send the
+		//    "application received" acknowledgement.
+		if ( $app_id && self::auto_accept_enabled() && class_exists( 'FF_Members' ) ) {
+			FF_Members::approve( $app_id, 'the-circle' );
+		} else {
+			FF_Emails::send_application_received( $name, $email );
+		}
+
 		// Send the applicant back to a clean success state.
 		wp_safe_redirect( add_query_arg( 'ff_app', 'success', $redirect ) );
 		exit;
+	}
+
+	/**
+	 * Whether auto-accept into The Circle is switched on.
+	 *
+	 * @return bool
+	 */
+	public static function auto_accept_enabled() {
+		return (bool) get_option( self::OPT_AUTO_ACCEPT, false );
+	}
+
+	/**
+	 * Decide whether a submission is spam (honeypot filled or submitted too fast).
+	 *
+	 * @return bool
+	 */
+	private static function is_spam_submission() {
+		// The honeypot must stay empty for a real person.
+		$hp = isset( $_POST[ self::HONEYPOT_FIELD ] ) ? trim( (string) wp_unslash( $_POST[ self::HONEYPOT_FIELD ] ) ) : '';
+		if ( '' !== $hp ) {
+			return true;
+		}
+
+		// The form must have been on-screen for at least a few seconds. A missing
+		// or non-numeric timestamp is treated as human (page caches can strip it),
+		// so only a clearly-too-fast submission is flagged.
+		$ts = isset( $_POST['ff_ts'] ) ? absint( wp_unslash( $_POST['ff_ts'] ) ) : 0;
+		if ( $ts > 0 && ( time() - $ts ) < self::MIN_FILL_SECONDS ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

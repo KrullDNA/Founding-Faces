@@ -33,6 +33,15 @@ class FF_Emails {
 	const OPT_CIRCLE_SUBJECT = 'ff_email_circle_subject';
 	const OPT_CIRCLE_BODY    = 'ff_email_circle_body';
 
+	// Promotion email: sent when a Circle member is chosen for The 35.
+	const OPT_PROMO_SUBJECT  = 'ff_email_promo_subject';
+	const OPT_PROMO_BODY     = 'ff_email_promo_body';
+
+	// Application-received email: the acknowledgement sent the moment someone
+	// applies (only when applications are held for manual review).
+	const OPT_RECEIVED_SUBJECT = 'ff_email_received_subject';
+	const OPT_RECEIVED_BODY    = 'ff_email_received_body';
+
 	// User meta holding the hashed set-password token and its expiry.
 	const META_TOKEN_HASH = 'ff_setpw_hash';
 	const META_TOKEN_EXP  = 'ff_setpw_expires';
@@ -91,12 +100,57 @@ class FF_Emails {
 	public static function default_body( $is_35 ) {
 		if ( $is_35 ) {
 			return __(
-				"Hi {name},\n\nWelcome to Founding Faces. You are Founding Face {number} — one of The 35.\n\nTo set your password and step inside, use this secure link (valid for 7 days):\n{set_password_link}\n\nIf your link ever expires, you can request a fresh one from the login page:\n{login_url}\n\nWith thanks,\n{site_name}",
+				"Hi {name},\n\nWelcome to Founding Faces. You are Founding Face {number} — one of The 35.\n\nUse the button below to set your password and step inside. The link is valid for 7 days; if it ever expires you can request a fresh one from the login page.\n\nWith thanks,\n{site_name}",
 				'founding-faces'
 			);
 		}
 		return __(
-			"Hi {name},\n\nWelcome to Founding Faces and the Apotheca community.\n\nTo set your password and step inside, use this secure link (valid for 7 days):\n{set_password_link}\n\nIf your link ever expires, you can request a fresh one from the login page:\n{login_url}\n\nWith thanks,\n{site_name}",
+			"Hi {name},\n\nWelcome to Founding Faces and the Apotheca community.\n\nUse the button below to set your password and step inside. The link is valid for 7 days; if it ever expires you can request a fresh one from the login page.\n\nWith thanks,\n{site_name}",
+			'founding-faces'
+		);
+	}
+
+	/**
+	 * The default subject for the promotion (chosen for The 35) email.
+	 *
+	 * @return string
+	 */
+	public static function default_promo_subject() {
+		return __( 'Congratulations — you are one of The 35', 'founding-faces' );
+	}
+
+	/**
+	 * The default body for the promotion email.
+	 *
+	 * The member already has a password (they set it as a Circle member), so this
+	 * email has no set-password link — just the news and a sign-in button.
+	 *
+	 * @return string
+	 */
+	public static function default_promo_body() {
+		return __(
+			"Hi {name},\n\nWe have some special news. You have been chosen as one of The 35 — the inner circle of Founding Faces.\n\nYou are now Founding Face {number}. Your place, your number, and everything you've taken part in are yours alone.\n\nSign in any time to see inside.\n\nWith thanks,\n{site_name}",
+			'founding-faces'
+		);
+	}
+
+	/**
+	 * The default subject for the application-received email.
+	 *
+	 * @return string
+	 */
+	public static function default_received_subject() {
+		return __( 'We\'ve received your application', 'founding-faces' );
+	}
+
+	/**
+	 * The default body for the application-received email.
+	 *
+	 * @return string
+	 */
+	public static function default_received_body() {
+		return __(
+			"Hi {name},\n\nThank you for applying to join Founding Faces. Your application has been received and is now being reviewed.\n\nWe'll be in touch by email as soon as there's news.\n\nWith thanks,\n{site_name}",
 			'founding-faces'
 		);
 	}
@@ -159,10 +213,108 @@ class FF_Emails {
 		$subject = self::fill( $subject_tpl, $replacements, false );
 		$body    = self::fill( $body_tpl, $replacements, true );
 
+		// Wrap the body in the branded shell, with the secure link as a button.
+		$html = FF_Email_Template::build( array(
+			'heading'   => $is_35
+				? __( 'Welcome to The 35', 'founding-faces' )
+				: __( 'Welcome to Founding Faces', 'founding-faces' ),
+			'body_html' => $body,
+			'cta'       => array(
+				'label' => __( 'Set your password', 'founding-faces' ),
+				'url'   => $link,
+			),
+			'preheader' => __( 'Set your password to step inside.', 'founding-faces' ),
+		) );
+
 		// Send as HTML so links are clickable.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
-		return wp_mail( $user->user_email, $subject, $body, $headers );
+		return wp_mail( $user->user_email, $subject, $html, $headers );
+	}
+
+	/**
+	 * Send the "you've been chosen for The 35" email to a promoted member.
+	 *
+	 * Fired by FF_Members::promote_to_35(). The member already has a password, so
+	 * this carries a sign-in button rather than a set-password link.
+	 *
+	 * @param int $user_id The member's WordPress user id.
+	 * @return bool
+	 */
+	public static function send_promotion( $user_id ) {
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return false;
+		}
+
+		$number     = get_user_meta( $user_id, FF_Members::META_NUMBER, true );
+		$real_name  = get_user_meta( $user_id, FF_Members::META_REAL_NAME, true );
+		$first_name = trim( (string) $real_name ) !== '' ? preg_split( '/\s+/', trim( $real_name ) )[0] : $user->display_name;
+
+		$replacements = array(
+			'{name}'        => $first_name,
+			'{number}'      => (int) $number,
+			'{group}'       => __( 'The 35', 'founding-faces' ),
+			'{public_name}' => get_user_meta( $user_id, FF_Members::META_PUBLIC_NAME, true ),
+			'{site_name}'   => get_bloginfo( 'name' ),
+			'{login_url}'   => wp_login_url(),
+		);
+
+		$subject_tpl = get_option( self::OPT_PROMO_SUBJECT, self::default_promo_subject() );
+		$body_tpl    = get_option( self::OPT_PROMO_BODY, self::default_promo_body() );
+
+		$subject = self::fill( $subject_tpl, $replacements, false );
+		$body    = self::fill( $body_tpl, $replacements, true );
+
+		$html = FF_Email_Template::build( array(
+			'heading'   => __( 'You are one of The 35', 'founding-faces' ),
+			'body_html' => $body,
+			'cta'       => array(
+				'label' => __( 'Sign in', 'founding-faces' ),
+				'url'   => wp_login_url(),
+			),
+			'preheader' => __( 'You have been chosen for The 35.', 'founding-faces' ),
+		) );
+
+		return wp_mail( $user->user_email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
+	}
+
+	/**
+	 * Send the application-received acknowledgement to a new applicant.
+	 *
+	 * Sent from the application handler when applications are held for manual
+	 * review. When auto-accept is on, the member gets the welcome email instead,
+	 * so this is not sent (no duplicate).
+	 *
+	 * @param string $name  The applicant's name.
+	 * @param string $email The applicant's email.
+	 * @return bool
+	 */
+	public static function send_application_received( $name, $email ) {
+		if ( ! is_email( $email ) ) {
+			return false;
+		}
+
+		$first_name = trim( (string) $name ) !== '' ? preg_split( '/\s+/', trim( $name ) )[0] : __( 'there', 'founding-faces' );
+
+		$replacements = array(
+			'{name}'      => $first_name,
+			'{site_name}' => get_bloginfo( 'name' ),
+		);
+
+		$subject_tpl = get_option( self::OPT_RECEIVED_SUBJECT, self::default_received_subject() );
+		$body_tpl    = get_option( self::OPT_RECEIVED_BODY, self::default_received_body() );
+
+		$subject = self::fill( $subject_tpl, $replacements, false );
+		$body    = self::fill( $body_tpl, $replacements, true );
+
+		$html = FF_Email_Template::build( array(
+			'heading'   => __( 'Application received', 'founding-faces' ),
+			'body_html' => $body,
+			'preheader' => __( 'Thanks for applying to Founding Faces.', 'founding-faces' ),
+		) );
+
+		return wp_mail( $email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
 	}
 
 	/**
@@ -213,15 +365,24 @@ class FF_Emails {
 		$link  = self::build_setpw_link( $user_id, $token );
 
 		$subject = __( 'Reset your Founding Faces password', 'founding-faces' );
-		$body    = wpautop( make_clickable( sprintf(
-			/* translators: 1: member first name or display name, 2: secure link, 3: site name. */
-			__( "Hi %1\$s,\n\nUse this secure link to set a new password (valid for 7 days):\n%2\$s\n\nIf you didn't ask for this, you can safely ignore this email.\n\n%3\$s", 'founding-faces' ),
-			esc_html( $user->display_name ),
-			esc_url( $link ),
-			esc_html( get_bloginfo( 'name' ) )
+		$body    = wpautop( esc_html( sprintf(
+			/* translators: 1: member first name or display name, 2: site name. */
+			__( "Hi %1\$s,\n\nUse the button below to set a new password. The link is valid for 7 days.\n\nIf you didn't ask for this, you can safely ignore this email.\n\n%2\$s", 'founding-faces' ),
+			$user->display_name,
+			get_bloginfo( 'name' )
 		) ) );
 
-		return wp_mail( $user->user_email, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		$html = FF_Email_Template::build( array(
+			'heading'   => __( 'Reset your password', 'founding-faces' ),
+			'body_html' => $body,
+			'cta'       => array(
+				'label' => __( 'Set a new password', 'founding-faces' ),
+				'url'   => $link,
+			),
+			'preheader' => __( 'Set a new Founding Faces password.', 'founding-faces' ),
+		) );
+
+		return wp_mail( $user->user_email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
 	}
 
 	/*

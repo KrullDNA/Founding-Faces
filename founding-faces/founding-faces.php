@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.21
+ * Version:           1.0.22
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.21' );
+define( 'FF_VERSION', '1.0.22' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -100,6 +100,9 @@ require_once FF_PATH . 'includes/class-ff-account.php';
 
 // Membership: approval, user creation, numbering, withdrawal, welcome email.
 require_once FF_PATH . 'includes/class-ff-members.php';
+
+// The branded HTML email shell that wraps every programme email.
+require_once FF_PATH . 'includes/class-ff-email-template.php';
 
 // Welcome emails, the set-password token, and the login-page access screens.
 // Loaded always: the login page and its screens are not the admin area.
