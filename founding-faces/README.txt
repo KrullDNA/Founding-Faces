@@ -196,6 +196,11 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.20 =
+* New: the Member Archive header's group pill ("The 35" / "The Circle") now has
+  full styling controls -- border, corner radius, padding and margin -- on top
+  of the existing typography, colour and background.
+
 = 1.0.19 =
 * Fix: removed the empty gap that appeared under the Member Archive header's
   background colour. The subheading paragraph's default bottom margin was

@@ -146,6 +146,28 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-group' => 'background-color: {{VALUE}};' ),
 		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'group_border',
+			'selector' => '{{WRAPPER}} .ff-history-group',
+		) );
+		$this->add_responsive_control( 'group_radius', array(
+			'label'      => __( 'Group corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-group' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'group_padding', array(
+			'label'      => __( 'Group padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-group' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'group_margin', array(
+			'label'      => __( 'Group margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-group' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
 			'name'     => 'intro_typo',
 			'label'    => __( 'Subheading text', 'founding-faces' ),
