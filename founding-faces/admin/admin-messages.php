@@ -163,8 +163,9 @@ class FF_Admin_Messages {
 			if ( '' !== trim( (string) $m->body ) ) {
 				echo '<div>' . nl2br( esc_html( $m->body ) ) . '</div>';
 			}
-			if ( ! empty( $m->attachment_url ) ) {
-				echo '<p style="margin:6px 0 0;"><a href="' . esc_url( $m->attachment_url ) . '" target="_blank" rel="noopener">&#128206; ' . esc_html( $m->attachment_name ? $m->attachment_name : __( 'View attachment', 'founding-faces' ) ) . '</a></p>';
+			$att = FF_Messages::attachment_link( $m );
+			if ( '' !== $att ) {
+				echo '<p style="margin:6px 0 0;"><a href="' . esc_url( $att ) . '" target="_blank" rel="noopener">&#128206; ' . esc_html( $m->attachment_name ? $m->attachment_name : __( 'View attachment', 'founding-faces' ) ) . '</a></p>';
 			}
 			echo '</div>';
 		}

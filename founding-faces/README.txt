@@ -196,6 +196,20 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.28 =
+* Security: message attachments are now private. New uploads are stored in a
+  protected directory (uploads/founding-faces-private, with a deny .htaccess and
+  no directory listing) instead of the public uploads folder, under a random
+  name. Every attachment is served only through a gated endpoint that checks the
+  viewer is the thread's own member or an administrator — direct URL access is
+  denied. Notification-email attachment links require signing in.
+  Note for NGINX hosts: .htaccess is ignored by NGINX, so also deny web access
+  to /wp-content/uploads/founding-faces-private/ in your server config; the
+  gated endpoint still enforces access either way, and file paths are random and
+  never exposed.
+* Database: adds attachment_path to ff_messages (schema 1.1.2), applied on
+  update. Any attachment from 1.0.27 keeps working via its stored link.
+
 = 1.0.27 =
 * New: messages can carry an attachment — an image or PDF (JPG, PNG, GIF or PDF,
   up to 8 MB). The type is validated by real content, not just the file name.

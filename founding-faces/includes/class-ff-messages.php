@@ -54,10 +54,42 @@ class FF_Messages {
 	}
 
 	/**
+	 * The protected directory attachments are stored in (outside public reach).
+	 *
+	 * Created on demand, with an .htaccess that denies direct access and an empty
+	 * index file so the folder can't be listed. Files are only ever served back
+	 * through the gated serve_attachment() endpoint, never by direct URL.
+	 *
+	 * @return string The absolute base directory path.
+	 */
+	private static function private_dir() {
+		$up   = wp_upload_dir();
+		$base = trailingslashit( $up['basedir'] ) . 'founding-faces-private';
+
+		if ( ! is_dir( $base ) ) {
+			wp_mkdir_p( $base );
+		}
+		// Apache: deny direct web access (2.4 and 2.2 syntaxes).
+		$htaccess = $base . '/.htaccess';
+		if ( ! file_exists( $htaccess ) ) {
+			file_put_contents( $htaccess, "Require all denied\n<IfModule !mod_authz_core.c>\nOrder deny,allow\nDeny from all\n</IfModule>\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		}
+		// Stop directory listing anywhere a stray request lands.
+		$index = $base . '/index.html';
+		if ( ! file_exists( $index ) ) {
+			file_put_contents( $index, '' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		}
+		return $base;
+	}
+
+	/**
 	 * Validate and store one uploaded file, restricted to JPG/PNG/GIF/PDF.
 	 *
+	 * The file is moved into the protected directory (not the public uploads
+	 * folder) under a random name; the original name is kept only for display.
+	 *
 	 * @param string $field The $_FILES key.
-	 * @return array|null {url, name} on success, {error} on a bad file, or null
+	 * @return array|null {path, name} on success, {error} on a bad file, or null
 	 *                    when no file was chosen.
 	 */
 	public static function handle_upload( $field = 'ff_file' ) {
@@ -79,38 +111,61 @@ class FF_Messages {
 			return array( 'error' => __( 'Only JPG, PNG, GIF or PDF files can be attached.', 'founding-faces' ) );
 		}
 
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		$moved = wp_handle_upload( $file, array(
-			'test_form' => false,
-			'mimes'     => self::allowed_upload_mimes(),
-		) );
+		$ext = strtolower( pathinfo( $check['proper_filename'] ? $check['proper_filename'] : $file['name'], PATHINFO_EXTENSION ) );
+		if ( '' === $ext ) {
+			$map = array( 'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'application/pdf' => 'pdf' );
+			$ext = isset( $map[ $check['type'] ] ) ? $map[ $check['type'] ] : 'dat';
+		}
 
-		if ( isset( $moved['error'] ) ) {
-			return array( 'error' => $moved['error'] );
+		$base     = self::private_dir();
+		$relative = gmdate( 'Y/m' ) . '/' . wp_generate_password( 24, false ) . '.' . $ext;
+		$abs      = trailingslashit( $base ) . $relative;
+		wp_mkdir_p( dirname( $abs ) );
+
+		if ( ! move_uploaded_file( $file['tmp_name'], $abs ) ) {
+			return array( 'error' => __( 'The file could not be saved. Please try again.', 'founding-faces' ) );
 		}
-		if ( empty( $moved['url'] ) ) {
-			return null;
-		}
+		@chmod( $abs, 0644 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors, WordPress.WP.AlternativeFunctions
+
 		return array(
-			'url'  => $moved['url'],
+			'path' => $relative,
 			'name' => sanitize_file_name( wp_basename( $file['name'] ) ),
 		);
 	}
 
 	/**
-	 * Render an attachment (image thumbnail or a PDF/file link).
+	 * The link to a message's attachment: the gated endpoint for a protected
+	 * file, or the stored URL for any legacy (pre-1.1.2) public upload.
 	 *
-	 * @param string $url  The stored file URL.
-	 * @param string $name The original file name.
+	 * @param object $msg The message row.
+	 * @return string The URL, or '' if there's no attachment.
+	 */
+	public static function attachment_link( $msg ) {
+		if ( ! empty( $msg->attachment_path ) ) {
+			return add_query_arg(
+				array( 'action' => 'ff_attachment', 'm' => (int) $msg->id ),
+				admin_url( 'admin-post.php' )
+			);
+		}
+		if ( ! empty( $msg->attachment_url ) ) {
+			return $msg->attachment_url;
+		}
+		return '';
+	}
+
+	/**
+	 * Render a message's attachment (image thumbnail or a PDF/file link).
+	 *
+	 * @param object $msg The message row.
 	 * @return string
 	 */
-	public static function attachment_html( $url, $name ) {
-		$url = (string) $url;
+	public static function attachment_html( $msg ) {
+		$url = self::attachment_link( $msg );
 		if ( '' === $url ) {
 			return '';
 		}
-		$name    = $name ? $name : wp_basename( $url );
-		$is_image = (bool) preg_match( '/\.(jpe?g|png|gif)$/i', $url );
+		$name     = ! empty( $msg->attachment_name ) ? $msg->attachment_name : __( 'attachment', 'founding-faces' );
+		$is_image = (bool) preg_match( '/\.(jpe?g|png|gif)$/i', $name );
 
 		if ( $is_image ) {
 			return '<a class="ff-message-attach ff-message-attach--image" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">'
@@ -118,6 +173,49 @@ class FF_Messages {
 		}
 		return '<a class="ff-message-attach ff-message-attach--file" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">'
 			. '<span class="ff-message-attach-icon" aria-hidden="true">&#128206;</span> ' . esc_html( $name ) . '</a>';
+	}
+
+	/**
+	 * Stream a protected attachment, but only to its member or an admin.
+	 *
+	 * @return void
+	 */
+	public static function serve_attachment() {
+		$mid = isset( $_GET['m'] ) ? absint( wp_unslash( $_GET['m'] ) ) : 0;
+
+		global $wpdb;
+		$msg = $mid ? $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::table() . " WHERE id = %d", $mid ) ) : null;
+
+		if ( ! $msg || empty( $msg->attachment_path ) ) {
+			status_header( 404 );
+			exit;
+		}
+
+		// Only the member the thread belongs to, or an administrator, may view it.
+		$uid = get_current_user_id();
+		if ( (int) $msg->member_id !== (int) $uid && ! current_user_can( 'manage_options' ) ) {
+			status_header( 403 );
+			exit;
+		}
+
+		// Resolve the file safely inside the protected directory (no traversal).
+		$base = realpath( self::private_dir() );
+		$abs  = realpath( trailingslashit( self::private_dir() ) . $msg->attachment_path );
+		if ( ! $base || ! $abs || 0 !== strpos( $abs, $base ) || ! is_file( $abs ) ) {
+			status_header( 404 );
+			exit;
+		}
+
+		$type = wp_check_filetype( $msg->attachment_name ? $msg->attachment_name : $abs );
+		$mime = $type['type'] ? $type['type'] : 'application/octet-stream';
+
+		nocache_headers();
+		header( 'Content-Type: ' . $mime );
+		header( 'Content-Length: ' . filesize( $abs ) );
+		header( 'Content-Disposition: inline; filename="' . rawurlencode( $msg->attachment_name ? $msg->attachment_name : wp_basename( $abs ) ) . '"' );
+		header( 'X-Content-Type-Options: nosniff' );
+		readfile( $abs ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		exit;
 	}
 
 	/**
@@ -141,6 +239,9 @@ class FF_Messages {
 		// Members are logged in, so only the priv handlers are needed.
 		add_action( 'admin_post_' . self::ACTION_SUBMIT, array( __CLASS__, 'handle_submit' ) );
 		add_action( 'admin_post_' . self::ACTION_REPLY, array( __CLASS__, 'handle_reply' ) );
+
+		// The gated attachment endpoint (logged-in only; ownership checked inside).
+		add_action( 'admin_post_ff_attachment', array( __CLASS__, 'serve_attachment' ) );
 
 		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
 	}
@@ -207,11 +308,11 @@ class FF_Messages {
 
 		$context = in_array( $context, array( 'feedback', 'question' ), true ) ? $context : 'question';
 		$body    = trim( (string) $body );
-		$att_url  = ( is_array( $attachment ) && ! empty( $attachment['url'] ) ) ? $attachment['url'] : null;
+		$att_path = ( is_array( $attachment ) && ! empty( $attachment['path'] ) ) ? $attachment['path'] : null;
 		$att_name = ( is_array( $attachment ) && ! empty( $attachment['name'] ) ) ? $attachment['name'] : null;
 
 		// A message needs either text or an attachment.
-		if ( '' === $body && ! $att_url ) {
+		if ( '' === $body && ! $att_path ) {
 			return false;
 		}
 
@@ -226,7 +327,7 @@ class FF_Messages {
 				'reference_id'    => $reference_id ? (int) $reference_id : null,
 				'subject'         => mb_substr( $subject, 0, 200 ),
 				'body'            => $body,
-				'attachment_url'  => $att_url,
+				'attachment_path' => $att_path,
 				'attachment_name' => $att_name,
 				'member_read'     => 1, // The member wrote it; they've seen it.
 				'admin_read'      => 0, // New for Nick.
@@ -265,10 +366,10 @@ class FF_Messages {
 
 		$root = self::thread_root( $thread_id );
 		$body = trim( (string) $body );
-		$att_url  = ( is_array( $attachment ) && ! empty( $attachment['url'] ) ) ? $attachment['url'] : null;
+		$att_path = ( is_array( $attachment ) && ! empty( $attachment['path'] ) ) ? $attachment['path'] : null;
 		$att_name = ( is_array( $attachment ) && ! empty( $attachment['name'] ) ) ? $attachment['name'] : null;
 
-		if ( ! $root || ( '' === $body && ! $att_url ) ) {
+		if ( ! $root || ( '' === $body && ! $att_path ) ) {
 			return false;
 		}
 
@@ -285,7 +386,7 @@ class FF_Messages {
 				'reference_id'    => $root->reference_id ? (int) $root->reference_id : null,
 				'subject'         => '',
 				'body'            => $body,
-				'attachment_url'  => $att_url,
+				'attachment_path' => $att_path,
 				'attachment_name' => $att_name,
 				// If Nick replies, it's unread by the member (and vice-versa).
 				'member_read'     => ( 'admin' === $sender ) ? 0 : 1,
@@ -528,8 +629,9 @@ class FF_Messages {
 			$body .= '<p><strong>' . esc_html__( 'On:', 'founding-faces' ) . '</strong> ' . esc_html( $ref ) . '</p>';
 		}
 		$body .= '<blockquote style="margin:0;padding:12px 16px;border-left:3px solid #d5d8dd;">' . nl2br( esc_html( $msg->body ) ) . '</blockquote>';
-		if ( ! empty( $msg->attachment_url ) ) {
-			$body .= '<p>' . esc_html__( 'Attachment:', 'founding-faces' ) . ' <a href="' . esc_url( $msg->attachment_url ) . '">' . esc_html( $msg->attachment_name ? $msg->attachment_name : __( 'view file', 'founding-faces' ) ) . '</a></p>';
+		$att = self::attachment_link( $msg );
+		if ( '' !== $att ) {
+			$body .= '<p>' . esc_html__( 'Attachment:', 'founding-faces' ) . ' <a href="' . esc_url( $att ) . '">' . esc_html( $msg->attachment_name ? $msg->attachment_name : __( 'view file', 'founding-faces' ) ) . '</a> ' . esc_html__( '(sign in to view)', 'founding-faces' ) . '</p>';
 		}
 
 		$html = FF_Email_Template::build( array(
@@ -566,8 +668,8 @@ class FF_Messages {
 
 		$body  = '<p>' . esc_html__( 'You have a new reply in your Founding Faces portal.', 'founding-faces' ) . '</p>';
 		$body .= '<blockquote style="margin:0;padding:12px 16px;border-left:3px solid #d5d8dd;">' . nl2br( esc_html( $msg->body ) ) . '</blockquote>';
-		if ( ! empty( $msg->attachment_url ) ) {
-			$body .= '<p>' . esc_html__( 'Attachment:', 'founding-faces' ) . ' <a href="' . esc_url( $msg->attachment_url ) . '">' . esc_html( $msg->attachment_name ? $msg->attachment_name : __( 'view file', 'founding-faces' ) ) . '</a></p>';
+		if ( ! empty( $msg->attachment_path ) || ! empty( $msg->attachment_url ) ) {
+			$body .= '<p>' . esc_html__( 'This reply includes an attachment — sign in to your portal to view it.', 'founding-faces' ) . '</p>';
 		}
 		$body .= '<p>' . esc_html__( 'Sign in to read it in full and reply.', 'founding-faces' ) . '</p>';
 
@@ -834,7 +936,7 @@ class FF_Messages {
 			if ( '' !== trim( (string) $m->body ) ) {
 				$out .= '<div class="ff-message-body">' . nl2br( esc_html( $m->body ) ) . '</div>';
 			}
-			$out .= self::attachment_html( $m->attachment_url, $m->attachment_name );
+			$out .= self::attachment_html( $m );
 			$out .= '</div>';
 		}
 		$out .= '</div>';
