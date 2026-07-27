@@ -82,7 +82,7 @@ class FF_Status_Widget extends \Elementor\Widget_Base {
 	protected function render() {
 		$s = $this->get_settings_for_display();
 
-		$args = array();
+		$args = array( 'form_class' => 'ff-form--full' );
 		if ( ! empty( $s['field_label'] ) ) {
 			$args['label'] = $s['field_label'];
 		}
