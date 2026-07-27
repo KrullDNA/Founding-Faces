@@ -91,6 +91,17 @@
 	color: var(--ff-error-ink);
 }
 
+/* Honeypot: pushed off-screen rather than display:none, since some bots skip
+ * fields that are explicitly hidden. Real people never see or fill it. */
+.ff-hp {
+	position: absolute !important;
+	left: -9999px !important;
+	top: auto;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
 /* ---- Submit button -------------------------------------------------------- */
 .ff-submit button {
 	font-family: inherit;

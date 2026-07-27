@@ -76,6 +76,23 @@ class FF_Settings {
 			array( 'sanitize_callback' => 'wp_kses_post' )
 		);
 
+		// Promotion (chosen for The 35) and application-received templates.
+		register_setting( self::GROUP, FF_Emails::OPT_PROMO_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_PROMO_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
+
+		// Branded email design options.
+		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_ACCENT, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_BG, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_BG, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+
+		// New-applications behaviour: hold for review, or auto-accept into Circle.
+		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
+
 		// Which connector is active (core). The connector add-on plugins register
 		// their own API-key settings against this same group via 'admin_init'.
 		register_setting(
@@ -118,6 +135,10 @@ class FF_Settings {
 		$b35    = get_option( FF_Emails::OPT_35_BODY, FF_Emails::default_body( true ) );
 		$scircle = get_option( FF_Emails::OPT_CIRCLE_SUBJECT, FF_Emails::default_subject( false ) );
 		$bcircle = get_option( FF_Emails::OPT_CIRCLE_BODY, FF_Emails::default_body( false ) );
+		$spromo  = get_option( FF_Emails::OPT_PROMO_SUBJECT, FF_Emails::default_promo_subject() );
+		$bpromo  = get_option( FF_Emails::OPT_PROMO_BODY, FF_Emails::default_promo_body() );
+		$srecv   = get_option( FF_Emails::OPT_RECEIVED_SUBJECT, FF_Emails::default_received_subject() );
+		$brecv   = get_option( FF_Emails::OPT_RECEIVED_BODY, FF_Emails::default_received_body() );
 		?>
 		<div class="wrap ff-admin">
 			<h1><?php esc_html_e( 'Founding Faces — Settings', 'founding-faces' ); ?></h1>
@@ -125,7 +146,11 @@ class FF_Settings {
 			<form method="post" action="options.php">
 				<?php settings_fields( self::GROUP ); ?>
 
+				<?php self::render_applications_section(); ?>
+
 				<?php self::render_email_platform_section(); ?>
+
+				<?php self::render_email_design_section(); ?>
 
 				<h2><?php esc_html_e( 'Welcome emails', 'founding-faces' ); ?></h2>
 				<p class="description">
@@ -133,6 +158,9 @@ class FF_Settings {
 					<code>{name}</code> <code>{number}</code> <code>{group}</code>
 					<code>{public_name}</code> <code>{site_name}</code>
 					<code>{login_url}</code> <code>{set_password_link}</code>
+				</p>
+				<p class="description">
+					<?php esc_html_e( 'The secure "Set your password" button is added to the welcome emails automatically, so you no longer need to include {set_password_link} in the body (though it still works if you do).', 'founding-faces' ); ?>
 				</p>
 
 				<h3><?php esc_html_e( 'The 35', 'founding-faces' ); ?></h3>
@@ -172,7 +200,48 @@ class FF_Settings {
 							<textarea name="<?php echo esc_attr( FF_Emails::OPT_CIRCLE_BODY ); ?>"
 								id="<?php echo esc_attr( FF_Emails::OPT_CIRCLE_BODY ); ?>"
 								rows="10" class="large-text code"><?php echo esc_textarea( $bcircle ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'Make sure this includes {set_password_link} so the member can set their password.', 'founding-faces' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Promotion email (chosen for The 35)', 'founding-faces' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Sent when you promote a Circle member into The 35. They already have a password, so this has a "Sign in" button instead of a set-password link. Placeholders: {name} {number} {group} {public_name} {site_name} {login_url}.', 'founding-faces' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_PROMO_SUBJECT ); ?>"><?php esc_html_e( 'Subject', 'founding-faces' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( FF_Emails::OPT_PROMO_SUBJECT ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_PROMO_SUBJECT ); ?>"
+								type="text" class="large-text" value="<?php echo esc_attr( $spromo ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_PROMO_BODY ); ?>"><?php esc_html_e( 'Body', 'founding-faces' ); ?></label></th>
+						<td>
+							<textarea name="<?php echo esc_attr( FF_Emails::OPT_PROMO_BODY ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_PROMO_BODY ); ?>"
+								rows="10" class="large-text code"><?php echo esc_textarea( $bpromo ); ?></textarea>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Application-received email', 'founding-faces' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Sent the moment someone submits the application, confirming it arrived — used while applications are held for manual review. (With auto-accept on, applicants get the Circle welcome email instead, so this is not also sent.) Placeholders: {name} {site_name}.', 'founding-faces' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_SUBJECT ); ?>"><?php esc_html_e( 'Subject', 'founding-faces' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_SUBJECT ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_SUBJECT ); ?>"
+								type="text" class="large-text" value="<?php echo esc_attr( $srecv ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_BODY ); ?>"><?php esc_html_e( 'Body', 'founding-faces' ); ?></label></th>
+						<td>
+							<textarea name="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_BODY ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_BODY ); ?>"
+								rows="8" class="large-text code"><?php echo esc_textarea( $brecv ); ?></textarea>
 						</td>
 					</tr>
 				</table>
@@ -197,6 +266,16 @@ class FF_Settings {
 	 * @param string $url The submitted tile URL.
 	 * @return string
 	 */
+	/**
+	 * Normalise a checkbox to '1' (on) or '' (off).
+	 *
+	 * @param mixed $value The submitted value.
+	 * @return string
+	 */
+	public static function sanitize_checkbox( $value ) {
+		return ( '1' === $value || 1 === $value || true === $value || 'on' === $value ) ? '1' : '';
+	}
+
 	public static function sanitize_tile_url( $url ) {
 		$url = trim( wp_strip_all_tags( (string) $url ) );
 		if ( '' === $url ) {
@@ -241,6 +320,80 @@ class FF_Settings {
 					) );
 					?>
 					<p class="description"><?php esc_html_e( 'Logged-out visitors always go to the login page and back. This only affects logged-in members in the wrong group.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Render the "New applications" section: hold for review, or auto-accept.
+	 *
+	 * A hidden field of the same name ships an empty value, so unticking the box
+	 * reliably saves "off" (an unchecked checkbox otherwise sends nothing).
+	 */
+	private static function render_applications_section() {
+		$auto = FF_Application::auto_accept_enabled();
+		?>
+		<h2><?php esc_html_e( 'New applications', 'founding-faces' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Automatic acceptance', 'founding-faces' ); ?></th>
+				<td>
+					<input type="hidden" name="<?php echo esc_attr( FF_Application::OPT_AUTO_ACCEPT ); ?>" value="" />
+					<label>
+						<input type="checkbox" name="<?php echo esc_attr( FF_Application::OPT_AUTO_ACCEPT ); ?>"
+							value="1" <?php checked( $auto ); ?> />
+						<?php esc_html_e( 'Automatically accept new applicants into The Circle', 'founding-faces' ); ?>
+					</label>
+					<p class="description">
+						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review. Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this — bot submissions never become members.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Render the branded-email design section (logo, colours, footer).
+	 */
+	private static function render_email_design_section() {
+		$logo    = FF_Email_Template::option( FF_Email_Template::OPT_LOGO );
+		$accent  = FF_Email_Template::option( FF_Email_Template::OPT_ACCENT );
+		$bg      = FF_Email_Template::option( FF_Email_Template::OPT_BG );
+		$btn_bg  = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_BG );
+		$btn_txt = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_TEXT );
+		$footer  = FF_Email_Template::option( FF_Email_Template::OPT_FOOTER );
+		?>
+		<h2><?php esc_html_e( 'Email design', 'founding-faces' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'The look applied to every programme email — welcome, promotion, password reset and application received. Set it once here.', 'founding-faces' ); ?></p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>"><?php esc_html_e( 'Logo URL', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>" type="url" class="large-text code" value="<?php echo esc_attr( $logo ); ?>" placeholder="https://…/logo.png" />
+					<p class="description"><?php esc_html_e( 'Paste the full URL of your logo image (upload it in Media, then copy its file URL). Leave blank for no logo.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Colours', 'founding-faces' ); ?></th>
+				<td>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Heading', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_ACCENT ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $accent ); ?>" placeholder="#2b2d33" /></label>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Page background', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_BG ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $bg ); ?>" placeholder="#f6f7f8" /></label>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Button', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_BUTTON_BG ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $btn_bg ); ?>" placeholder="#3a3d44" /></label>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Button text', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_BUTTON_TEXT ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $btn_txt ); ?>" placeholder="#ffffff" /></label>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>"><?php esc_html_e( 'Footer text', 'founding-faces' ); ?></label></th>
+				<td>
+					<textarea name="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>" rows="3" class="large-text"><?php echo esc_textarea( $footer ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'Appears at the foot of every email — e.g. your business name and address. Line breaks are kept.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>

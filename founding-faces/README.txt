@@ -196,6 +196,36 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.22 =
+* New: promote a Circle member into The 35. Approved-into-Circle rows now have
+  a "Promote -> The 35" button that assigns their Founding number, moves them to
+  The 35, and sends a "Congratulations, you're one of The 35" email (editable in
+  Settings). You still choose 35 or Circle at approval as before.
+* New: "New applications" setting. Turn on "Automatically accept new applicants
+  into The Circle" once The 35 is chosen, and valid applications become Circle
+  members instantly (welcome email sent) with no clicks. Leave it off during the
+  selection window to review every application by hand.
+* New: spam protection on the application form -- an invisible honeypot field
+  plus a too-fast-submit timing trap. Bot submissions are silently dropped, so
+  they never become members (important with auto-accept on). No configuration
+  and no third-party service needed.
+* New: branded HTML email design applied to every programme email (welcome,
+  promotion, password reset, application received) -- logo, heading, brand
+  colours and a real button. All editable under Settings -> Email design. The
+  secure "Set your password" button is now added automatically.
+* New: an "application received" email sent the moment someone applies (when
+  applications are held for manual review), editable in Settings.
+
+= 1.0.21 =
+* New: every shortcode now has a matching Elementor widget. Added three new
+  widgets with full, scoped Style tabs -- "Founding Faces Application Form" and
+  "Founding Faces Status Lookup" (form box, labels, fields, hints, submit
+  button with hover, and success/error messages), and "Founding Faces Account"
+  (page, title, standing box, section blocks, secondary buttons, plus the shared
+  form controls). The Account widget shows a styling sample in the Elementor
+  editor. Shared form controls live in a single trait so the two form widgets
+  stay consistent. The shortcodes still work unchanged.
+
 = 1.0.20 =
 * New: the Member Archive header's group pill ("The 35" / "The Circle") now has
   full styling controls -- border, corner radius, padding and margin -- on top

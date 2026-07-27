@@ -237,6 +237,81 @@ class FF_Members {
 	}
 
 	/**
+	 * Promote an existing Circle member into The 35.
+	 *
+	 * The applicant was already approved into The Circle (so they have a member
+	 * account and a password). This elevates them: assigns the next Founding
+	 * number, moves their group to The 35, updates their public identity, links
+	 * the change back to the application, logs it, sends the congratulations
+	 * email, and re-syncs them to the email platform in the new group.
+	 *
+	 * @param int $application_id The ff_applications row id.
+	 * @return int|WP_Error The member's user id, or a WP_Error.
+	 */
+	public static function promote_to_35( $application_id ) {
+		global $wpdb;
+
+		$table = $wpdb->prefix . 'ff_applications';
+		$app   = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $application_id )
+		);
+
+		if ( ! $app || empty( $app->user_id ) ) {
+			return new WP_Error( 'ff_no_member', __( 'That application has no member to promote.', 'founding-faces' ) );
+		}
+
+		$user_id = (int) $app->user_id;
+
+		// Must currently be a Circle member, still active, not already The 35.
+		if ( get_user_meta( $user_id, self::META_DEACTIVATED, true ) ) {
+			return new WP_Error( 'ff_deactivated_member', __( 'That member is no longer active.', 'founding-faces' ) );
+		}
+		if ( self::META_NUMBER && get_user_meta( $user_id, self::META_NUMBER, true ) ) {
+			return new WP_Error( 'ff_already_35', __( 'That member is already one of The 35.', 'founding-faces' ) );
+		}
+
+		// Assign the next Founding number and build the new public identity.
+		$number      = self::assign_next_number();
+		$public_name = sprintf(
+			/* translators: %d is the Founding number. */
+			__( 'Founding Face %d', 'founding-faces' ),
+			$number
+		);
+
+		// Move the member into The 35.
+		update_user_meta( $user_id, self::META_NUMBER, $number );
+		update_user_meta( $user_id, self::META_GROUP, 'the-35' );
+		update_user_meta( $user_id, self::META_PUBLIC_NAME, $public_name );
+		wp_update_user( array(
+			'ID'           => $user_id,
+			'display_name' => $public_name,
+			'nickname'     => $public_name,
+		) );
+		wp_set_object_terms( $user_id, 'the-35', FF_Post_Types::GROUP_TAXONOMY, false );
+
+		// Reflect the change on the application record.
+		$wpdb->update(
+			$table,
+			array(
+				'status'          => 'approved-35',
+				'assigned_number' => $number,
+			),
+			array( 'id' => (int) $app->id ),
+			array( '%s', '%d' ),
+			array( '%d' )
+		);
+
+		// Record the moment and tell the member.
+		FF_Interactions::log( $user_id, 'promoted', (int) $app->id );
+		FF_Emails::send_promotion( $user_id );
+
+		// Re-sync to the email platform: their group (segment) changed.
+		do_action( 'ff_member_approved', $user_id );
+
+		return $user_id;
+	}
+
+	/**
 	 * Decline an application.
 	 *
 	 * No user is created; the record is simply marked declined. The sensitive
@@ -410,6 +485,11 @@ class FF_Members {
 			case 'approve_circle':
 				$result = self::approve( $app_id, 'the-circle' );
 				$msg    = is_wp_error( $result ) ? $result->get_error_code() : 'approved_circle';
+				break;
+
+			case 'promote_35':
+				$result = self::promote_to_35( $app_id );
+				$msg    = is_wp_error( $result ) ? $result->get_error_code() : 'promoted_35';
 				break;
 
 			case 'decline':
