@@ -329,6 +329,24 @@
 	cursor: pointer;
 }
 
+/* Notes/polls grids: let the columns control (grid gap) own the spacing, and
+ * let each item fill its cell rather than keeping its own max-width/margin. */
+.ff-notes-cards .ff-note {
+	margin-bottom: 0;
+}
+
+.ff-polls-archive-grid .ff-poll {
+	max-width: none;
+	margin: 0;
+}
+
+.ff-polls-archive-heading {
+	font-family: var(--ff-font);
+	font-size: 1.15rem;
+	font-weight: 700;
+	margin: 1.5rem 0 1rem;
+}
+
 /* "View all notes" link ---------------------------------------------------- */
 .ff-notes-viewall {
 	margin: 0.5rem 0 0;

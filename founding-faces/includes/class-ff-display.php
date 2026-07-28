@@ -216,9 +216,11 @@ class FF_Display {
 		if ( empty( $notes ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'No notes to show here yet.', 'founding-faces' ) . '</p>';
 		} else {
+			$out .= '<div class="ff-notes-cards">';
 			foreach ( $notes as $note ) {
 				$out .= self::render_note_card( $note );
 			}
+			$out .= '</div>';
 			// Optional "view all" link, e.g. on a hub page's latest-notes block.
 			if ( '' !== trim( (string) $atts['view_all_url'] ) ) {
 				$label = '' !== trim( (string) $atts['view_all_text'] ) ? $atts['view_all_text'] : __( 'View all notes', 'founding-faces' );
@@ -271,18 +273,19 @@ class FF_Display {
 
 		$notes = self::get_viewable_notes( $product, $stage, absint( $atts['limit'] ), $order );
 
-		$out  = '<div class="ff-notes-archive">';
+		$out  = '<div class="ff-notes-archive ff-notes-list">';
 		$out .= self::archive_filter_bar( $atts, $product, $stage, $order );
 
-		$out .= '<div class="ff-notes-list">';
 		if ( empty( $notes ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'No notes match these filters.', 'founding-faces' ) . '</p>';
 		} else {
+			$out .= '<div class="ff-notes-cards">';
 			foreach ( $notes as $note ) {
 				$out .= self::render_note_card( $note );
 			}
+			$out .= '</div>';
 		}
-		$out .= '</div></div>';
+		$out .= '</div>';
 
 		return $out;
 	}

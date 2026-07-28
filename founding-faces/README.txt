@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.36 =
+* New: "Founding Faces Polls Archive" widget for a polls page — shows any open
+  poll first (votable, or results if the member has voted), then every past poll
+  with its results and outcome. All gated. A Columns control lays them out in a
+  grid.
+* New: a Columns control on the Notes and Notes Archive widgets, so notes can be
+  shown in a 1–4 column grid (responsive) alongside the product / type / date
+  filters.
+
 = 1.0.35 =
 * New: members are redirected to your hub page when they log in. Set it under
   Settings -> Members access -> "Members hub / portal page" (the same page used

@@ -173,3 +173,64 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		);
 	}
 }
+
+/**
+ * Class FF_Polls_Archive_Widget
+ *
+ * The polls page: any open poll first (votable / results), then every past poll
+ * with its results and outcome, laid out in a chosen number of columns.
+ */
+class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
+
+	public function get_name() {
+		return 'ff_polls_archive';
+	}
+	public function get_title() {
+		return __( 'Founding Faces Polls Archive', 'founding-faces' );
+	}
+	public function get_icon() {
+		return 'eicon-slider-push';
+	}
+	public function get_categories() {
+		return array( 'founding-faces' );
+	}
+	public function has_widget_inner_wrapper(): bool {
+		return ! \Elementor\Plugin::$instance->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	protected function register_controls() {
+		$this->start_controls_section( 'ff_pa_content', array(
+			'label' => __( 'Polls archive', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+		) );
+		$this->add_control( 'intro', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => __( 'Shows any open poll first, then all past polls with their results. Put this on your dedicated polls page.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+		$this->add_control( 'headings', array(
+			'label'        => __( 'Show "Open now" / "Past polls" headings', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+		) );
+		$this->add_responsive_control( 'columns', array(
+			'label'          => __( 'Columns', 'founding-faces' ),
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '1',
+			'tablet_default' => '1',
+			'mobile_default' => '1',
+			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
+			'selectors'      => array(
+				'{{WRAPPER}} .ff-polls-archive-grid' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); gap: 1.5rem; align-items: start;',
+			),
+		) );
+		$this->end_controls_section();
+	}
+
+	protected function render() {
+		$s        = $this->get_settings_for_display();
+		$headings = ( ! isset( $s['headings'] ) || 'yes' === $s['headings'] ) ? 'yes' : 'no';
+		echo FF_Polls::archive_shortcode( array( 'headings' => $headings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+}

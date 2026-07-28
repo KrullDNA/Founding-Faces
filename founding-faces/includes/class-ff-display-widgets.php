@@ -120,6 +120,19 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'condition'     => array( 'show_view_all' => 'yes' ),
 		) );
 
+		$this->add_responsive_control( 'columns', array(
+			'label'          => __( 'Columns', 'founding-faces' ),
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '1',
+			'tablet_default' => '1',
+			'mobile_default' => '1',
+			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
+			'separator'      => 'before',
+			'selectors'      => array(
+				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); gap: 1.25rem; align-items: start;',
+			),
+		) );
+
 		$this->end_controls_section();
 	}
 
@@ -198,6 +211,17 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'default' => 30,
 			'min'     => 1,
 			'max'     => 200,
+		) );
+		$this->add_responsive_control( 'columns', array(
+			'label'          => __( 'Columns', 'founding-faces' ),
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '1',
+			'tablet_default' => '1',
+			'mobile_default' => '1',
+			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
+			'selectors'      => array(
+				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); gap: 1.25rem; align-items: start;',
+			),
 		) );
 		$this->end_controls_section();
 	}
