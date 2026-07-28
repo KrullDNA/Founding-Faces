@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.32 =
+* New: members-only content is now explicitly kept out of search engines. Every
+  note and every access-restricted page/post is marked "noindex, nofollow" (both
+  a robots meta tag and an X-Robots-Tag header), and restricted pages are dropped
+  from the sitemap (notes already were). Combined with the existing redirects,
+  member URLs won't be indexed or listed by Google. Tip: set your members portal
+  pages' "Founding Faces Access" to All members / The 35 / The Circle so they get
+  this treatment too.
+
 = 1.0.31 =
 * Fix (important): the "Founding Faces Visibility / Show to" control was calling
   Elementor's get_settings_for_display() inside the should_render filter, which
