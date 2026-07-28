@@ -739,16 +739,32 @@ class FF_Polls {
 		$options = self::get_options( $poll_id );
 		$tally   = self::tally( $poll_id );
 		$total   = array_sum( $tally );
+		$max     = ! empty( $tally ) ? max( $tally ) : 0;
 
-		$out  = '<div class="ff-poll-inner ff-poll-results">';
+		$out = '<div class="ff-poll-inner ff-poll-results">';
+
+		// Closed capsule, above the question. Stylable via the widget controls.
+		if ( $closed ) {
+			$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">'
+				. esc_html__( 'Poll closed', 'founding-faces' ) . '</span></div>';
+		}
+
 		$out .= '<h3 class="ff-poll-question">' . esc_html( get_the_title( $poll_id ) ) . '</h3>';
 
 		foreach ( $options as $opt ) {
 			$votes   = isset( $tally[ (int) $opt['id'] ] ) ? (int) $tally[ (int) $opt['id'] ] : 0;
 			$percent = $total > 0 ? round( ( $votes / $total ) * 100 ) : 0;
 			$mine    = ( (int) $member_vote === (int) $opt['id'] );
+			$leading = ( $max > 0 && $votes === $max ); // The winning option(s).
 
-			$out .= '<div class="ff-poll-result ' . ( $mine ? 'is-mine' : '' ) . '">';
+			$classes = 'ff-poll-result';
+			if ( $mine ) {
+				$classes .= ' is-mine';
+			}
+			if ( $leading ) {
+				$classes .= ' ff-poll-result--leading';
+			}
+			$out .= '<div class="' . esc_attr( $classes ) . '">';
 			$out .= '<div class="ff-poll-result-head">';
 			$out .= '<span class="ff-poll-result-label">' . esc_html( $opt['label'] );
 			if ( $mine ) {
@@ -767,7 +783,8 @@ class FF_Polls {
 			esc_html( number_format_i18n( $total ) )
 		) . '</p>';
 
-		// On close, show the outcome and Nick's reasoning.
+		// On close, show the outcome and Nick's reasoning (the "closed" status is
+		// now shown as the capsule above the question).
 		if ( $closed ) {
 			$outcome = get_post_meta( $poll_id, self::META_OUTCOME, true );
 			if ( trim( (string) $outcome ) !== '' ) {
@@ -775,8 +792,6 @@ class FF_Polls {
 				$out .= '<span class="ff-poll-outcome-label">' . esc_html__( 'Where we landed', 'founding-faces' ) . '</span>';
 				$out .= wpautop( wp_kses_post( $outcome ) );
 				$out .= '</div>';
-			} else {
-				$out .= '<p class="ff-poll-closed-note">' . esc_html__( 'This poll is now closed.', 'founding-faces' ) . '</p>';
 			}
 		}
 
