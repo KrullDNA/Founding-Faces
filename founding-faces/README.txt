@@ -196,6 +196,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.35 =
+* New: members are redirected to your hub page when they log in. Set it under
+  Settings -> Members access -> "Members hub / portal page" (the same page used
+  for the message-reply link). Members headed to a specific gated page still land
+  there; admins keep the dashboard.
+* New: the Notes widget can now show a "View all" link (with your text and a
+  chosen page) beneath the list — ideal for a "latest 5 notes" block on the hub
+  that links to the full notes page. (It already had a "Maximum notes" number.)
+* New: "Founding Faces Notes Archive" widget for the dedicated notes page — a
+  filter bar (Product, Type/stage, Newest/Oldest) over every note the member may
+  see. Filters live in the URL so a view can be bookmarked. Each filter can be
+  toggled off.
+* Note: the Poll widget already hides itself when there's no active poll, so it
+  can sit on the hub and only appear when a poll is live.
+
 = 1.0.34 =
 * New: "Founding Faces Welcome" Elementor widget — a personalised greeting built
   from editable before / middle / after text around the member's own first name

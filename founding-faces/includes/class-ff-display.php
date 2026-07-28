@@ -37,6 +37,7 @@ class FF_Display {
 	public static function register() {
 		add_shortcode( 'ff_note', array( __CLASS__, 'sc_note' ) );
 		add_shortcode( 'ff_notes', array( __CLASS__, 'sc_notes' ) );
+		add_shortcode( 'ff_notes_archive', array( __CLASS__, 'sc_notes_archive' ) );
 		add_shortcode( 'ff_product_header', array( __CLASS__, 'sc_product_header' ) );
 		add_shortcode( 'ff_home', array( __CLASS__, 'sc_home' ) );
 
@@ -53,6 +54,7 @@ class FF_Display {
 	public static function register_widgets( $widgets_manager ) {
 		require_once FF_PATH . 'includes/class-ff-display-widgets.php';
 		$widgets_manager->register( new FF_Notes_Widget() );
+		$widgets_manager->register( new FF_Notes_Archive_Widget() );
 		$widgets_manager->register( new FF_Note_Widget() );
 		$widgets_manager->register( new FF_Product_Header_Widget() );
 		$widgets_manager->register( new FF_Home_Widget() );
@@ -176,10 +178,12 @@ class FF_Display {
 
 		$atts = shortcode_atts(
 			array(
-				'product' => 0,
-				'stage'   => '',
-				'limit'   => 50,
-				'filters' => 'yes',
+				'product'       => 0,
+				'stage'         => '',
+				'limit'         => 50,
+				'filters'       => 'yes',
+				'view_all_text' => '',
+				'view_all_url'  => '',
 			),
 			$atts,
 			'ff_notes'
@@ -215,10 +219,144 @@ class FF_Display {
 			foreach ( $notes as $note ) {
 				$out .= self::render_note_card( $note );
 			}
+			// Optional "view all" link, e.g. on a hub page's latest-notes block.
+			if ( '' !== trim( (string) $atts['view_all_url'] ) ) {
+				$label = '' !== trim( (string) $atts['view_all_text'] ) ? $atts['view_all_text'] : __( 'View all notes', 'founding-faces' );
+				$out  .= '<p class="ff-notes-viewall"><a class="ff-notes-viewall-link" href="' . esc_url( $atts['view_all_url'] ) . '">' . esc_html( $label ) . '</a></p>';
+			}
 		}
 
 		$out .= '</div>';
 		return $out;
+	}
+
+	/**
+	 * Filterable notes archive: [ff_notes_archive limit="30"].
+	 *
+	 * For the dedicated notes page: a filter bar (product, stage/type and a
+	 * newest/oldest sort) driving a gated list of every note the member may see.
+	 * The filters live in the URL, so a chosen view can be bookmarked or shared.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function sc_notes_archive( $atts ) {
+		self::enqueue();
+
+		$atts = shortcode_atts(
+			array(
+				'limit'          => 30,
+				'show_product'   => 'yes',
+				'show_stage'     => 'yes',
+				'show_sort'      => 'yes',
+			),
+			$atts,
+			'ff_notes_archive'
+		);
+
+		if ( ! FF_Gating::can_view_members_area() ) {
+			return self::members_only_notice();
+		}
+
+		// Read the current filters from the URL, validating each.
+		$product = isset( $_GET['ff_product'] ) ? absint( wp_unslash( $_GET['ff_product'] ) ) : 0;
+		if ( $product && FF_Post_Types::PRODUCT_CPT !== get_post_type( $product ) ) {
+			$product = 0;
+		}
+		$stage = isset( $_GET['ff_stage'] ) ? sanitize_key( wp_unslash( $_GET['ff_stage'] ) ) : '';
+		if ( '' !== $stage && ! array_key_exists( $stage, FF_Post_Types::note_stages() ) ) {
+			$stage = '';
+		}
+		$order = ( isset( $_GET['ff_order'] ) && 'oldest' === sanitize_key( wp_unslash( $_GET['ff_order'] ) ) ) ? 'ASC' : 'DESC';
+
+		$notes = self::get_viewable_notes( $product, $stage, absint( $atts['limit'] ), $order );
+
+		$out  = '<div class="ff-notes-archive">';
+		$out .= self::archive_filter_bar( $atts, $product, $stage, $order );
+
+		$out .= '<div class="ff-notes-list">';
+		if ( empty( $notes ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html__( 'No notes match these filters.', 'founding-faces' ) . '</p>';
+		} else {
+			foreach ( $notes as $note ) {
+				$out .= self::render_note_card( $note );
+			}
+		}
+		$out .= '</div></div>';
+
+		return $out;
+	}
+
+	/**
+	 * The filter bar for the notes archive: product, stage and sort selects.
+	 *
+	 * A single GET form so all three filters combine in the URL. Preserves other
+	 * query args as hidden fields.
+	 *
+	 * @param array  $atts    Which filters to show.
+	 * @param int    $product The current product filter.
+	 * @param string $stage   The current stage filter.
+	 * @param string $order   'ASC' or 'DESC'.
+	 * @return string
+	 */
+	private static function archive_filter_bar( $atts, $product, $stage, $order ) {
+		$out  = '<form class="ff-notes-filters" method="get">';
+
+		if ( 'yes' === $atts['show_product'] ) {
+			$out .= '<label class="ff-filter"><span>' . esc_html__( 'Product', 'founding-faces' ) . '</span><select name="ff_product">';
+			foreach ( self::product_choices_all() as $id => $label ) {
+				$out .= '<option value="' . esc_attr( $id ) . '" ' . selected( $product, $id, false ) . '>' . esc_html( $label ) . '</option>';
+			}
+			$out .= '</select></label>';
+		}
+
+		if ( 'yes' === $atts['show_stage'] ) {
+			$out .= '<label class="ff-filter"><span>' . esc_html__( 'Type', 'founding-faces' ) . '</span><select name="ff_stage">';
+			foreach ( self::stage_choices() as $key => $label ) {
+				$out .= '<option value="' . esc_attr( $key ) . '" ' . selected( $stage, $key, false ) . '>' . esc_html( $label ) . '</option>';
+			}
+			$out .= '</select></label>';
+		}
+
+		if ( 'yes' === $atts['show_sort'] ) {
+			$out .= '<label class="ff-filter"><span>' . esc_html__( 'Sort', 'founding-faces' ) . '</span><select name="ff_order">';
+			$out .= '<option value="newest" ' . selected( $order, 'DESC', false ) . '>' . esc_html__( 'Newest first', 'founding-faces' ) . '</option>';
+			$out .= '<option value="oldest" ' . selected( $order, 'ASC', false ) . '>' . esc_html__( 'Oldest first', 'founding-faces' ) . '</option>';
+			$out .= '</select></label>';
+		}
+
+		// Keep any unrelated query args on submit (but not our own filter keys).
+		foreach ( $_GET as $key => $val ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$key = sanitize_key( $key );
+			if ( in_array( $key, array( 'ff_product', 'ff_stage', 'ff_order' ), true ) || is_array( $val ) ) {
+				continue;
+			}
+			$out .= '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( wp_unslash( $val ) ) . '" />';
+		}
+
+		$out .= '<button type="submit" class="ff-filter-apply">' . esc_html__( 'Apply', 'founding-faces' ) . '</button>';
+		$out .= '</form>';
+		return $out;
+	}
+
+	/**
+	 * Products as id => title with an "All products" first option.
+	 *
+	 * @return array
+	 */
+	public static function product_choices_all() {
+		$choices  = array( 0 => __( 'All products', 'founding-faces' ) );
+		$products = get_posts( array(
+			'post_type'      => FF_Post_Types::PRODUCT_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		) );
+		foreach ( $products as $product ) {
+			$choices[ $product->ID ] = $product->post_title ? $product->post_title : sprintf( __( 'Product #%d', 'founding-faces' ), $product->ID );
+		}
+		return $choices;
 	}
 
 	/**
@@ -389,8 +527,9 @@ class FF_Display {
 	 * @param int    $limit      Maximum notes to return.
 	 * @return WP_Post[]
 	 */
-	private static function get_viewable_notes( $product_id, $stage, $limit ) {
-		$args = array(
+	private static function get_viewable_notes( $product_id, $stage, $limit, $order = 'DESC' ) {
+		$order = ( 'ASC' === strtoupper( (string) $order ) ) ? 'ASC' : 'DESC';
+		$args  = array(
 			'post_type'      => FF_Post_Types::NOTE_CPT,
 			'post_status'    => 'publish',
 			// Over-fetch a little because the gate may remove some, then trim.
@@ -423,9 +562,10 @@ class FF_Display {
 			return FF_Gating::can_view_note( $note->ID );
 		} ) );
 
-		// Sort by the note's own date (falling back to publish date), newest first.
-		usort( $notes, function ( $a, $b ) {
-			return strcmp( self::note_sort_key( $b ), self::note_sort_key( $a ) );
+		// Sort by the note's own date (falling back to publish date).
+		usort( $notes, function ( $a, $b ) use ( $order ) {
+			$cmp = strcmp( self::note_sort_key( $b ), self::note_sort_key( $a ) );
+			return ( 'ASC' === $order ) ? -$cmp : $cmp;
 		} );
 
 		return array_slice( $notes, 0, max( 1, $limit ) );

@@ -290,6 +290,57 @@
 	display: block;
 }
 
+/* Notes archive filter bar ------------------------------------------------- */
+.ff-notes-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 0.9rem;
+	margin-bottom: 1.5rem;
+}
+
+.ff-notes-filters .ff-filter {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	font-size: 0.82rem;
+	color: var(--ff-muted);
+}
+
+.ff-notes-filters select {
+	font-family: inherit;
+	font-size: 0.95rem;
+	color: var(--ff-ink);
+	background: #fff;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 0.5rem 0.7rem;
+}
+
+.ff-filter-apply {
+	font-family: inherit;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--ff-accent-ink);
+	background: var(--ff-accent);
+	border: none;
+	border-radius: var(--ff-radius);
+	padding: 0.55rem 1.2rem;
+	cursor: pointer;
+}
+
+/* "View all notes" link ---------------------------------------------------- */
+.ff-notes-viewall {
+	margin: 0.5rem 0 0;
+}
+
+.ff-notes-viewall-link {
+	display: inline-block;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--ff-accent);
+}
+
 /* Stage filter chips ------------------------------------------------------- */
 .ff-stage-filters {
 	display: flex;

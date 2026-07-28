@@ -326,7 +326,7 @@ class FF_Settings {
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="<?php echo esc_attr( FF_Messages::OPT_PORTAL_PAGE ); ?>"><?php esc_html_e( 'Members portal page', 'founding-faces' ); ?></label></th>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Messages::OPT_PORTAL_PAGE ); ?>"><?php esc_html_e( 'Members hub / portal page', 'founding-faces' ); ?></label></th>
 				<td>
 					<?php
 					wp_dropdown_pages( array(
@@ -337,7 +337,7 @@ class FF_Settings {
 						'option_none_value' => 0,
 					) );
 					?>
-					<p class="description"><?php esc_html_e( 'The page where members read their messages (the one with the Messages widget). The "Open my portal" button in reply emails points here. Stored as a page, so it resolves to the correct address on staging and live automatically.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Your members\' home / hub page. Members are sent here when they log in, and the "Open my portal" button in message-reply emails points here too. Stored as a page, so it resolves to the correct address on staging and live automatically.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>
