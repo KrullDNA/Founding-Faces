@@ -102,6 +102,7 @@ class FF_Admin_Privacy {
 		echo '<th>' . esc_html__( 'Postcode', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Consent', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Consent recorded', 'founding-faces' ) . '</th>';
+		echo '<th>' . esc_html__( 'Last login', 'founding-faces' ) . '</th>';
 		echo '<th>' . esc_html__( 'Actions', 'founding-faces' ) . '</th>';
 		echo '</tr></thead><tbody>';
 
@@ -133,6 +134,10 @@ class FF_Admin_Privacy {
 			echo '<td>' . ( $postcode ? esc_html( $postcode ) : '—' ) . '</td>';
 			echo '<td>' . ( $consent ? '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Yes', 'founding-faces' ) . '</span>' : '<span style="color:#8a1f1f;">' . esc_html__( 'No', 'founding-faces' ) . '</span>' ) . '</td>';
 			echo '<td>' . esc_html( $app && $app->consent_at ? $app->consent_at : '—' ) . '</td>';
+			$last_login = (int) get_user_meta( $uid, FF_Members::META_LAST_LOGIN, true );
+			echo '<td>' . ( $last_login
+				? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_login ) )
+				: '<span class="ff-consent">' . esc_html__( 'Never', 'founding-faces' ) . '</span>' ) . '</td>';
 			echo '<td class="ff-actions">';
 			self::action_button( 'ff_admin_export', $uid, __( 'Export CSV', 'founding-faces' ) );
 			self::action_button( 'ff_admin_delete', $uid, __( 'Delete data', 'founding-faces' ), true );
