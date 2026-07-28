@@ -196,6 +196,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.39 =
+* New: schedule a poll's close and hide. Each poll now has optional "Auto-close
+  at" and "Auto-hide at" date/times. At the close time the poll stops taking
+  votes and shows the final results and your reasoning; at the hide time it
+  disappears from the site entirely. Set the hide time a little after the close
+  time to give members a window to see the final votes. If neither time is set,
+  choosing "Closed" in the poll's Status makes it disappear straight away. Times
+  are entered and shown in your site's timezone. (Note: with full-page caching
+  such as LiteSpeed, a scheduled change may not appear until the cache refreshes
+  for that page.)
+
 = 1.0.38 =
 * Fix: admin "view as a member" preview now works for page access. is_member()
   resolves the current user's id before checking their group, which meant the
