@@ -391,7 +391,14 @@ class FF_Polls {
 	 * @return string
 	 */
 	public static function archive_shortcode( $atts ) {
-		$atts = shortcode_atts( array( 'headings' => 'yes' ), $atts, 'ff_polls_archive' );
+		$atts = shortcode_atts(
+			array(
+				'headings' => 'yes',
+				'show'     => 'both', // 'both' | 'open' | 'past'.
+			),
+			$atts,
+			'ff_polls_archive'
+		);
 
 		if ( ! FF_Gating::can_view_members_area() ) {
 			return FF_Display::members_only_notice();
@@ -399,6 +406,7 @@ class FF_Polls {
 
 		self::enqueue_front();
 
+		$show   = in_array( $atts['show'], array( 'both', 'open', 'past' ), true ) ? $atts['show'] : 'both';
 		$ids    = self::viewable_poll_ids();
 		$open   = array();
 		$closed = array();
@@ -410,11 +418,24 @@ class FF_Polls {
 			}
 		}
 
-		$headings = ( 'yes' === $atts['headings'] );
-		$out      = '<div class="ff-polls-archive">';
+		// Honour the "show" choice, so two widgets (one open, one past) can each
+		// be styled separately on the same page.
+		if ( 'past' === $show ) {
+			$open = array();
+		} elseif ( 'open' === $show ) {
+			$closed = array();
+		}
+
+		// Headings are only useful when both sections can appear together.
+		$headings = ( 'yes' === $atts['headings'] ) && ( 'both' === $show );
+		$out      = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . '">';
 
 		if ( empty( $open ) && empty( $closed ) ) {
-			$out .= '<p class="ff-empty-note">' . esc_html__( 'No polls yet — check back soon.', 'founding-faces' ) . '</p>';
+			$out .= '<p class="ff-empty-note">' . esc_html(
+				'open' === $show
+					? __( 'No open poll right now.', 'founding-faces' )
+					: __( 'No polls yet — check back soon.', 'founding-faces' )
+			) . '</p>';
 			return $out . '</div>';
 		}
 

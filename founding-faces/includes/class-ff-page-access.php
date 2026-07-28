@@ -199,8 +199,10 @@ class FF_Page_Access {
 	 * @return bool
 	 */
 	public static function is_allowed( $level, $post_id = 0 ) {
-		// Admins and page editors are never locked out.
-		if ( current_user_can( 'manage_options' ) || ( $post_id && current_user_can( 'edit_post', $post_id ) ) ) {
+		// Admins and page editors are never locked out — unless an admin is
+		// previewing the site as a member, in which case they get the real gate.
+		if ( '' === FF_Gating::preview_group()
+			&& ( current_user_can( 'manage_options' ) || ( $post_id && current_user_can( 'edit_post', $post_id ) ) ) ) {
 			return true;
 		}
 

@@ -196,6 +196,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.37 =
+* New: admin "view as a member" preview. From your own profile (or the toolbar
+  switcher), pick The 35 or The Circle and browse the site exactly as that group
+  does — gated notes, polls, pages and menu items included, and blocked from the
+  other tier's content just like a real member. It only affects you; switch back
+  to "Administrator" any time. A "Viewing as…" indicator shows in the toolbar.
+* New: the Polls Archive widget has a "Show" option — open poll then past polls
+  (default), open only, or past only — so you can place two widgets (one open,
+  one past) and style each area differently.
+
 = 1.0.36 =
 * New: "Founding Faces Polls Archive" widget for a polls page — shows any open
   poll first (votable, or results if the member has voted), then every past poll

@@ -205,14 +205,25 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->add_control( 'intro', array(
 			'type'            => \Elementor\Controls_Manager::RAW_HTML,
-			'raw'             => __( 'Shows any open poll first, then all past polls with their results. Put this on your dedicated polls page.', 'founding-faces' ),
+			'raw'             => __( 'Shows any open poll first, then all past polls with their results. Tip: to style the open poll differently, place two of these widgets — one set to "Open poll only", one to "Past polls only".', 'founding-faces' ),
 			'content_classes' => 'elementor-descriptor',
+		) );
+		$this->add_control( 'show', array(
+			'label'   => __( 'Show', 'founding-faces' ),
+			'type'    => \Elementor\Controls_Manager::SELECT,
+			'default' => 'both',
+			'options' => array(
+				'both' => __( 'Open poll, then past polls', 'founding-faces' ),
+				'open' => __( 'Open poll only', 'founding-faces' ),
+				'past' => __( 'Past polls only', 'founding-faces' ),
+			),
 		) );
 		$this->add_control( 'headings', array(
 			'label'        => __( 'Show "Open now" / "Past polls" headings', 'founding-faces' ),
 			'type'         => \Elementor\Controls_Manager::SWITCHER,
 			'default'      => 'yes',
 			'return_value' => 'yes',
+			'condition'    => array( 'show' => 'both' ),
 		) );
 		$this->add_responsive_control( 'columns', array(
 			'label'          => __( 'Columns', 'founding-faces' ),
@@ -231,6 +242,10 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 	protected function render() {
 		$s        = $this->get_settings_for_display();
 		$headings = ( ! isset( $s['headings'] ) || 'yes' === $s['headings'] ) ? 'yes' : 'no';
-		echo FF_Polls::archive_shortcode( array( 'headings' => $headings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$show     = isset( $s['show'] ) && in_array( $s['show'], array( 'both', 'open', 'past' ), true ) ? $s['show'] : 'both';
+		echo FF_Polls::archive_shortcode( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'headings' => $headings,
+			'show'     => $show,
+		) );
 	}
 }
