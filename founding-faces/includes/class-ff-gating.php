@@ -99,18 +99,19 @@ class FF_Gating {
 	 * @return string 'the-35', 'the-circle', or ''.
 	 */
 	public static function group_of( $user_id = null ) {
-		// When asked about the CURRENT user and that user is a previewing admin,
-		// report the previewed group, so the whole site treats them as it would
-		// a real member of that group.
-		if ( null === $user_id ) {
+		$user_id = $user_id ? $user_id : get_current_user_id();
+		if ( ! $user_id ) {
+			return '';
+		}
+		// When resolving the CURRENT viewer and that viewer is a previewing admin,
+		// report the previewed group, so the whole site treats them as it would a
+		// real member of that group. (This must run whether the caller passed null
+		// or the current user's own id — is_member() resolves the id first.)
+		if ( (int) $user_id === get_current_user_id() ) {
 			$preview = self::preview_group();
 			if ( '' !== $preview ) {
 				return $preview;
 			}
-		}
-		$user_id = $user_id ? $user_id : get_current_user_id();
-		if ( ! $user_id ) {
-			return '';
 		}
 		return (string) get_user_meta( $user_id, FF_Members::META_GROUP, true );
 	}
