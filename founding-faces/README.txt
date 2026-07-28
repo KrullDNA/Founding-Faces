@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.33 =
+* New: the members table under Privacy & Tools now shows a "Last login" column
+  with the date and time of each member's most recent sign-in (or "Never").
+  Recording starts from this update, so existing members show "Never" until
+  their next login.
+
 = 1.0.32 =
 * New: members-only content is now explicitly kept out of search engines. Every
   note and every access-restricted page/post is marked "noindex, nofollow" (both

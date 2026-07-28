@@ -70,6 +70,9 @@ class FF_Members {
 	// The admin-post action used by every moderation button.
 	const MODERATE_ACTION = 'ff_moderate';
 
+	// User meta: the Unix timestamp (GMT) of the member's last login.
+	const META_LAST_LOGIN = 'ff_last_login';
+
 	/**
 	 * Wire up the moderation handler and the deactivated-login block.
 	 *
@@ -82,6 +85,25 @@ class FF_Members {
 		// Stop a deactivated member from logging in, so a retired number's owner
 		// can't come back in while their number stays reserved.
 		add_filter( 'authenticate', array( __CLASS__, 'block_deactivated_login' ), 30, 3 );
+
+		// Record each successful login, so the admin can see who's active.
+		add_action( 'wp_login', array( __CLASS__, 'record_login' ), 10, 2 );
+	}
+
+	/**
+	 * Record a member's last-login time on a successful login.
+	 *
+	 * @param string       $user_login The login name (unused).
+	 * @param WP_User|null $user       The user who logged in.
+	 * @return void
+	 */
+	public static function record_login( $user_login, $user = null ) {
+		if ( ! $user instanceof WP_User ) {
+			$user = get_user_by( 'login', $user_login );
+		}
+		if ( $user ) {
+			update_user_meta( $user->ID, self::META_LAST_LOGIN, time() );
+		}
 	}
 
 	/*
