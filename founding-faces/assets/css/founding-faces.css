@@ -547,6 +547,22 @@
 }
 
 /* ==========================================================================
+ * Personalised welcome widget.
+ * ========================================================================== */
+
+.ff-welcome {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+	margin: 0;
+}
+
+/* The name and number are inline spans so they can be styled to stand out. */
+.ff-welcome-name,
+.ff-welcome-number {
+	display: inline;
+}
+
+/* ==========================================================================
  * Personal history page.
  * ========================================================================== */
 

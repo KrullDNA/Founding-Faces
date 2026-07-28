@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.34 =
+* New: "Founding Faces Welcome" Elementor widget — a personalised greeting built
+  from editable before / middle / after text around the member's own first name
+  and Founding number (e.g. "Hi Sarah, Founding Member 4, welcome back."). Toggle
+  the name and number on/off independently, choose the HTML tag, and style the
+  whole line plus the name and number separately (full Style tab). Shows the real
+  first name because the member only ever sees their own greeting; The Circle has
+  no number, so that part simply doesn't show for them.
+
 = 1.0.33 =
 * New: the members table under Privacy & Tools now shows a "Last login" column
   with the date and time of each member's most recent sign-in (or "Never").
