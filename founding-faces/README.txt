@@ -196,6 +196,13 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.38 =
+* Fix: admin "view as a member" preview now works for page access. is_member()
+  resolves the current user's id before checking their group, which meant the
+  previewed group was skipped and an "All members" page wrongly redirected the
+  previewing admin. group_of() now applies the preview whenever it resolves the
+  current viewer, so The 35 / The Circle previews reach their allowed pages.
+
 = 1.0.37 =
 * New: admin "view as a member" preview. From your own profile (or the toolbar
   switcher), pick The 35 or The Circle and browse the site exactly as that group
