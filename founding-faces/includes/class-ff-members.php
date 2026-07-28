@@ -88,6 +88,45 @@ class FF_Members {
 
 		// Record each successful login, so the admin can see who's active.
 		add_action( 'wp_login', array( __CLASS__, 'record_login' ), 10, 2 );
+
+		// Send members to the hub page when they log in.
+		add_filter( 'login_redirect', array( __CLASS__, 'member_login_redirect' ), 10, 3 );
+	}
+
+	/**
+	 * Redirect a member to the hub page after they log in.
+	 *
+	 * Administrators keep the default destination. A member who was sent to log
+	 * in for a specific page (e.g. a gated note) is returned there; only the
+	 * default "go to the dashboard" case is replaced with the hub.
+	 *
+	 * @param string           $redirect_to The default redirect destination.
+	 * @param string           $requested   The requested redirect_to, if any.
+	 * @param WP_User|WP_Error $user        The user logging in.
+	 * @return string
+	 */
+	public static function member_login_redirect( $redirect_to, $requested, $user ) {
+		if ( ! ( $user instanceof WP_User ) ) {
+			return $redirect_to;
+		}
+		// Admins (and anyone who can reach wp-admin) keep the default.
+		if ( user_can( $user, 'manage_options' ) ) {
+			return $redirect_to;
+		}
+		if ( ! FF_Gating::is_member( $user->ID ) ) {
+			return $redirect_to;
+		}
+
+		// Respect an explicit destination the member was headed to (a gated note,
+		// say); only replace the default wp-admin landing.
+		$is_default = ( '' === (string) $requested ) || false !== strpos( (string) $requested, 'wp-admin' );
+		if ( ! $is_default ) {
+			return $redirect_to;
+		}
+
+		$hub = (int) get_option( FF_Messages::OPT_PORTAL_PAGE, 0 );
+		$url = $hub ? get_permalink( $hub ) : '';
+		return $url ? $url : $redirect_to;
 	}
 
 	/**

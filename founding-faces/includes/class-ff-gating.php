@@ -25,6 +25,37 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FF_Gating {
 
+	// User meta on an admin: which group they are previewing the site as
+	// ('the-35' | 'the-circle' | ''). Only ever read for administrators.
+	const META_PREVIEW = 'ff_preview_as';
+
+	/**
+	 * The group an administrator is previewing the site as, or '' if none.
+	 *
+	 * Only administrators can preview; for everyone else this is always ''.
+	 *
+	 * @return string 'the-35', 'the-circle', or ''.
+	 */
+	public static function preview_group() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return '';
+		}
+		$g = get_user_meta( get_current_user_id(), self::META_PREVIEW, true );
+		return in_array( $g, array( 'the-35', 'the-circle' ), true ) ? $g : '';
+	}
+
+	/**
+	 * Whether the current viewer is an administrator who should see everything.
+	 *
+	 * True for a normal admin; FALSE while an admin is previewing as a member,
+	 * so the preview experiences the real gate instead of the admin bypass.
+	 *
+	 * @return bool
+	 */
+	public static function admin_bypass() {
+		return current_user_can( 'manage_options' ) && '' === self::preview_group();
+	}
+
 	/**
 	 * Wire up the Elementor visibility control and its server-side enforcement.
 	 *
@@ -68,6 +99,15 @@ class FF_Gating {
 	 * @return string 'the-35', 'the-circle', or ''.
 	 */
 	public static function group_of( $user_id = null ) {
+		// When asked about the CURRENT user and that user is a previewing admin,
+		// report the previewed group, so the whole site treats them as it would
+		// a real member of that group.
+		if ( null === $user_id ) {
+			$preview = self::preview_group();
+			if ( '' !== $preview ) {
+				return $preview;
+			}
+		}
 		$user_id = $user_id ? $user_id : get_current_user_id();
 		if ( ! $user_id ) {
 			return '';
@@ -153,8 +193,9 @@ class FF_Gating {
 			return;
 		}
 
-		// Administrators and The 35 see every note.
-		if ( current_user_can( 'manage_options' ) || self::is_the_35() ) {
+		// Administrators and The 35 see every note (a previewing admin does not
+		// bypass, so they experience the real gate).
+		if ( self::admin_bypass() || self::is_the_35() ) {
 			return;
 		}
 
@@ -249,9 +290,12 @@ class FF_Gating {
 	 */
 	public static function can_view_note( $note_id, $user_id = null ) {
 		// Administrators always see everything (they build the pages and, per
-		// the governing principle, can always see the full record).
+		// the governing principle, can always see the full record) — unless the
+		// admin is previewing the site as a member, in which case they are gated
+		// exactly as that member would be.
+		$is_current = ( null === $user_id );
 		$check_user = $user_id ? $user_id : get_current_user_id();
-		if ( user_can( $check_user, 'manage_options' ) ) {
+		if ( user_can( $check_user, 'manage_options' ) && ! ( $is_current && '' !== self::preview_group() ) ) {
 			return true;
 		}
 

@@ -47,6 +47,7 @@ class FF_Polls {
 		// added mid-'init' isn't reliably run, which could hide the Polls menu.
 		self::register_cpt();
 		add_shortcode( 'ff_poll', array( __CLASS__, 'shortcode' ) );
+		add_shortcode( 'ff_polls_archive', array( __CLASS__, 'archive_shortcode' ) );
 
 		// Voting is by logged-in members only, so only the priv handler is used.
 		add_action( 'wp_ajax_' . self::VOTE_ACTION, array( __CLASS__, 'ajax_vote' ) );
@@ -79,6 +80,7 @@ class FF_Polls {
 	public static function register_widget( $widgets_manager ) {
 		require_once FF_PATH . 'includes/class-ff-poll-widget.php';
 		$widgets_manager->register( new FF_Poll_Widget() );
+		$widgets_manager->register( new FF_Polls_Archive_Widget() );
 	}
 
 	/**
@@ -349,6 +351,118 @@ class FF_Polls {
 			'meta_value'     => '1', // phpcs:ignore WordPress.DB.SlowDBQuery
 		) );
 		return empty( $ids ) ? 0 : (int) $ids[0];
+	}
+
+	/**
+	 * Whether a poll is closed.
+	 *
+	 * @param int $poll_id The poll id.
+	 * @return bool
+	 */
+	public static function is_closed( $poll_id ) {
+		return 'closed' === get_post_meta( $poll_id, self::META_STATUS, true );
+	}
+
+	/**
+	 * The ids of every poll the current member may see, newest first.
+	 *
+	 * @return int[]
+	 */
+	public static function viewable_poll_ids() {
+		$ids = get_posts( array(
+			'post_type'      => self::POLL_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'fields'         => 'ids',
+		) );
+		return array_values( array_filter( array_map( 'intval', $ids ), array( __CLASS__, 'can_view_poll' ) ) );
+	}
+
+	/**
+	 * The [ff_polls_archive] shortcode: open poll(s) then past polls with results.
+	 *
+	 * For a dedicated polls page: any open poll shows first (votable, or results
+	 * if the member has voted), followed by every past poll with its results and
+	 * outcome. All gated — a poll the member can't see never appears.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function archive_shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'headings' => 'yes',
+				'show'     => 'both', // 'both' | 'open' | 'past'.
+			),
+			$atts,
+			'ff_polls_archive'
+		);
+
+		if ( ! FF_Gating::can_view_members_area() ) {
+			return FF_Display::members_only_notice();
+		}
+
+		self::enqueue_front();
+
+		$show   = in_array( $atts['show'], array( 'both', 'open', 'past' ), true ) ? $atts['show'] : 'both';
+		$ids    = self::viewable_poll_ids();
+		$open   = array();
+		$closed = array();
+		foreach ( $ids as $id ) {
+			if ( self::is_closed( $id ) ) {
+				$closed[] = $id;
+			} else {
+				$open[] = $id;
+			}
+		}
+
+		// Honour the "show" choice, so two widgets (one open, one past) can each
+		// be styled separately on the same page.
+		if ( 'past' === $show ) {
+			$open = array();
+		} elseif ( 'open' === $show ) {
+			$closed = array();
+		}
+
+		// Headings are only useful when both sections can appear together.
+		$headings = ( 'yes' === $atts['headings'] ) && ( 'both' === $show );
+		$out      = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . '">';
+
+		if ( empty( $open ) && empty( $closed ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html(
+				'open' === $show
+					? __( 'No open poll right now.', 'founding-faces' )
+					: __( 'No polls yet — check back soon.', 'founding-faces' )
+			) . '</p>';
+			return $out . '</div>';
+		}
+
+		if ( ! empty( $open ) ) {
+			if ( $headings ) {
+				$out .= '<h2 class="ff-polls-archive-heading">' . esc_html__( 'Open now', 'founding-faces' ) . '</h2>';
+			}
+			$out .= '<div class="ff-polls-archive-grid">';
+			foreach ( $open as $id ) {
+				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id ) . '</div>';
+			}
+			$out .= '</div>';
+		}
+
+		if ( ! empty( $closed ) ) {
+			if ( $headings ) {
+				$out .= '<h2 class="ff-polls-archive-heading">' . esc_html__( 'Past polls', 'founding-faces' ) . '</h2>';
+			}
+			$out .= '<div class="ff-polls-archive-grid">';
+			foreach ( $closed as $id ) {
+				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id ) . '</div>';
+			}
+			$out .= '</div>';
+		}
+
+		$out .= '</div>';
+		return $out;
 	}
 
 	/*

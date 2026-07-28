@@ -196,6 +196,40 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.37 =
+* New: admin "view as a member" preview. From your own profile (or the toolbar
+  switcher), pick The 35 or The Circle and browse the site exactly as that group
+  does — gated notes, polls, pages and menu items included, and blocked from the
+  other tier's content just like a real member. It only affects you; switch back
+  to "Administrator" any time. A "Viewing as…" indicator shows in the toolbar.
+* New: the Polls Archive widget has a "Show" option — open poll then past polls
+  (default), open only, or past only — so you can place two widgets (one open,
+  one past) and style each area differently.
+
+= 1.0.36 =
+* New: "Founding Faces Polls Archive" widget for a polls page — shows any open
+  poll first (votable, or results if the member has voted), then every past poll
+  with its results and outcome. All gated. A Columns control lays them out in a
+  grid.
+* New: a Columns control on the Notes and Notes Archive widgets, so notes can be
+  shown in a 1–4 column grid (responsive) alongside the product / type / date
+  filters.
+
+= 1.0.35 =
+* New: members are redirected to your hub page when they log in. Set it under
+  Settings -> Members access -> "Members hub / portal page" (the same page used
+  for the message-reply link). Members headed to a specific gated page still land
+  there; admins keep the dashboard.
+* New: the Notes widget can now show a "View all" link (with your text and a
+  chosen page) beneath the list — ideal for a "latest 5 notes" block on the hub
+  that links to the full notes page. (It already had a "Maximum notes" number.)
+* New: "Founding Faces Notes Archive" widget for the dedicated notes page — a
+  filter bar (Product, Type/stage, Newest/Oldest) over every note the member may
+  see. Filters live in the URL so a view can be bookmarked. Each filter can be
+  toggled off.
+* Note: the Poll widget already hides itself when there's no active poll, so it
+  can sit on the hub and only appear when a poll is live.
+
 = 1.0.34 =
 * New: "Founding Faces Welcome" Elementor widget — a personalised greeting built
   from editable before / middle / after text around the member's own first name

@@ -91,11 +91,46 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'return_value' => 'yes',
 		) );
 		$this->add_control( 'limit', array(
-			'label'   => __( 'Maximum notes', 'founding-faces' ),
-			'type'    => \Elementor\Controls_Manager::NUMBER,
-			'default' => 50,
-			'min'     => 1,
-			'max'     => 200,
+			'label'       => __( 'Maximum notes', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'default'     => 50,
+			'min'         => 1,
+			'max'         => 200,
+			'description' => __( 'e.g. 5 for a "latest notes" block on the hub page.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'show_view_all', array(
+			'label'        => __( 'Show a "View all" link', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => '',
+			'return_value' => 'yes',
+			'separator'    => 'before',
+		) );
+		$this->add_control( 'view_all_text', array(
+			'label'     => __( 'Link text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::TEXT,
+			'default'   => __( 'View all notes', 'founding-faces' ),
+			'condition' => array( 'show_view_all' => 'yes' ),
+		) );
+		$this->add_control( 'view_all_url', array(
+			'label'         => __( 'Notes page', 'founding-faces' ),
+			'type'          => \Elementor\Controls_Manager::URL,
+			'placeholder'   => __( 'https://…/notes', 'founding-faces' ),
+			'show_external' => false,
+			'condition'     => array( 'show_view_all' => 'yes' ),
+		) );
+
+		$this->add_responsive_control( 'columns', array(
+			'label'          => __( 'Columns', 'founding-faces' ),
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '1',
+			'tablet_default' => '1',
+			'mobile_default' => '1',
+			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
+			'separator'      => 'before',
+			'selectors'      => array(
+				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); gap: 1.25rem; align-items: start;',
+			),
 		) );
 
 		$this->end_controls_section();
@@ -104,11 +139,101 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 	/** Render. */
 	protected function render() {
 		$s = $this->get_settings_for_display();
+
+		$view_all_url = '';
+		if ( isset( $s['show_view_all'] ) && 'yes' === $s['show_view_all'] && ! empty( $s['view_all_url']['url'] ) ) {
+			$view_all_url = $s['view_all_url']['url'];
+		}
+
 		echo FF_Display::sc_notes( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			'product' => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
-			'stage'   => isset( $s['stage'] ) ? $s['stage'] : '',
-			'filters' => ( isset( $s['filters'] ) && 'yes' === $s['filters'] ) ? 'yes' : 'no',
-			'limit'   => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,
+			'product'       => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
+			'stage'         => isset( $s['stage'] ) ? $s['stage'] : '',
+			'filters'       => ( isset( $s['filters'] ) && 'yes' === $s['filters'] ) ? 'yes' : 'no',
+			'limit'         => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,
+			'view_all_text' => isset( $s['view_all_text'] ) ? $s['view_all_text'] : '',
+			'view_all_url'  => $view_all_url,
+		) );
+	}
+}
+
+/**
+ * The filterable notes archive (for the dedicated notes page).
+ */
+class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
+
+	/** @return string */
+	public function get_name() {
+		return 'ff_notes_archive';
+	}
+
+	/** @return string */
+	public function get_title() {
+		return __( 'Founding Faces Notes Archive', 'founding-faces' );
+	}
+
+	/** @return string */
+	public function get_icon() {
+		return 'eicon-filter';
+	}
+
+	/** Register the controls. */
+	protected function register_controls() {
+		$this->start_controls_section( 'ff_archive_content', array(
+			'label' => __( 'Notes archive', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+		) );
+		$this->add_control( 'intro', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => __( 'Every note the member may see, with filters for product, type and date. Put this on your dedicated notes page.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+		$this->add_control( 'show_product', array(
+			'label'        => __( 'Product filter', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+		) );
+		$this->add_control( 'show_stage', array(
+			'label'        => __( 'Type (stage) filter', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+		) );
+		$this->add_control( 'show_sort', array(
+			'label'        => __( 'Date sort', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+		) );
+		$this->add_control( 'limit', array(
+			'label'   => __( 'Maximum notes', 'founding-faces' ),
+			'type'    => \Elementor\Controls_Manager::NUMBER,
+			'default' => 30,
+			'min'     => 1,
+			'max'     => 200,
+		) );
+		$this->add_responsive_control( 'columns', array(
+			'label'          => __( 'Columns', 'founding-faces' ),
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '1',
+			'tablet_default' => '1',
+			'mobile_default' => '1',
+			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
+			'selectors'      => array(
+				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); gap: 1.25rem; align-items: start;',
+			),
+		) );
+		$this->end_controls_section();
+	}
+
+	/** Render. */
+	protected function render() {
+		$s = $this->get_settings_for_display();
+		echo FF_Display::sc_notes_archive( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'limit'        => isset( $s['limit'] ) ? absint( $s['limit'] ) : 30,
+			'show_product' => ( ! isset( $s['show_product'] ) || 'yes' === $s['show_product'] ) ? 'yes' : 'no',
+			'show_stage'   => ( ! isset( $s['show_stage'] ) || 'yes' === $s['show_stage'] ) ? 'yes' : 'no',
+			'show_sort'    => ( ! isset( $s['show_sort'] ) || 'yes' === $s['show_sort'] ) ? 'yes' : 'no',
 		) );
 	}
 }
