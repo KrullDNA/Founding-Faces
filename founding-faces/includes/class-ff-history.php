@@ -40,7 +40,9 @@ class FF_History {
 	 */
 	public static function register_widgets( $widgets_manager ) {
 		require_once FF_PATH . 'includes/class-ff-history-widgets.php';
+		require_once FF_PATH . 'includes/class-ff-welcome-widget.php';
 		$widgets_manager->register( new FF_Member_Archive_Widget() );
+		$widgets_manager->register( new FF_Welcome_Widget() );
 	}
 
 	/**
