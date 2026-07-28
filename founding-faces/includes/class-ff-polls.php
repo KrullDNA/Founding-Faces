@@ -33,6 +33,8 @@ class FF_Polls {
 	const META_STATUS   = 'ff_poll_status';    // 'open' | 'closed'.
 	const META_ACTIVE   = 'ff_poll_active';    // 1 if this is the current active poll.
 	const META_OUTCOME  = 'ff_poll_outcome';   // Nick's reasoning, shown on close.
+	const META_CLOSE_AT = 'ff_poll_close_at';  // GMT Unix time to auto-close (show results), or 0.
+	const META_HIDE_AT  = 'ff_poll_hide_at';   // GMT Unix time to auto-hide entirely, or 0.
 
 	// The AJAX action name for casting a vote.
 	const VOTE_ACTION = 'ff_vote';
@@ -354,13 +356,79 @@ class FF_Polls {
 	}
 
 	/**
-	 * Whether a poll is closed.
+	 * The effective state of a poll: 'open', 'closed' (results shown), or 'hidden'.
+	 *
+	 * Combines the manual Status with the optional scheduled close/hide times:
+	 *  - Past the hide time  -> hidden (gone from the site).
+	 *  - Manually closed with NO close/hide times set -> hidden immediately.
+	 *  - Past the close time, or manually closed with a time set -> closed
+	 *    (results and reasoning shown, until the hide time passes).
+	 *  - Otherwise -> open (accepting votes).
+	 *
+	 * @param int $poll_id The poll id.
+	 * @return string 'open' | 'closed' | 'hidden'.
+	 */
+	public static function poll_state( $poll_id ) {
+		$now      = time();
+		$close_at = (int) get_post_meta( $poll_id, self::META_CLOSE_AT, true );
+		$hide_at  = (int) get_post_meta( $poll_id, self::META_HIDE_AT, true );
+		$manual   = ( 'closed' === get_post_meta( $poll_id, self::META_STATUS, true ) );
+
+		if ( $hide_at > 0 && $now >= $hide_at ) {
+			return 'hidden';
+		}
+
+		$closed = ( $close_at > 0 && $now >= $close_at );
+
+		if ( $manual ) {
+			// Manually closed with neither date set disappears straight away.
+			if ( 0 === $close_at && 0 === $hide_at ) {
+				return 'hidden';
+			}
+			$closed = true;
+		}
+
+		return $closed ? 'closed' : 'open';
+	}
+
+	/**
+	 * Whether a poll is showing results (its effective state is 'closed').
 	 *
 	 * @param int $poll_id The poll id.
 	 * @return bool
 	 */
 	public static function is_closed( $poll_id ) {
-		return 'closed' === get_post_meta( $poll_id, self::META_STATUS, true );
+		return 'closed' === self::poll_state( $poll_id );
+	}
+
+	/**
+	 * Convert a datetime-local admin value (site time) to a GMT Unix timestamp.
+	 *
+	 * @param string $value 'Y-m-d\TH:i' or 'Y-m-d H:i' in the site's timezone.
+	 * @return int A GMT Unix timestamp, or 0 if empty/invalid.
+	 */
+	public static function local_to_gmt_ts( $value ) {
+		$value = trim( str_replace( 'T', ' ', (string) $value ) );
+		if ( '' === $value ) {
+			return 0;
+		}
+		$gmt = get_gmt_from_date( $value, 'Y-m-d H:i:s' );
+		$ts  = $gmt ? strtotime( $gmt . ' +0000' ) : false;
+		return $ts ? (int) $ts : 0;
+	}
+
+	/**
+	 * Convert a stored GMT timestamp to a datetime-local field value (site time).
+	 *
+	 * @param int $ts A GMT Unix timestamp, or 0.
+	 * @return string 'Y-m-d\TH:i', or '' if 0.
+	 */
+	public static function gmt_ts_to_local( $ts ) {
+		$ts = (int) $ts;
+		if ( ! $ts ) {
+			return '';
+		}
+		return get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $ts ), 'Y-m-d\TH:i' );
 	}
 
 	/**
@@ -377,7 +445,12 @@ class FF_Polls {
 			'order'          => 'DESC',
 			'fields'         => 'ids',
 		) );
-		return array_values( array_filter( array_map( 'intval', $ids ), array( __CLASS__, 'can_view_poll' ) ) );
+		$ids = array_filter( array_map( 'intval', $ids ), array( __CLASS__, 'can_view_poll' ) );
+		// Drop polls past their hide time (or manually closed with no schedule).
+		$ids = array_filter( $ids, function ( $id ) {
+			return 'hidden' !== self::poll_state( $id );
+		} );
+		return array_values( $ids );
 	}
 
 	/**
@@ -501,8 +574,8 @@ class FF_Polls {
 			wp_send_json_error( array( 'message' => __( 'This poll isn\'t available to you.', 'founding-faces' ) ) );
 		}
 
-		// Must be open.
-		if ( 'closed' === get_post_meta( $poll_id, self::META_STATUS, true ) ) {
+		// Must be open (not closed by hand or by its scheduled close time).
+		if ( 'open' !== self::poll_state( $poll_id ) ) {
 			wp_send_json_error( array( 'message' => __( 'This poll is closed.', 'founding-faces' ) ) );
 		}
 
@@ -568,6 +641,11 @@ class FF_Polls {
 			return '';
 		}
 
+		// Past its hide time (or manually closed with no schedule): gone entirely.
+		if ( 'hidden' === self::poll_state( $poll_id ) ) {
+			return '';
+		}
+
 		$style = wp_parse_args( $style, array(
 			'accent'  => '#3a3d44',
 			'align'   => 'left',
@@ -597,11 +675,11 @@ class FF_Polls {
 	 * @return string
 	 */
 	private static function render_inner( $poll_id ) {
-		$status    = get_post_meta( $poll_id, self::META_STATUS, true ) ? get_post_meta( $poll_id, self::META_STATUS, true ) : 'open';
+		$state     = self::poll_state( $poll_id );
 		$member_id = get_current_user_id();
 
 		// Closed: show results and Nick's reasoning to everyone in the audience.
-		if ( 'closed' === $status ) {
+		if ( 'closed' === $state ) {
 			return self::render_results( $poll_id, self::member_vote( $poll_id, $member_id ), true );
 		}
 
@@ -782,6 +860,8 @@ class FF_Polls {
 		$status   = get_post_meta( $post->ID, self::META_STATUS, true ) ? get_post_meta( $post->ID, self::META_STATUS, true ) : 'open';
 		$active   = (int) get_post_meta( $post->ID, self::META_ACTIVE, true );
 		$outcome  = get_post_meta( $post->ID, self::META_OUTCOME, true );
+		$close_at = self::gmt_ts_to_local( get_post_meta( $post->ID, self::META_CLOSE_AT, true ) );
+		$hide_at  = self::gmt_ts_to_local( get_post_meta( $post->ID, self::META_HIDE_AT, true ) );
 
 		// Ensure at least two empty rows to start with.
 		if ( count( $options ) < 2 ) {
@@ -815,6 +895,21 @@ class FF_Polls {
 						<option value="open" <?php selected( $status, 'open' ); ?>><?php esc_html_e( 'Open (accepting votes)', 'founding-faces' ); ?></option>
 						<option value="closed" <?php selected( $status, 'closed' ); ?>><?php esc_html_e( 'Closed (show results & reasoning)', 'founding-faces' ); ?></option>
 					</select>
+					<p class="description"><?php esc_html_e( 'With NO close/hide times set below, choosing "Closed" makes the poll disappear straight away. Set times below to close and hide it on a schedule instead.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_poll_close_at"><?php esc_html_e( 'Auto-close at', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="datetime-local" name="ff_poll_close_at" id="ff_poll_close_at" value="<?php echo esc_attr( $close_at ); ?>" />
+					<p class="description"><?php esc_html_e( 'Optional. At this time the poll stops taking votes and shows the final results and your reasoning. Leave blank to close it by hand with the Status above.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_poll_hide_at"><?php esc_html_e( 'Auto-hide at', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="datetime-local" name="ff_poll_hide_at" id="ff_poll_hide_at" value="<?php echo esc_attr( $hide_at ); ?>" />
+					<p class="description"><?php esc_html_e( 'Optional. At this time the poll disappears from the site entirely. Set it a little after the close time so members can see the final votes for a while first.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -916,6 +1011,12 @@ class FF_Polls {
 		// Status.
 		$status = ( isset( $_POST['ff_poll_status'] ) && 'closed' === $_POST['ff_poll_status'] ) ? 'closed' : 'open';
 		update_post_meta( $post_id, self::META_STATUS, $status );
+
+		// Scheduled close/hide times (stored as GMT timestamps; 0 = unset).
+		$close_at = isset( $_POST['ff_poll_close_at'] ) ? self::local_to_gmt_ts( sanitize_text_field( wp_unslash( $_POST['ff_poll_close_at'] ) ) ) : 0;
+		$hide_at  = isset( $_POST['ff_poll_hide_at'] ) ? self::local_to_gmt_ts( sanitize_text_field( wp_unslash( $_POST['ff_poll_hide_at'] ) ) ) : 0;
+		update_post_meta( $post_id, self::META_CLOSE_AT, $close_at );
+		update_post_meta( $post_id, self::META_HIDE_AT, $hide_at );
 
 		// Outcome.
 		update_post_meta( $post_id, self::META_OUTCOME, isset( $_POST['ff_poll_outcome'] ) ? wp_kses_post( wp_unslash( $_POST['ff_poll_outcome'] ) ) : '' );
