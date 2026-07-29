@@ -123,6 +123,27 @@ trait FF_Poll_Style_Controls {
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-poll-result-percent' => 'color: {{VALUE}};' ),
 		) );
+		$this->add_control( 'total_heading', array(
+			'label'     => __( 'Vote count', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'total_typo',
+			'label'    => __( 'Vote count text', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-poll-total',
+		) );
+		$this->add_control( 'total_color', array(
+			'label'     => __( 'Vote count colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-total' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'total_gap', array(
+			'label'     => __( 'Space above vote count', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-total' => 'margin-top: {{SIZE}}{{UNIT}};' ),
+		) );
 		$this->end_controls_section();
 
 		/* =========================== CLOSED CAPSULE ======================== */
