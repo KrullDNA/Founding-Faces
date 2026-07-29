@@ -768,7 +768,7 @@ class FF_Polls {
 			$out .= '<div class="ff-poll-result-head">';
 			$out .= '<span class="ff-poll-result-label">' . esc_html( $opt['label'] );
 			if ( $mine ) {
-				$out .= ' <span class="ff-poll-yours">' . esc_html__( 'your choice', 'founding-faces' ) . '</span>';
+				$out .= '<span class="ff-poll-yours">' . esc_html__( 'your choice', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
 			$out .= '<span class="ff-poll-result-percent">' . esc_html( $percent ) . '%</span>';
