@@ -577,10 +577,13 @@
 }
 
 .ff-poll-yours {
+	/* inline-block so the label starts its own "word": this lets the
+	   typography control's text-transform (capitalize/uppercase) behave
+	   correctly, and keeps margin-left reliable. */
+	display: inline-block;
 	margin-left: 0.4rem;
 	font-weight: 600;
 	font-size: 0.72rem;
-	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	color: var(--ff-poll-accent);
 }
