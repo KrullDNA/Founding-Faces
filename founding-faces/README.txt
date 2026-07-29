@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.18
+Stable tag: 1.0.43
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,18 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.43 =
+* New: vote-count styling on both poll widgets — the "X votes" line under the
+  results now has its own colour, typography, and top-spacing controls, in the
+  "Question & labels" Style section.
+
+= 1.0.42 =
+* Fix: the poll "your choice" label now respects the typography control's
+  text-transform. The label no longer forces uppercase by default (so "Default"
+  shows natural case), and "Capitalize" now renders "Your Choice" correctly — the
+  label is an inline-block, so it's read as its own word rather than running into
+  the option name (which was why the "y" in "your" stayed lowercase).
 
 = 1.0.41 =
 * New: "Your choice" styling on both poll widgets — the your-choice bar colour
