@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.43
+Stable tag: 1.0.44
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,11 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.44 =
+* Change: the poll "your choice" label is now stored as "Your choice" (capital
+  Y), so "Normal" in the typography control shows a naturally capitalised label
+  rather than all-lowercase.
 
 = 1.0.43 =
 * New: vote-count styling on both poll widgets — the "X votes" line under the
