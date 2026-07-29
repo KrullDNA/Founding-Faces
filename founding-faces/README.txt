@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.41 =
+* New: "Your choice" styling on both poll widgets — the your-choice bar colour
+  (which takes priority when an option is both winning and the member's choice),
+  plus the "your choice" label colour, typography, and a gap control between the
+  answer and the label.
+
 = 1.0.40 =
 * New: full result-bar styling on both poll widgets (Poll and Polls Archive).
   Set the bar colour, the WINNING bar colour (the option with the most votes),

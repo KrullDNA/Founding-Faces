@@ -577,6 +577,7 @@
 }
 
 .ff-poll-yours {
+	margin-left: 0.4rem;
 	font-weight: 600;
 	font-size: 0.72rem;
 	text-transform: uppercase;

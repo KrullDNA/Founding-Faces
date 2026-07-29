@@ -46,16 +46,39 @@ trait FF_Poll_Style_Controls {
 			'type'        => \Elementor\Controls_Manager::COLOR,
 			'selectors'   => array( '{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
 		) );
-		$this->add_control( 'bar_mine_color', array(
-			'label'       => __( 'Your-choice bar colour', 'founding-faces' ),
-			'description' => __( 'The bar for the option the member voted for.', 'founding-faces' ),
-			'type'        => \Elementor\Controls_Manager::COLOR,
-			'selectors'   => array( '{{WRAPPER}} .ff-poll-result.is-mine .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
-		) );
 		$this->add_control( 'bar_track_color', array(
 			'label'     => __( 'Track (empty) colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-poll-bar' => 'background-color: {{VALUE}};' ),
+		) );
+
+		// The member's own choice: its bar plus its "your choice" label.
+		$this->add_control( 'mine_heading', array(
+			'label'       => __( 'Your choice', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::HEADING,
+			'separator'   => 'before',
+			'description' => __( 'When an option is both winning and the member\'s choice, this bar colour takes priority.', 'founding-faces' ),
+		) );
+		$this->add_control( 'bar_mine_color', array(
+			'label'     => __( 'Your-choice bar colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-result.is-mine .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'yours_color', array(
+			'label'     => __( '"Your choice" label colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-yours' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'yours_typo',
+			'label'    => __( '"Your choice" label text', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-poll-yours',
+		) );
+		$this->add_responsive_control( 'yours_gap', array(
+			'label'     => __( 'Gap before "your choice" label', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-yours' => 'margin-left: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->add_responsive_control( 'bar_height', array(
 			'label'     => __( 'Bar height', 'founding-faces' ),
