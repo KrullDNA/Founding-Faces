@@ -481,6 +481,24 @@
 	margin: 0 0 var(--ff-poll-gap);
 }
 
+/* The "Poll closed" capsule above the question (styleable in the widget). */
+.ff-poll-status {
+	margin: 0 0 0.8rem;
+}
+
+.ff-poll-status-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: var(--ff-poll-accent);
+	color: #fff;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	line-height: 1.4;
+}
+
 .ff-poll-options {
 	display: grid;
 	gap: var(--ff-poll-gap);

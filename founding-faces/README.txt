@@ -196,6 +196,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.40 =
+* New: full result-bar styling on both poll widgets (Poll and Polls Archive).
+  Set the bar colour, the WINNING bar colour (the option with the most votes),
+  the your-choice bar colour, the empty-track colour, plus bar height and corner
+  radius. Question, option-label and percentage colours too.
+* Change: the "poll closed" message is now a styleable capsule ("Poll closed")
+  shown above the question, with its own alignment, colours, typography, padding
+  and radius controls. The old line beneath the results is removed; your
+  "Where we landed" outcome text still shows when set.
+
 = 1.0.39 =
 * New: schedule a poll's close and hide. Each poll now has optional "Auto-close
   at" and "Auto-hide at" date/times. At the close time the poll stops taking

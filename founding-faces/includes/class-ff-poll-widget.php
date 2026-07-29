@@ -17,12 +17,151 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Trait FF_Poll_Style_Controls
+ *
+ * Shared Style-tab controls for both poll widgets: the result bars (default,
+ * winning and your-choice colours, track, height, radius) and the "Poll closed"
+ * capsule. Every selector is scoped to {{WRAPPER}}.
+ */
+trait FF_Poll_Style_Controls {
+
+	/**
+	 * Register the shared poll Style sections.
+	 */
+	protected function register_poll_style_controls() {
+
+		/* ============================ RESULT BARS =========================== */
+		$this->start_controls_section( 'ff_poll_bars', array(
+			'label' => __( 'Result bars', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+		$this->add_control( 'bar_color', array(
+			'label'     => __( 'Bar colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'bar_leading_color', array(
+			'label'       => __( 'Winning bar colour', 'founding-faces' ),
+			'description' => __( 'The option with the most votes.', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::COLOR,
+			'selectors'   => array( '{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'bar_mine_color', array(
+			'label'       => __( 'Your-choice bar colour', 'founding-faces' ),
+			'description' => __( 'The bar for the option the member voted for.', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::COLOR,
+			'selectors'   => array( '{{WRAPPER}} .ff-poll-result.is-mine .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'bar_track_color', array(
+			'label'     => __( 'Track (empty) colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-bar' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'bar_height', array(
+			'label'     => __( 'Bar height', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 4, 'max' => 40 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-bar' => 'height: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'bar_radius', array(
+			'label'      => __( 'Bar corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 999 ) ),
+			'selectors'  => array(
+				'{{WRAPPER}} .ff-poll-bar'      => 'border-radius: {{SIZE}}{{UNIT}};',
+				'{{WRAPPER}} .ff-poll-bar-fill' => 'border-radius: {{SIZE}}{{UNIT}};',
+			),
+		) );
+		$this->end_controls_section();
+
+		/* ============================ POLL TEXT ============================= */
+		$this->start_controls_section( 'ff_poll_text', array(
+			'label' => __( 'Question & labels', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'question_typo',
+			'label'    => __( 'Question', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-poll-question',
+		) );
+		$this->add_control( 'question_color', array(
+			'label'     => __( 'Question colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-question' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'label_color', array(
+			'label'     => __( 'Option label colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-result-label' => 'color: {{VALUE}};' ),
+			'separator' => 'before',
+		) );
+		$this->add_control( 'percent_color', array(
+			'label'     => __( 'Percentage colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-result-percent' => 'color: {{VALUE}};' ),
+		) );
+		$this->end_controls_section();
+
+		/* =========================== CLOSED CAPSULE ======================== */
+		$this->start_controls_section( 'ff_poll_capsule', array(
+			'label' => __( '"Poll closed" capsule', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+		$this->add_responsive_control( 'capsule_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-status' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'capsule_typo',
+			'selector' => '{{WRAPPER}} .ff-poll-status-badge',
+		) );
+		$this->add_control( 'capsule_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-status-badge' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'capsule_color', array(
+			'label'     => __( 'Text colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-status-badge' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'capsule_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-status-badge' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'capsule_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-status-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'capsule_gap', array(
+			'label'     => __( 'Space below capsule', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-status' => 'margin-bottom: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+	}
+}
+
+/**
  * Class FF_Poll_Widget
  *
  * Renders a chosen poll (or the current active one) through FF_Polls, passing
  * the style settings straight into the renderer.
  */
 class FF_Poll_Widget extends \Elementor\Widget_Base {
+
+	use FF_Poll_Style_Controls;
 
 	/**
 	 * The widget's machine name.
@@ -148,6 +287,9 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		);
 
 		$this->end_controls_section();
+
+		// The shared bar / text / capsule Style sections.
+		$this->register_poll_style_controls();
 	}
 
 	/**
@@ -181,6 +323,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
  * with its results and outcome, laid out in a chosen number of columns.
  */
 class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
+
+	use FF_Poll_Style_Controls;
 
 	public function get_name() {
 		return 'ff_polls_archive';
@@ -237,6 +381,9 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 			),
 		) );
 		$this->end_controls_section();
+
+		// The shared bar / text / capsule Style sections.
+		$this->register_poll_style_controls();
 	}
 
 	protected function render() {
