@@ -123,7 +123,10 @@
 		var button  = section.querySelector( '.ff-notes-more-button' );
 		var results = section.querySelector( '.ff-notes-results' );
 
-		if ( ! button || ! results ) {
+		// No nonce means this is the editor's sample list: it is there to be
+		// styled, not driven, so leave its button and filters inert rather than
+		// letting a click return an error on the canvas.
+		if ( ! button || ! results || ! button.dataset.nonce ) {
 			return;
 		}
 

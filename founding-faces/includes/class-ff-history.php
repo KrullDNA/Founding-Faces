@@ -36,6 +36,14 @@ class FF_History {
 	 */
 	const NOTE_ORDER_LIMIT = 500;
 
+	/**
+	 * How many sample rows the editor will draw for one page of notes.
+	 *
+	 * The sample matches the widget's page size so a full batch can be judged
+	 * on the canvas, but a page size of 100 would make the editor unworkable.
+	 */
+	const SAMPLE_NOTE_LIMIT = 30;
+
 	public static function register() {
 		add_shortcode( 'ff_history', array( __CLASS__, 'shortcode' ) );
 		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
@@ -177,20 +185,72 @@ class FF_History {
 	}
 
 	/**
+	 * A pool of sample notes, as many as the editor asks for.
+	 *
+	 * The titles and products cycle through fixed lists rather than repeating
+	 * one row, so a long page in the editor looks like a real list: mixed
+	 * lengths, mixed products, and a run of unread notes at the top where the
+	 * real ordering puts them.
+	 *
+	 * @param int $count How many rows to build.
+	 * @return array[] Each row is array( title, is unread, product ).
+	 */
+	private static function sample_note_pool( $count ) {
+		$titles = array(
+			__( 'Trial 14 — the new emulsifier', 'founding-faces' ),
+			__( 'Switching to a mild preservative system', 'founding-faces' ),
+			__( 'Trial 12 — stability at 40°C', 'founding-faces' ),
+			__( 'Why we rejected the first serum base', 'founding-faces' ),
+			__( 'The squalane question, settled', 'founding-faces' ),
+			__( 'Batch 09 — pH drift over six weeks', 'founding-faces' ),
+			__( 'What the panel said about the texture', 'founding-faces' ),
+			__( 'Raising the niacinamide to 4%', 'founding-faces' ),
+			__( 'Trial 11 — separation on the third day', 'founding-faces' ),
+			__( 'Sourcing: a second supplier for the butter', 'founding-faces' ),
+			__( 'Fragrance-free, and why it stays that way', 'founding-faces' ),
+			__( 'Cold-process trial — the results', 'founding-faces' ),
+		);
+		$products = array(
+			__( 'The Barrier Cream', 'founding-faces' ),
+			__( 'The Cleansing Balm', 'founding-faces' ),
+			__( 'The Serum', 'founding-faces' ),
+			__( 'The Overnight Mask', 'founding-faces' ),
+		);
+
+		$rows  = array();
+		$count = max( 1, (int) $count );
+		for ( $i = 0; $i < $count; $i++ ) {
+			$rows[] = array(
+				$titles[ $i % count( $titles ) ],
+				$i < 3, // The first few are unread, as the real ordering has it.
+				$products[ $i % count( $products ) ],
+			);
+		}
+
+		return $rows;
+	}
+
+	/**
 	 * Sample notes-read markup.
 	 *
-	 * @param string $heading Optional heading override.
-	 * @param bool   $link    Whether to render the titles as links (to '#').
+	 * Fills a whole page at the widget's own page size, so the editor shows
+	 * what a full batch and its "Load more" button actually look like rather
+	 * than a token few rows.
+	 *
+	 * @param string $heading      Optional heading override.
+	 * @param bool   $link         Whether to render the titles as links (to '#').
+	 * @param int    $per_page     The widget's page size; 0 for no paging.
+	 * @param array  $show         Which filters to offer.
+	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
 	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
-		$rows    = array(
-			array( __( 'Trial 14 — the new emulsifier', 'founding-faces' ), true, __( 'The Barrier Cream', 'founding-faces' ) ),
-			array( __( 'Switching to a mild preservative system', 'founding-faces' ), true, __( 'The Cleansing Balm', 'founding-faces' ) ),
-			array( __( 'Trial 12 — stability at 40°C', 'founding-faces' ), false, __( 'The Barrier Cream', 'founding-faces' ) ),
-			array( __( 'Why we rejected the first serum base', 'founding-faces' ), false, __( 'The Serum', 'founding-faces' ) ),
-		);
+
+		// A full page, so the batch size can be judged on the canvas. Capped so
+		// that setting the page size to 100 doesn't bury the editor in samples.
+		$per_page = absint( $per_page );
+		$rows     = self::sample_note_pool( $per_page > 0 ? min( $per_page, self::SAMPLE_NOTE_LIMIT ) : 8 );
 
 		$out  = '<section class="ff-history-section ff-notes-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
@@ -217,7 +277,7 @@ class FF_History {
 
 		// The editor always shows the button, whatever the page size, so it can
 		// be styled without first creating enough notes to trigger it.
-		if ( absint( $per_page ) > 0 ) {
+		if ( $per_page > 0 ) {
 			$out .= '<div class="ff-notes-more"><button type="button" class="ff-notes-more-button">'
 				. esc_html__( 'Load more', 'founding-faces' ) . '</button></div>';
 		}

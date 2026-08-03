@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.57
+Stable tag: 1.0.58
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.58 =
+* The editor now draws a full page of sample notes at the widget's own page
+  size, instead of four token rows, so the batch size and the "Load more"
+  button can be judged on the canvas before a single real note exists. The
+  sample titles and products vary rather than repeating one row, and the
+  unread ones sit at the top where the real ordering puts them.
+* Sample pages are capped at 30 rows, so setting the page size to 100 doesn't
+  bury the editor.
+* The sample list's button and filters are inert on the canvas: clicking them
+  no longer returns a loading error where there is nothing to load.
 
 = 1.0.57 =
 * New: each note in the member's notes list can name its product on a small
