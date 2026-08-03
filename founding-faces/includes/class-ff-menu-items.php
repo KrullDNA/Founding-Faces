@@ -9,8 +9,9 @@
  *    logged in, pointing at the right URL each time (with a redirect back to
  *    the hub after login, and to a chosen page after logout).
  * 2. A count bubble — like a mini-cart — showing how many unread messages (or
- *    new notes, or open polls) are waiting, so a member sees at a glance that
- *    there's something for them.
+ *    unread notes, or unvoted polls) are waiting, so a member sees at a glance
+ *    that there's something for them. The same counts are available as a
+ *    standalone Member Bar widget for Elementor headers.
  *
  * Both are opt-in per menu item in Appearance → Menus, so an existing menu is
  * untouched until a checkbox is ticked. Everything is resolved at render time
@@ -34,12 +35,42 @@ class FF_Menu_Items {
 	const META_AUTH   = '_ff_menu_auth';        // '' | 'loginout' | 'login' | 'logout'.
 	const META_BADGE  = '_ff_menu_badge';       // '' | 'messages' | 'notes' | 'polls' | 'all'.
 
+	// How many recent notes the unread count scans. The bubble is a nudge, not
+	// an audit, so this keeps the query bounded on a menu that renders on every
+	// page; older unread notes stop adding to the number past this point.
+	const NOTE_SCAN_LIMIT = 100;
+
+	// The sample count shown while designing in the Elementor editor or the
+	// Customizer, so a bubble is always visible to style even at zero unread.
+	const PREVIEW_COUNT = 3;
+
 	// Settings (shared with the Login widget).
 	const OPT_LOGIN_PAGE     = 'ff_login_page_url';
 	const OPT_LOGIN_REDIRECT = 'ff_login_redirect_url';
 	const OPT_LOGOUT_REDIRECT = 'ff_logout_redirect_url';
 	const OPT_LOGIN_LABEL    = 'ff_login_label';
 	const OPT_LOGOUT_LABEL   = 'ff_logout_label';
+
+	/**
+	 * Whether we're rendering inside a design surface (Elementor editor or
+	 * preview, or the Customizer) rather than for a real visitor.
+	 *
+	 * @return bool
+	 */
+	public static function is_design_preview() {
+		if ( is_customize_preview() ) {
+			return true;
+		}
+
+		if ( ! did_action( 'elementor/loaded' ) || ! class_exists( '\Elementor\Plugin' ) ) {
+			return false;
+		}
+
+		$elementor = \Elementor\Plugin::$instance;
+
+		return ( isset( $elementor->editor ) && $elementor->editor->is_edit_mode() )
+			|| ( isset( $elementor->preview ) && $elementor->preview->is_preview_mode() );
+	}
 
 	/**
 	 * Wire up the menu-item fields, the save handler and the render filters.
@@ -87,7 +118,9 @@ class FF_Menu_Items {
 	 */
 	public static function register_widgets( $widgets_manager ) {
 		require_once FF_PATH . 'includes/class-ff-login-widget.php';
+		require_once FF_PATH . 'includes/class-ff-member-bar-widget.php';
 		$widgets_manager->register( new FF_Login_Widget() );
+		$widgets_manager->register( new FF_Member_Bar_Widget() );
 	}
 
 	/*
@@ -245,7 +278,7 @@ class FF_Menu_Items {
 		return array(
 			''         => __( 'No bubble', 'founding-faces' ),
 			'messages' => __( 'Unread private messages', 'founding-faces' ),
-			'notes'    => __( 'New notes since last visit', 'founding-faces' ),
+			'notes'    => __( 'Unread notes', 'founding-faces' ),
 			'polls'    => __( 'Open polls not yet voted in', 'founding-faces' ),
 			'all'      => __( 'Everything unread (messages + notes + polls)', 'founding-faces' ),
 		);
@@ -355,7 +388,9 @@ class FF_Menu_Items {
 	 * @return string
 	 */
 	public static function append_badge( $item_output, $item, $depth, $args ) {
-		if ( ! is_user_logged_in() ) {
+		$editing = self::is_design_preview();
+
+		if ( ! is_user_logged_in() && ! $editing ) {
 			return $item_output;
 		}
 
@@ -365,6 +400,13 @@ class FF_Menu_Items {
 		}
 
 		$count = self::badge_count( $source );
+
+		// While designing a header, show a sample count so the bubble is
+		// visible and styleable even when nothing is actually unread.
+		if ( $count < 1 && $editing ) {
+			$count = self::PREVIEW_COUNT;
+		}
+
 		if ( $count < 1 ) {
 			return $item_output;
 		}
@@ -406,14 +448,14 @@ class FF_Menu_Items {
 				return self::count_messages( $user_id );
 
 			case 'notes':
-				return self::count_new_notes( $user_id );
+				return self::count_unread_notes( $user_id );
 
 			case 'polls':
 				return self::count_open_polls( $user_id );
 
 			case 'all':
 				return self::count_messages( $user_id )
-					+ self::count_new_notes( $user_id )
+					+ self::count_unread_notes( $user_id )
 					+ self::count_open_polls( $user_id );
 		}
 
@@ -431,32 +473,40 @@ class FF_Menu_Items {
 	}
 
 	/**
-	 * Notes published since the member last logged in, that they may see.
+	 * Notes this member may see and hasn't opened yet.
 	 *
-	 * A member with no recorded login yet sees no badge rather than a count of
-	 * every note ever published — the bubble is for what's new to them.
+	 * Deliberately based on what the member has actually read, not on when they
+	 * last logged in: a session where they read two of five new notes should
+	 * leave three on the bubble, not zero. A note counts as read once it has a
+	 * 'note_viewed' interaction, which the display layer records on first view.
+	 *
+	 * The gate runs on every note, so a Circle member only ever counts notes
+	 * their group is allowed to see — a 35-only note is never in their total.
 	 *
 	 * @param int $user_id The member.
 	 * @return int
 	 */
-	private static function count_new_notes( $user_id ) {
-		$since = (int) get_user_meta( $user_id, FF_Members::META_LAST_LOGIN, true );
-		if ( ! $since ) {
-			return 0;
-		}
-
+	private static function count_unread_notes( $user_id ) {
 		$notes = get_posts( array(
 			'post_type'      => FF_Post_Types::NOTE_CPT,
 			'post_status'    => 'publish',
-			'posts_per_page' => 50,
+			'posts_per_page' => self::NOTE_SCAN_LIMIT,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 			'fields'         => 'ids',
-			'date_query'     => array(
-				array( 'after' => gmdate( 'Y-m-d H:i:s', $since ), 'column' => 'post_date_gmt', 'inclusive' => false ),
-			),
 		) );
+		if ( empty( $notes ) ) {
+			return 0;
+		}
+
+		// One query for everything this member has already opened.
+		$seen = array_flip( FF_Interactions::reference_ids( $user_id, 'note_viewed' ) );
 
 		$count = 0;
 		foreach ( $notes as $note_id ) {
+			if ( isset( $seen[ (int) $note_id ] ) ) {
+				continue;
+			}
 			if ( FF_Gating::can_view_note( $note_id ) ) {
 				$count++;
 			}

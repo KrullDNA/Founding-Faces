@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.46
+Stable tag: 1.0.48
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,44 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.48 =
+* Fix: declining an application sent no email at all, while the status lookup
+  told the applicant to check an inbox that had nothing in it. A declined
+  applicant is now emailed, from a template editable on the Settings page
+  alongside the two welcome emails. Clearing the body field declines silently.
+* New: a "Send it again" button under the status lookup result. It re-sends to
+  the address already on file — a fresh welcome email with a brand-new
+  set-password link for an approved member (which also fixes an expired
+  seven-day token), the decline email for a declined applicant, or the received
+  confirmation for one still pending. The reply is identical in every case,
+  including for an unknown address, so the lookup still never reveals the
+  decision and can't be used to test whether someone applied. Rate-limited to
+  one send per address every fifteen minutes.
+* New: the Status Lookup widget gained a heading and body copy, each with full
+  style controls (colour, typography, alignment, margin, padding), plus style
+  controls for the "send it again" prompt and button.
+* New: an optional "Hide the form after a successful lookup" switch on the
+  Status Lookup widget, with a "check another email" link back. An unrecognised
+  email always keeps the form up so it can be corrected.
+
+= 1.0.47 =
+* Change: the notes bubble now counts genuinely unread notes rather than notes
+  published since the member's last login — a session where they read two of five
+  leaves three on the bubble instead of clearing it. A note counts as read once
+  it has been rendered to that member, and the gate still applies, so a Circle
+  member only ever counts notes their group may see.
+* Fix: reading notes in a list (the hub feed, a product's notes, the archive) now
+  records the view. Previously only a single-note page did, so notes read in a
+  list would never clear the count.
+* New: Founding Faces Member Bar widget — a header strip of Messages / Notes /
+  Polls links, each with its own count circle, plus an optional Log in / Log out
+  link. Full style controls for the circle (background, number colour and
+  typography, size, radius, border) and its position, either beside the label or
+  floating on the top-right corner like a mini-cart.
+* New: the count bubble shows a sample number while designing in the Elementor
+  editor or the Customizer, so it is always visible to style even when nothing is
+  actually unread.
 
 = 1.0.46 =
 * New: a dynamic Log in / Log out menu item. Set it per item in Appearance →

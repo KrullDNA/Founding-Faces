@@ -390,8 +390,16 @@ class FF_Members {
 	public static function decline( $application_id ) {
 		global $wpdb;
 
+		$table = $wpdb->prefix . 'ff_applications';
+
+		// Read the applicant before updating, so the decline email has a name
+		// and address to go to (a declined applicant never has a user account).
+		$app = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $application_id )
+		);
+
 		$updated = $wpdb->update(
-			$wpdb->prefix . 'ff_applications',
+			$table,
 			array( 'status' => 'declined' ),
 			array( 'id' => (int) $application_id ),
 			array( '%s' ),
@@ -401,6 +409,13 @@ class FF_Members {
 		if ( false === $updated ) {
 			return new WP_Error( 'ff_decline_failed', __( 'The application could not be updated.', 'founding-faces' ) );
 		}
+
+		// A decision is never silence: tell them, kindly. Sending is skipped
+		// automatically if the template body has been emptied in Settings.
+		if ( $app && ! empty( $app->email ) ) {
+			FF_Emails::send_decline( isset( $app->name ) ? $app->name : '', $app->email );
+		}
+
 		return true;
 	}
 

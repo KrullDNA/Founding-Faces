@@ -513,6 +513,10 @@ class FF_Application {
 		$atts         = is_array( $atts ) ? $atts : array();
 		$label        = ! empty( $atts['label'] ) ? $atts['label'] : __( 'Check your application status', 'founding-faces' );
 		$button_label = ! empty( $atts['button_label'] ) ? $atts['button_label'] : __( 'Check status', 'founding-faces' );
+		$heading      = isset( $atts['heading'] ) ? (string) $atts['heading'] : '';
+		$intro        = isset( $atts['intro'] ) ? (string) $atts['intro'] : '';
+		$hide_on_found = ( isset( $atts['hide_on_found'] ) && 'yes' === $atts['hide_on_found'] );
+		$again_label  = ! empty( $atts['again_label'] ) ? $atts['again_label'] : __( 'Check another email', 'founding-faces' );
 
 		$form_class = 'ff-form ff-status-form';
 		if ( ! empty( $atts['form_class'] ) ) {
@@ -521,10 +525,17 @@ class FF_Application {
 
 		$result_html = '';
 		$email       = '';
+		$found       = false;
 
-		// Process a submitted lookup. This only reads data, but we still verify
-		// a nonce so the endpoint can't be driven by an off-site form.
-		if ( isset( $_POST['ff_status_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['ff_status_nonce'] ), 'ff_status_lookup' ) ) {
+		// A "send it again" request: re-send the decision email to the address
+		// already on file. Handled before the lookup so the confirmation shows.
+		if ( isset( $_POST['ff_resend_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['ff_resend_nonce'] ), 'ff_status_resend' ) ) {
+			$email       = isset( $_POST['ff_status_email'] ) ? sanitize_email( wp_unslash( $_POST['ff_status_email'] ) ) : '';
+			$result_html = self::resend_decision_email( $email );
+			$found       = true;
+		} elseif ( isset( $_POST['ff_status_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['ff_status_nonce'] ), 'ff_status_lookup' ) ) {
+			// Process a submitted lookup. This only reads data, but we still
+			// verify a nonce so the endpoint can't be driven by an off-site form.
 			$email = isset( $_POST['ff_status_email'] ) ? sanitize_email( wp_unslash( $_POST['ff_status_email'] ) ) : '';
 
 			if ( '' === $email || ! is_email( $email ) ) {
@@ -532,8 +543,32 @@ class FF_Application {
 					. esc_html__( 'Please enter a valid email address.', 'founding-faces' )
 					. '</div>';
 			} else {
-				$result_html = self::status_message_for_email( $email );
+				$status      = self::status_for_email( $email );
+				$result_html = self::status_message_for_status( $status, $email );
+				// "Found" means we matched an application — a wrong email keeps
+				// the form up so it can be corrected straight away.
+				$found = ( null !== $status );
 			}
+		}
+
+		$out = '<div class="ff-status">';
+
+		if ( '' !== trim( $heading ) ) {
+			$out .= '<h3 class="ff-status-heading">' . esc_html( $heading ) . '</h3>';
+		}
+		if ( '' !== trim( $intro ) ) {
+			$out .= '<div class="ff-status-intro">' . wp_kses_post( wpautop( $intro ) ) . '</div>';
+		}
+
+		$out .= $result_html;
+
+		// With "hide the form" on, a matched lookup replaces the form with a
+		// link back — so the result stands alone, but is never a dead end.
+		if ( $hide_on_found && $found ) {
+			$out .= '<p class="ff-status-again"><a class="ff-status-again-link" href="'
+				. esc_url( self::current_url() ) . '">' . esc_html( $again_label ) . '</a></p>';
+			$out .= '</div>';
+			return $out;
 		}
 
 		ob_start();
@@ -550,36 +585,121 @@ class FF_Application {
 			</p>
 		</form>
 		<?php
-		$form_html = ob_get_clean();
+		$out .= ob_get_clean();
+		$out .= '</div>';
 
-		// Show the result above the form so it's the first thing seen.
-		return $result_html . $form_html;
+		return $out;
 	}
 
 	/**
-	 * Build the status message for a given email address.
+	 * The "send it again" form, shown under a decided application's message.
 	 *
-	 * Looks up the most recent application for the email and returns a friendly,
-	 * deliberately vague message. A decided application (approved either way, or
-	 * declined) is reported as "a decision has been made — check your email", so
-	 * the lookup never delivers a cold rejection and never leaks the group.
+	 * The address is carried in a hidden field, so the email only ever goes to
+	 * the address that was just looked up — which is the address on the
+	 * application. Nothing about the decision is shown on screen.
+	 *
+	 * @param string $email The looked-up email.
+	 * @return string
+	 */
+	private static function resend_form( $email ) {
+		$out  = '<form class="ff-status-resend" method="post" action="' . esc_url( self::current_url() ) . '">';
+		$out .= wp_nonce_field( 'ff_status_resend', 'ff_resend_nonce', true, false );
+		$out .= '<input type="hidden" name="ff_status_email" value="' . esc_attr( $email ) . '" />';
+		$out .= '<p class="ff-status-resend-hint">' . esc_html__( "Didn't receive it? Check your spam folder, or we can send it again.", 'founding-faces' ) . '</p>';
+		$out .= '<button type="submit" class="ff-status-resend-button">' . esc_html__( 'Send it again', 'founding-faces' ) . '</button>';
+		$out .= '</form>';
+		return $out;
+	}
+
+	/**
+	 * Re-send the decision email for an application, rate-limited.
+	 *
+	 * An approved member gets a fresh welcome email with a brand-new
+	 * set-password link, which also solves an expired seven-day token. A
+	 * declined applicant gets the decline email again. The reply is identical
+	 * either way, so the lookup still never reveals the decision — and it is
+	 * identical for an unknown address too, so this can't be used to test
+	 * whether someone applied.
+	 *
+	 * @param string $email The email to re-send to.
+	 * @return string The confirmation HTML.
+	 */
+	private static function resend_decision_email( $email ) {
+		// The same reassuring reply in every case, so nothing is disclosed.
+		$sent_notice = '<div class="ff-notice ff-notice--success">'
+			. esc_html__( "If there's an application for that email address, we've just sent it again. Please allow a few minutes, and check your spam folder.", 'founding-faces' )
+			. '</div>';
+
+		if ( '' === $email || ! is_email( $email ) ) {
+			return $sent_notice;
+		}
+
+		// Rate limit: one resend per address every fifteen minutes, so the
+		// button can't be used to flood someone's inbox.
+		$key = 'ff_resend_' . md5( strtolower( $email ) );
+		if ( get_transient( $key ) ) {
+			return '<div class="ff-notice">'
+				. esc_html__( "We've already sent that very recently. Please give it a few minutes to arrive, and check your spam folder.", 'founding-faces' )
+				. '</div>';
+		}
+		set_transient( $key, 1, 15 * MINUTE_IN_SECONDS );
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'ff_applications';
+		$app   = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM {$table} WHERE email = %s ORDER BY id DESC LIMIT 1", $email )
+		);
+
+		if ( ! $app ) {
+			return $sent_notice;
+		}
+
+		if ( 'pending' === $app->status ) {
+			// Nothing has been decided, so re-send the received confirmation.
+			FF_Emails::send_application_received( $app->name, $app->email );
+		} elseif ( 'declined' === $app->status ) {
+			FF_Emails::send_decline( $app->name, $app->email );
+		} elseif ( ! empty( $app->user_id ) ) {
+			// Approved: a fresh welcome email with a brand-new set-password link.
+			FF_Emails::send_welcome( (int) $app->user_id );
+		}
+
+		return $sent_notice;
+	}
+
+	/**
+	 * The stored status for an email address, or null if there's no application.
 	 *
 	 * @param string $email The applicant's email address.
-	 * @return string The message HTML.
+	 * @return string|null
 	 */
-	private static function status_message_for_email( $email ) {
+	private static function status_for_email( $email ) {
 		global $wpdb;
 
 		$table = $wpdb->prefix . 'ff_applications';
 
-		// The most recent application for this email.
-		$status = $wpdb->get_var(
+		return $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT status FROM {$table} WHERE email = %s ORDER BY id DESC LIMIT 1",
 				$email
 			)
 		);
+	}
 
+	/**
+	 * The message for a looked-up status.
+	 *
+	 * A decided application (approved either way, or declined) is reported as
+	 * "a decision has been made — check your email", so the lookup never
+	 * delivers a cold rejection and never leaks the group. Because a decision
+	 * email is now always sent, that instruction is true for everyone, and the
+	 * "send it again" button covers the case where it never arrived.
+	 *
+	 * @param string|null $status The stored status, or null if not found.
+	 * @param string      $email  The looked-up email.
+	 * @return string The message HTML.
+	 */
+	private static function status_message_for_status( $status, $email ) {
 		if ( null === $status ) {
 			return '<div class="ff-notice">'
 				. esc_html__( 'We couldn\'t find an application for that email address. Please check it and try again.', 'founding-faces' )
@@ -589,20 +709,16 @@ class FF_Application {
 		if ( 'pending' === $status ) {
 			return '<div class="ff-notice ff-notice--pending">'
 				. esc_html__( 'Your application is being reviewed. We\'ll email you as soon as there\'s news — thank you for your patience.', 'founding-faces' )
-				. '</div>';
+				. '</div>'
+				. self::resend_form( $email );
 		}
 
 		// Anything else means the application has been decided.
 		return '<div class="ff-notice ff-notice--decided">'
 			. esc_html__( 'A decision has been made on your application. Please check your inbox (including spam) for an email from Apotheca.', 'founding-faces' )
-			. '</div>';
+			. '</div>'
+			. self::resend_form( $email );
 	}
-
-	/*
-	 * -----------------------------------------------------------------------
-	 * Small helpers.
-	 * -----------------------------------------------------------------------
-	 */
 
 	/**
 	 * Work out the URL of the page currently being viewed.
