@@ -103,6 +103,19 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'description' => __( 'A "Load more" button fetches the next batch of this size without reloading the page. Set 0 to show every note at once.', 'founding-faces' ),
 		) );
 
+		$this->add_control( 'notes_paging', array(
+			'label'       => __( 'Paging', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'more',
+			'options'     => array(
+				'more'    => __( '"Load more" button', 'founding-faces' ),
+				'numbers' => __( 'Page numbers', 'founding-faces' ),
+				'both'    => __( 'Page numbers and "Load more"', 'founding-faces' ),
+			),
+			'condition'   => array( 'section' => array( 'all', 'notes' ) ),
+			'description' => __( 'With both, a member can jump to roughly the right page and then keep loading from there.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'filters_heading', array(
 			'label'     => __( 'Filters', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
@@ -559,6 +572,117 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->end_controls_section();
 
+		/* ========================== PAGE NUMBERS =========================== */
+		$this->start_controls_section( 'ff_ma_pager_style', array(
+			'label'     => __( 'Page numbers', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array(
+				'section'      => array( 'all', 'notes' ),
+				'notes_paging' => array( 'numbers', 'both' ),
+			),
+		) );
+		$this->add_responsive_control( 'pager_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'flex-start' => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center'     => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'flex-end'   => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-notes-pages' => 'justify-content: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'pager_typo',
+			'selector' => '{{WRAPPER}} .ff-notes-page',
+		) );
+
+		$this->start_controls_tabs( 'pager_tabs' );
+		$this->start_controls_tab( 'pager_tab_n', array( 'label' => __( 'Normal', 'founding-faces' ) ) );
+		$this->add_control( 'pager_color', array(
+			'label'     => __( 'Text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'pager_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'pager_border',
+			'selector' => '{{WRAPPER}} .ff-notes-page',
+		) );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab( 'pager_tab_h', array( 'label' => __( 'Hover', 'founding-faces' ) ) );
+		$this->add_control( 'pager_color_h', array(
+			'label'     => __( 'Text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page:hover' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'pager_bg_h', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page:hover' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'pager_border_h', array(
+			'label'     => __( 'Border colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page:hover' => 'border-color: {{VALUE}};' ),
+		) );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab( 'pager_tab_c', array( 'label' => __( 'Current', 'founding-faces' ) ) );
+		$this->add_control( 'pager_color_c', array(
+			'label'     => __( 'Text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page.is-current' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'pager_bg_c', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page.is-current' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'pager_border_c', array(
+			'label'     => __( 'Border colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page.is-current' => 'border-color: {{VALUE}};' ),
+		) );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+
+		$this->add_responsive_control( 'pager_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'separator'  => 'before',
+			'selectors'  => array( '{{WRAPPER}} .ff-notes-page' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'pager_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-notes-page' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'pager_gap', array(
+			'label'     => __( 'Gap between numbers', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-notes-pages' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'pager_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-notes-pages' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'pager_gap_color', array(
+			'label'     => __( 'Colour of the "…" gap', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-notes-page-gap' => 'color: {{VALUE}};' ),
+		) );
+		$this->end_controls_section();
+
 		/* ========================= PRODUCT LABEL =========================== */
 		$this->start_controls_section( 'ff_ma_product_style', array(
 			'label'     => __( 'Product label', 'founding-faces' ),
@@ -877,9 +1001,10 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			);
 			$show  = array_filter( $show );
 			$prod  = ! isset( $s['show_note_product'] ) || 'yes' === $s['show_note_product'];
+			$pag   = isset( $s['notes_paging'] ) ? $s['notes_paging'] : 'more';
 			$out  .= $sample
-				? FF_History::sample_notes( $h, $link, $per, $show, $prod )
-				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod );
+				? FF_History::sample_notes( $h, $link, $per, $show, $prod, $pag )
+				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod, $pag );
 		}
 		if ( 'all' === $section || 'feedback' === $section ) {
 			$h    = ( 'feedback' === $section ) ? $heading : '';

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.63
+Stable tag: 1.0.64
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.64 =
+* New: numbered pages on the member's notes list, as an alternative to the
+  "Load more" button or alongside it. A new Paging control offers "Load more"
+  button, Page numbers, or both — with both, a member can jump to roughly the
+  right page and then keep loading from there.
+* Long lists show a window of numbers rather than all of them: the first and
+  last pages, the two either side of the current one, and a "…" where pages
+  have been left out.
+* The numbers are built on the server and returned with every request, so a
+  filter that changes how many pages there are comes back with a pager that
+  already matches. Jumping to a page loads only that page's rows.
+* New "Page numbers" style section: alignment, typography, Normal/Hover/Current
+  colours and borders, corner radius, padding, the gap between numbers, margin,
+  and the colour of the "…".
 
 = 1.0.63 =
 * The Elementor editor now shows sample content by default, on the Member

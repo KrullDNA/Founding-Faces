@@ -1348,6 +1348,43 @@
 	color: var(--ff-error-ink);
 }
 
+/* Page numbers under a member's notes list. --------------------------------- */
+.ff-notes-pages {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+	margin-top: 1rem;
+}
+
+.ff-notes-page {
+	font-family: inherit;
+	font-size: 0.9rem;
+	line-height: 1;
+	color: var(--ff-ink);
+	background: transparent;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 0.45rem 0.7rem;
+	cursor: pointer;
+}
+
+.ff-notes-page:hover {
+	border-color: var(--ff-accent);
+}
+
+.ff-notes-page.is-current {
+	background: var(--ff-accent);
+	color: var(--ff-accent-ink);
+	border-color: var(--ff-accent);
+	cursor: default;
+}
+
+.ff-notes-page-gap {
+	color: var(--ff-muted);
+	padding: 0 0.15rem;
+}
+
 /* Filter bar above the member's notes list. ---------------------------------- */
 .ff-note-filters {
 	display: flex;

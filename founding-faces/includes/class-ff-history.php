@@ -248,15 +248,16 @@ class FF_History {
 	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true ) {
+	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more' ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
+		$paging  = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
 
 		// A full page, so the batch size can be judged on the canvas. Capped so
 		// that setting the page size to 100 doesn't bury the editor in samples.
 		$per_page = absint( $per_page );
 		$rows     = self::sample_note_pool( $per_page > 0 ? min( $per_page, self::SAMPLE_NOTE_LIMIT ) : 8 );
 
-		$out  = '<section class="ff-history-section ff-notes-section">';
+		$out  = '<section class="ff-history-section ff-notes-section" data-paging="' . esc_attr( $paging ) . '">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 		$out .= self::note_filter_bar( $show );
 		$out .= '<div class="ff-notes-results">';
@@ -279,11 +280,16 @@ class FF_History {
 		}
 		$out .= '</ul></div>';
 
-		// The editor always shows the button, whatever the page size, so it can
-		// be styled without first creating enough notes to trigger it.
-		if ( $per_page > 0 ) {
+		// The editor always shows the button and the numbers, whatever the page
+		// size, so both can be styled without first creating enough notes to
+		// trigger them. Five pages is enough to show the gap marker's spacing.
+		if ( $per_page > 0 && 'numbers' !== $paging ) {
 			$out .= '<div class="ff-notes-more"><button type="button" class="ff-notes-more-button">'
 				. esc_html__( 'Load more', 'founding-faces' ) . '</button></div>';
+		}
+		if ( 'more' !== $paging ) {
+			$rows_per = ( $per_page > 0 ) ? $per_page : 10;
+			$out     .= '<div class="ff-notes-pager">' . self::note_pager( 1, $rows_per * 5, $rows_per ) . '</div>';
 		}
 
 		$out .= '</section>';
@@ -462,10 +468,11 @@ class FF_History {
 	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true ) {
+	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more' ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
+		$paging  = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
 
-		$out  = '<section class="ff-history-section ff-notes-section">';
+		$out  = '<section class="ff-history-section ff-notes-section" data-paging="' . esc_attr( $paging ) . '">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 		$out .= self::note_filter_bar( $show );
 
@@ -488,37 +495,90 @@ class FF_History {
 		$out .= '</div>';
 
 		// The button is always in the markup so a filter change can reveal it;
-		// it stays hidden until there is genuinely more to load.
-		$has_more = ( $per_page > 0 && $total > $per_page );
+		// it stays hidden until there is genuinely more to load, and stays
+		// hidden altogether when the paging is numbers only.
+		$has_more = ( $per_page > 0 && $total > $per_page && 'numbers' !== $paging );
 		if ( $per_page > 0 || ! empty( $show ) ) {
 			self::enqueue_load_more();
 		}
 
-		if ( $per_page > 0 ) {
-			$out .= '<div class="ff-notes-more"' . ( $has_more ? '' : ' hidden' ) . '>';
-			$out .= '<button type="button" class="ff-notes-more-button"'
-				. ' data-offset="' . esc_attr( $per_page ) . '"'
+		if ( $per_page > 0 || ! empty( $show ) ) {
+			$offset = ( $per_page > 0 ) ? $per_page : 0;
+			$out   .= '<div class="ff-notes-more"' . ( $has_more ? '' : ' hidden' ) . '>';
+			$out   .= '<button type="button" class="ff-notes-more-button"'
+				. ' data-offset="' . esc_attr( $offset ) . '"'
 				. ' data-per-page="' . esc_attr( $per_page ) . '"'
 				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
 				. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
 				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
 				. esc_html__( 'Load more', 'founding-faces' )
 				. '</button>';
-			$out .= '</div>';
-		} elseif ( ! empty( $show ) ) {
-			// No paging, but the filters still need a nonce to talk to AJAX.
-			$out .= '<div class="ff-notes-more" hidden>';
-			$out .= '<button type="button" class="ff-notes-more-button"'
-				. ' data-offset="0" data-per-page="0"'
-				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
-				. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
-				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
-				. esc_html__( 'Load more', 'founding-faces' )
-				. '</button>';
-			$out .= '</div>';
+			$out   .= '</div>';
+		}
+
+		// Page numbers, when asked for. Always in the markup so a filter change
+		// can fill it in, even when the unfiltered list fits on one page.
+		if ( 'more' !== $paging ) {
+			$out .= '<div class="ff-notes-pager">' . self::note_pager( 1, $total, $per_page ) . '</div>';
 		}
 
 		return $out . '</section>';
+	}
+
+	/**
+	 * The numbered page links under a member's notes list.
+	 *
+	 * Long lists get a window rather than every number: the first and last
+	 * pages, the few either side of the current one, and a gap marker where
+	 * pages have been left out. Forty pages of links would be its own problem.
+	 *
+	 * @param int $current  The page being shown, from 1.
+	 * @param int $total    How many notes match.
+	 * @param int $per_page How many rows a page holds.
+	 * @return string
+	 */
+	public static function note_pager( $current, $total, $per_page ) {
+		$per_page = absint( $per_page );
+		if ( $per_page < 1 ) {
+			return '';
+		}
+
+		$pages = (int) ceil( $total / $per_page );
+		if ( $pages < 2 ) {
+			return '';
+		}
+
+		$current = min( max( 1, (int) $current ), $pages );
+		$window  = 2;
+		$show    = array( 1, $pages );
+
+		for ( $i = $current - $window; $i <= $current + $window; $i++ ) {
+			if ( $i > 0 && $i <= $pages ) {
+				$show[] = $i;
+			}
+		}
+
+		$show = array_values( array_unique( $show ) );
+		sort( $show );
+
+		$out  = '<nav class="ff-notes-pages" aria-label="' . esc_attr__( 'Notes pages', 'founding-faces' ) . '">';
+		$last = 0;
+		foreach ( $show as $page ) {
+			if ( $last && $page > $last + 1 ) {
+				$out .= '<span class="ff-notes-page-gap" aria-hidden="true">&hellip;</span>';
+			}
+
+			$classes = 'ff-notes-page' . ( $page === $current ? ' is-current' : '' );
+			$out    .= '<button type="button" class="' . esc_attr( $classes ) . '" data-page="' . esc_attr( $page ) . '"'
+				. ( $page === $current ? ' aria-current="page"' : '' ) . '>'
+				. esc_html( number_format_i18n( $page ) )
+				. '</button>';
+
+			$last = $page;
+		}
+		$out .= '</nav>';
+
+		return $out;
 	}
 
 	/**
@@ -878,11 +938,18 @@ class FF_History {
 		$rows = self::note_rows( $slice, $link, $product );
 		$next = ( $per_page > 0 ) ? $offset + count( $slice ) : $total;
 
+		// Which page this batch is, so the numbers can mark it as current. The
+		// pager is rendered here rather than assembled in the browser: the
+		// windowing rule then lives in one place, and a filter that changes the
+		// number of pages returns a pager that already matches.
+		$page = ( $per_page > 0 ) ? (int) floor( $offset / $per_page ) + 1 : 1;
+
 		wp_send_json_success( array(
 			'html'    => $rows,
 			'empty'   => ( 0 === $total ) ? esc_html__( 'No notes match these filters.', 'founding-faces' ) : '',
 			'offset'  => $next,
 			'hasMore' => ( $per_page > 0 ) && ( $next < $total ),
+			'pager'   => self::note_pager( $page, $total, $per_page ),
 		) );
 	}
 

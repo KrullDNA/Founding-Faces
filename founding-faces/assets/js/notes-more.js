@@ -1,9 +1,10 @@
 /**
- * Filtering and "load more" for a member's notes list.
+ * Filtering, "load more" and page numbers for a member's notes list.
  *
- * Both talk to the same endpoint. Changing a filter replaces the list from the
- * start; the button appends the next batch. Either way only the rows for that
- * request come back, so a member with hundreds of notes never waits on one
+ * All three talk to the same endpoint. Changing a filter replaces the list from
+ * the start, a page number replaces it from that page, and the button appends
+ * the next batch onto what is already there. Either way only the rows for that
+ * one request come back, so a member with hundreds of notes never waits on one
  * long list.
  *
  * No dependencies, no build step.
@@ -109,7 +110,51 @@
 	}
 
 	/**
-	 * Wire one notes section: its filters and its button.
+	 * Put a fresh set of rows in place of whatever is showing.
+	 *
+	 * @param {HTMLElement} results The results wrapper.
+	 * @param {Object}      data    The response payload.
+	 */
+	function replaceRows( results, data ) {
+		if ( data.empty ) {
+			results.innerHTML = '<p class="ff-empty-note"></p>';
+			results.firstChild.textContent = data.empty;
+			return;
+		}
+
+		results.innerHTML = '<ul class="ff-history-list ff-notes-read-list"></ul>';
+
+		var list = results.firstChild;
+		var rows = parseRows( data.html );
+		while ( rows.length ) {
+			list.appendChild( rows[ 0 ] );
+		}
+	}
+
+	/**
+	 * Redraw the page numbers, and show or hide the "load more" button.
+	 *
+	 * The pager markup is built on the server, so the rule for which numbers
+	 * appear lives in one place rather than two.
+	 *
+	 * @param {HTMLElement} section The notes section.
+	 * @param {HTMLElement} wrap    The "load more" wrapper.
+	 * @param {Object}      data    The response payload.
+	 */
+	function refreshControls( section, wrap, data ) {
+		var pager = section.querySelector( '.ff-notes-pager' );
+		if ( pager && undefined !== data.pager ) {
+			pager.innerHTML = data.pager;
+		}
+
+		if ( wrap ) {
+			// Numbers-only paging has no button to reveal.
+			wrap.hidden = ( 'numbers' === section.dataset.paging ) || ! data.hasMore;
+		}
+	}
+
+	/**
+	 * Wire one notes section: its filters, its button and its page numbers.
 	 *
 	 * @param {HTMLElement} section The notes section.
 	 */
@@ -157,10 +202,7 @@
 					button.dataset.offset = data.offset;
 					button.disabled = false;
 					button.textContent = label;
-
-					if ( ! data.hasMore ) {
-						wrap.hidden = true;
-					}
+					refreshControls( section, wrap, data );
 				} )
 				.catch( function () {
 					button.disabled = false;
@@ -179,27 +221,48 @@
 				request( section, button, 0 )
 					.then( function ( data ) {
 						section.classList.remove( 'is-loading' );
-
-						if ( data.empty ) {
-							results.innerHTML = '<p class="ff-empty-note"></p>';
-							results.firstChild.textContent = data.empty;
-						} else {
-							results.innerHTML = '<ul class="ff-history-list ff-notes-read-list"></ul>';
-							var list = results.firstChild;
-							var rows = parseRows( data.html );
-							while ( rows.length ) {
-								list.appendChild( rows[ 0 ] );
-							}
-						}
-
+						replaceRows( results, data );
 						button.dataset.offset = data.offset;
-						wrap.hidden = ! data.hasMore;
+						refreshControls( section, wrap, data );
 					} )
 					.catch( function () {
 						section.classList.remove( 'is-loading' );
 						showError( section );
 					} );
 			} );
+		} );
+
+		// --- Page numbers: jump straight to a page. ---
+		// Delegated, because the pager redraws itself after every request and
+		// a handler bound to today's buttons would not survive that.
+		section.addEventListener( 'click', function ( e ) {
+			var link = e.target.closest( '.ff-notes-page' );
+			if ( ! link || link.classList.contains( 'is-current' ) ) {
+				return;
+			}
+
+			var perPage = parseInt( button.dataset.perPage, 10 ) || 0;
+			var page    = parseInt( link.dataset.page, 10 ) || 1;
+			var offset  = ( page - 1 ) * perPage;
+
+			section.classList.add( 'is-loading' );
+			clearError( section );
+
+			request( section, button, offset )
+				.then( function ( data ) {
+					section.classList.remove( 'is-loading' );
+					replaceRows( results, data );
+					button.dataset.offset = data.offset;
+					refreshControls( section, wrap, data );
+
+					// The list has moved under the reader's feet, so put its
+					// top back where they can see it.
+					section.scrollIntoView( { block: 'start', behavior: 'smooth' } );
+				} )
+				.catch( function () {
+					section.classList.remove( 'is-loading' );
+					showError( section );
+				} );
 		} );
 	}
 
