@@ -693,6 +693,73 @@ class FF_Polls {
 	}
 
 	/**
+	 * A sample poll for the Elementor editor.
+	 *
+	 * Uses the live markup and classes so every part — the closed capsule, the
+	 * question, the bars (default, winning, your-choice), the labels and the
+	 * vote count — can be styled before a real poll exists or is voted on.
+	 *
+	 * @param string $state 'results' or 'voting'.
+	 * @return string
+	 */
+	public static function sample_poll( $state = 'results' ) {
+		$out = '<div class="ff-poll ff-poll--sample">';
+
+		if ( 'voting' === $state ) {
+			$out .= '<div class="ff-poll-inner">';
+			$out .= '<h3 class="ff-poll-question">' . esc_html__( 'Which shade should we take into the well-aging product?', 'founding-faces' ) . '</h3>';
+			$out .= '<div class="ff-poll-options">';
+			foreach ( array( __( 'Orange', 'founding-faces' ), __( 'Lime', 'founding-faces' ), __( 'Blush', 'founding-faces' ) ) as $label ) {
+				$out .= '<button type="button" class="ff-poll-option"><span class="ff-poll-option-label">' . esc_html( $label ) . '</span></button>';
+			}
+			$out .= '</div>';
+			$out .= '<p class="ff-poll-hint">' . esc_html__( 'Results are revealed once you vote.', 'founding-faces' ) . '</p>';
+			$out .= '</div></div>';
+			return $out;
+		}
+
+		$out .= '<div class="ff-poll-inner">';
+		$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">' . esc_html__( 'Poll closed', 'founding-faces' ) . '</span></div>';
+		$out .= '<h3 class="ff-poll-question">' . esc_html__( 'Which shade should we take into the well-aging product?', 'founding-faces' ) . '</h3>';
+
+		// Three options: the first is both the leader and the member's choice.
+		$rows = array(
+			array( __( 'Orange', 'founding-faces' ), 58, true, true ),
+			array( __( 'Lime', 'founding-faces' ), 27, false, false ),
+			array( __( 'Blush', 'founding-faces' ), 15, false, false ),
+		);
+		foreach ( $rows as $row ) {
+			$classes = 'ff-poll-result';
+			if ( $row[3] ) {
+				$classes .= ' is-mine';
+			}
+			if ( $row[2] ) {
+				$classes .= ' ff-poll-result--leading';
+			}
+			$out .= '<div class="' . esc_attr( $classes ) . '">';
+			$out .= '<div class="ff-poll-result-head">';
+			$out .= '<span class="ff-poll-result-label">' . esc_html( $row[0] );
+			if ( $row[3] ) {
+				$out .= '<span class="ff-poll-yours">' . esc_html__( 'Your choice', 'founding-faces' ) . '</span>';
+			}
+			$out .= '</span>';
+			$out .= '<span class="ff-poll-result-percent">' . esc_html( $row[1] ) . '%</span>';
+			$out .= '</div>';
+			$out .= '<div class="ff-poll-bar"><span class="ff-poll-bar-fill" style="width:' . esc_attr( $row[1] ) . '%;"></span></div>';
+			$out .= '</div>';
+		}
+
+		$out .= '<p class="ff-poll-total">' . esc_html__( '100 votes', 'founding-faces' ) . '</p>';
+		$out .= '<div class="ff-poll-outcome">';
+		$out .= '<span class="ff-poll-outcome-label">' . esc_html__( 'Where we landed', 'founding-faces' ) . '</span>';
+		$out .= '<p>' . esc_html__( 'Sample outcome text, so the reasoning block can be styled too.', 'founding-faces' ) . '</p>';
+		$out .= '</div>';
+		$out .= '</div></div>';
+
+		return $out;
+	}
+
+	/**
 	 * Render the voting form (question and clickable options).
 	 *
 	 * @param int $poll_id The poll id.

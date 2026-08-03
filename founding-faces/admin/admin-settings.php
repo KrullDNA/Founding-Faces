@@ -96,6 +96,13 @@ class FF_Settings {
 		// The page that hosts the members portal (used by message reply emails).
 		register_setting( self::GROUP, FF_Messages::OPT_PORTAL_PAGE, array( 'sanitize_callback' => 'absint' ) );
 
+		// The login/logout menu item and the Login widget.
+		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGIN_PAGE, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGIN_REDIRECT, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGOUT_REDIRECT, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGIN_LABEL, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGOUT_LABEL, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+
 		// Which connector is active (core). The connector add-on plugins register
 		// their own API-key settings against this same group via 'admin_init'.
 		register_setting(
@@ -338,6 +345,56 @@ class FF_Settings {
 					) );
 					?>
 					<p class="description"><?php esc_html_e( 'Your members\' home / hub page. Members are sent here when they log in, and the "Open my portal" button in message-reply emails points here too. Stored as a page, so it resolves to the correct address on staging and live automatically.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
+		<h2><?php esc_html_e( 'Log in and log out', 'founding-faces' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( 'Used by the "Log in / Log out" menu item (set it per item in Appearance → Menus) and by the Founding Faces Login widget.', 'founding-faces' ); ?>
+		</p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_PAGE ); ?>"><?php esc_html_e( 'Login page URL', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="url" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_PAGE ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_PAGE ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGIN_PAGE, '' ) ); ?>"
+						placeholder="<?php echo esc_attr( home_url( '/login/' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'The page holding your Founding Faces Login widget. Leave empty to use the standard WordPress login screen.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_REDIRECT ); ?>"><?php esc_html_e( 'After login, go to', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="url" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_REDIRECT ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_REDIRECT ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGIN_REDIRECT, '' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'Leave empty to use the members hub page set above — recommended, since that follows the site between staging and live.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_LOGOUT_REDIRECT ); ?>"><?php esc_html_e( 'After logout, go to', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="url" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_LOGOUT_REDIRECT ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGOUT_REDIRECT ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGOUT_REDIRECT, '' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'Leave empty for the home page.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_LABEL ); ?>"><?php esc_html_e( 'Menu labels', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_LABEL ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_LABEL ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGIN_LABEL, '' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Log in', 'founding-faces' ); ?>" />
+					<p class="description"><?php esc_html_e( 'Shown when logged out.', 'founding-faces' ); ?></p>
+					<input type="text" class="regular-text" style="margin-top:8px;" id="<?php echo esc_attr( FF_Menu_Items::OPT_LOGOUT_LABEL ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGOUT_LABEL ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGOUT_LABEL, '' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Log out', 'founding-faces' ); ?>" />
+					<p class="description"><?php esc_html_e( 'Shown when logged in.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>
