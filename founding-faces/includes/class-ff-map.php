@@ -164,6 +164,45 @@ class FF_Map {
 	 *
 	 * @return array A list of [lat, lng, tier] where tier is 35 or 0.
 	 */
+	/**
+	 * The points to draw, standing in samples while designing.
+	 *
+	 * With no approved members yet — or none with a postcode — the map would be
+	 * an empty grey rectangle in the Elementor editor, leaving the dot colour,
+	 * size and opacity controls with nothing to preview. Sample dots across the
+	 * Australian capitals fill that gap; they never appear on the live site.
+	 *
+	 * @return array
+	 */
+	public static function points_for_render() {
+		$points = self::build_points();
+
+		if ( ! empty( $points ) || ! FF_History::is_editor() ) {
+			return $points;
+		}
+
+		// Roughly the capitals, so the spread looks like a real membership.
+		$capitals = array(
+			array( -33.87, 151.21 ), array( -37.81, 144.96 ), array( -27.47, 153.03 ),
+			array( -31.95, 115.86 ), array( -34.93, 138.60 ), array( -42.88, 147.33 ),
+			array( -35.28, 149.13 ), array( -12.46, 130.84 ), array( -33.43, 151.34 ),
+			array( -38.15, 144.36 ), array( -28.00, 153.43 ), array( -32.93, 151.78 ),
+		);
+
+		// Same positional shape as build_points(): [lat, lng, 35 or 0].
+		$sample = array();
+		foreach ( $capitals as $i => $pair ) {
+			$sample[] = array(
+				$pair[0],
+				$pair[1],
+				// A realistic mix: roughly a third in The 35.
+				( 0 === $i % 3 ) ? 35 : 0,
+			);
+		}
+
+		return $sample;
+	}
+
 	public static function build_points() {
 		$users = get_users( array(
 			'meta_key'     => FF_Members::META_GROUP, // phpcs:ignore WordPress.DB.SlowDBQuery
@@ -294,7 +333,7 @@ class FF_Map {
 		// attribute (rather than a shared global) so the map initialises the
 		// same way on the front end and inside the Elementor editor.
 		$config = array(
-			'points'      => self::build_points(),
+			'points'      => self::points_for_render(),
 			'center'      => array( (float) $args['center'][0], (float) $args['center'][1] ),
 			'zoom'        => (int) $args['zoom'],
 			'minZoom'     => (int) $args['min_zoom'],

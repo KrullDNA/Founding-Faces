@@ -67,6 +67,35 @@ class FF_History {
 		return $edit || $prev;
 	}
 
+	/**
+	 * Whether a real render gave the editor nothing worth designing against.
+	 *
+	 * Deliberately based on the output, not on who is looking. Nick is an
+	 * administrator and usually a member too, so "is the viewer a member?" is
+	 * the wrong question in the editor — it makes the one person who designs
+	 * these pages the one person who never sees the samples. What matters is
+	 * whether real content came back: a blank render, a gate notice or an
+	 * empty state all mean there is nothing on screen to style.
+	 *
+	 * @param string $html The real render output.
+	 * @return bool
+	 */
+	public static function sample_needed( $html ) {
+		$html = (string) $html;
+
+		if ( '' === trim( wp_strip_all_tags( $html ) ) ) {
+			return true;
+		}
+
+		foreach ( array( 'ff-empty-note', 'ff-members-only', 'ff-empty', 'ff-notice' ) as $marker ) {
+			if ( false !== strpos( $html, $marker ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/*
 	 * -----------------------------------------------------------------------
 	 * Sample renderers.

@@ -242,7 +242,13 @@ class FF_Account_Widget extends \Elementor\Widget_Base {
 	 */
 	protected function render() {
 		if ( FF_Gating::is_member() ) {
-			echo FF_Account::render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$html = FF_Account::render();
+
+			if ( FF_History::is_editor() && FF_History::sample_needed( $html ) ) {
+				$html = FF_Account::sample();
+			}
+
+			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 		if ( FF_History::is_editor() ) {
