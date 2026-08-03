@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.46
+Stable tag: 1.0.47
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,24 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.47 =
+* Change: the notes bubble now counts genuinely unread notes rather than notes
+  published since the member's last login — a session where they read two of five
+  leaves three on the bubble instead of clearing it. A note counts as read once
+  it has been rendered to that member, and the gate still applies, so a Circle
+  member only ever counts notes their group may see.
+* Fix: reading notes in a list (the hub feed, a product's notes, the archive) now
+  records the view. Previously only a single-note page did, so notes read in a
+  list would never clear the count.
+* New: Founding Faces Member Bar widget — a header strip of Messages / Notes /
+  Polls links, each with its own count circle, plus an optional Log in / Log out
+  link. Full style controls for the circle (background, number colour and
+  typography, size, radius, border) and its position, either beside the label or
+  floating on the top-right corner like a mini-cart.
+* New: the count bubble shows a sample number while designing in the Elementor
+  editor or the Customizer, so it is always visible to style even when nothing is
+  actually unread.
 
 = 1.0.46 =
 * New: a dynamic Log in / Log out menu item. Set it per item in Appearance →

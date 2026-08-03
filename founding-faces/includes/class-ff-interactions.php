@@ -72,6 +72,57 @@ class FF_Interactions {
 	}
 
 	/**
+	 * Log an interaction once for each of many reference ids.
+	 *
+	 * The batched form of log_once(): one query to find what's already recorded,
+	 * then one insert per genuinely new id. Used when a list renders many notes
+	 * at once, where calling log_once() per note would mean a query each.
+	 *
+	 * @param int    $member_id The member's user id.
+	 * @param string $type      The interaction type.
+	 * @param int[]  $ids       The reference ids.
+	 */
+	public static function log_once_many( $member_id, $type, $ids ) {
+		$member_id = (int) $member_id;
+		$ids       = array_unique( array_filter( array_map( 'intval', (array) $ids ) ) );
+		if ( ! $member_id || empty( $ids ) ) {
+			return;
+		}
+
+		$seen = array_flip( self::reference_ids( $member_id, $type ) );
+		foreach ( $ids as $id ) {
+			if ( ! isset( $seen[ $id ] ) ) {
+				self::log( $member_id, $type, $id );
+			}
+		}
+	}
+
+	/**
+	 * The reference ids a member has already logged for a given type.
+	 *
+	 * One query instead of a has() call per item, for the places that need to
+	 * ask "which of these has this member seen?" — such as counting unread
+	 * notes for the menu bubble.
+	 *
+	 * @param int    $member_id The member's user id.
+	 * @param string $type      The interaction type (e.g. 'note_viewed').
+	 * @return int[] Reference ids, as integers.
+	 */
+	public static function reference_ids( $member_id, $type ) {
+		global $wpdb;
+
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT reference_id FROM {$wpdb->prefix}ff_interactions WHERE member_id = %d AND type = %s",
+				(int) $member_id,
+				$type
+			)
+		);
+
+		return array_map( 'intval', (array) $ids );
+	}
+
+	/**
 	 * Get a member's own interaction rows, newest first.
 	 *
 	 * Reads only the given member's rows — the caller passes the current

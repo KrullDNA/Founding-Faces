@@ -1063,3 +1063,29 @@
 	margin: 0;
 	color: var(--ff-ink);
 }
+
+/* Member bar: header links with their own count circles. --------------------- */
+.ff-member-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 20px;
+	font-family: var(--ff-font);
+}
+
+.ff-member-bar-item {
+	display: inline-flex;
+	align-items: center;
+	position: relative;
+	text-decoration: none;
+	color: inherit;
+	line-height: 1.2;
+}
+
+/* Mini-cart style: the circle floats over the label's top-right corner. */
+.ff-member-bar--corner .ff-menu-badge {
+	position: absolute;
+	top: -0.6em;
+	right: -0.9em;
+	margin-left: 0;
+}

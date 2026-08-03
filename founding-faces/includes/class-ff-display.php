@@ -232,6 +232,7 @@ class FF_Display {
 				$out .= self::render_note_card( $note );
 			}
 			$out .= '</div>';
+			self::mark_viewed( $notes );
 			// Optional "view all" link, e.g. on a hub page's latest-notes block.
 			if ( '' !== trim( (string) $atts['view_all_url'] ) ) {
 				$label = '' !== trim( (string) $atts['view_all_text'] ) ? $atts['view_all_text'] : __( 'View all notes', 'founding-faces' );
@@ -295,6 +296,7 @@ class FF_Display {
 				$out .= self::render_note_card( $note );
 			}
 			$out .= '</div>';
+			self::mark_viewed( $notes );
 		}
 		$out .= '</div>';
 
@@ -474,6 +476,7 @@ class FF_Display {
 						$out .= self::render_note_card( $note );
 					}
 					$out .= '</div>';
+					self::mark_viewed( $latest );
 				}
 			}
 			$out .= '</section>';
@@ -553,6 +556,26 @@ class FF_Display {
 		 * @param WP_Post $note The note being rendered.
 		 */
 		return apply_filters( 'ff_render_note', $out, $note );
+	}
+
+	/**
+	 * Record that a member has now seen these notes.
+	 *
+	 * A note card renders the note's full body, so a member who is shown one in
+	 * a list has read it in every sense that matters here — the same as opening
+	 * its own page. Recording it keeps the "unread notes" menu bubble honest:
+	 * it counts notes the member has never been shown, and clears as they work
+	 * through them, rather than resetting on every login.
+	 *
+	 * @param WP_Post[] $notes The notes that were rendered.
+	 */
+	private static function mark_viewed( $notes ) {
+		$member_id = get_current_user_id();
+		if ( ! $member_id || empty( $notes ) ) {
+			return;
+		}
+
+		FF_Interactions::log_once_many( $member_id, 'note_viewed', wp_list_pluck( $notes, 'ID' ) );
 	}
 
 	/*
