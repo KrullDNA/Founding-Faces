@@ -404,9 +404,23 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 	protected function render() {
 		$s = $this->get_settings_for_display();
 
-		// In the editor, show sample cards when there's nothing real yet, so
-		// every element can be styled up front.
-		if ( $this->ffds_is_editor() && ! FF_Gating::can_view_members_area() ) {
+		$view_all_url = '';
+		if ( isset( $s['show_view_all'] ) && 'yes' === $s['show_view_all'] && ! empty( $s['view_all_url']['url'] ) ) {
+			$view_all_url = $s['view_all_url']['url'];
+		}
+
+		$html = FF_Display::sc_notes( array(
+			'product'       => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
+			'stage'         => isset( $s['stage'] ) ? $s['stage'] : '',
+			'filters'       => ( isset( $s['filters'] ) && 'yes' === $s['filters'] ) ? 'yes' : 'no',
+			'limit'         => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,
+			'view_all_text' => isset( $s['view_all_text'] ) ? $s['view_all_text'] : '',
+			'view_all_url'  => $view_all_url,
+		) );
+
+		// In the editor, stand in sample cards when the real render had nothing
+		// to show, so every element can be styled up front.
+		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
 			echo '<div class="ff-notes-list">';
 			if ( ! isset( $s['filters'] ) || 'yes' === $s['filters'] ) {
 				echo FF_Display::sample_filter_chips(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -419,19 +433,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			return;
 		}
 
-		$view_all_url = '';
-		if ( isset( $s['show_view_all'] ) && 'yes' === $s['show_view_all'] && ! empty( $s['view_all_url']['url'] ) ) {
-			$view_all_url = $s['view_all_url']['url'];
-		}
-
-		echo FF_Display::sc_notes( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			'product'       => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
-			'stage'         => isset( $s['stage'] ) ? $s['stage'] : '',
-			'filters'       => ( isset( $s['filters'] ) && 'yes' === $s['filters'] ) ? 'yes' : 'no',
-			'limit'         => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,
-			'view_all_text' => isset( $s['view_all_text'] ) ? $s['view_all_text'] : '',
-			'view_all_url'  => $view_all_url,
-		) );
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
@@ -608,7 +610,11 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'show_sort'    => ( ! isset( $s['show_sort'] ) || 'yes' === $s['show_sort'] ) ? 'yes' : 'no',
 		);
 
-		if ( $this->ffds_is_editor() && ! FF_Gating::can_view_members_area() ) {
+		$html = FF_Display::sc_notes_archive( array_merge( $flags, array(
+			'limit' => isset( $s['limit'] ) ? absint( $s['limit'] ) : 30,
+		) ) );
+
+		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
 			echo '<div class="ff-notes-archive ff-notes-list">';
 			echo FF_Display::sample_filter_bar( $flags ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo FF_Display::sample_note_cards( 3 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -616,9 +622,7 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			return;
 		}
 
-		echo FF_Display::sc_notes_archive( array_merge( $flags, array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			'limit' => isset( $s['limit'] ) ? absint( $s['limit'] ) : 30,
-		) ) );
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
@@ -664,15 +668,17 @@ class FF_Note_Widget extends FF_Display_Widget_Base {
 	protected function render() {
 		$s = $this->get_settings_for_display();
 
-		if ( $this->ffds_is_editor() && ! FF_Gating::can_view_members_area() ) {
+		$html = FF_Display::sc_note( array(
+			'id'      => isset( $s['note_id'] ) ? absint( $s['note_id'] ) : 0,
+			'listing' => $this->ffds_listing_id( $s, 'listing' ),
+		) );
+
+		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
 			echo '<div class="ff-notes-single">' . FF_Display::sample_note_card() . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
-		echo FF_Display::sc_note( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			'id'      => isset( $s['note_id'] ) ? absint( $s['note_id'] ) : 0,
-			'listing' => $this->ffds_listing_id( $s, 'listing' ),
-		) );
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
@@ -721,14 +727,16 @@ class FF_Product_Header_Widget extends FF_Display_Widget_Base {
 	protected function render() {
 		$s = $this->get_settings_for_display();
 
-		if ( $this->ffds_is_editor() && ! FF_Gating::can_view_members_area() ) {
+		$html = FF_Display::sc_product_header( array(
+			'product' => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
+		) );
+
+		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
 			echo FF_Display::sample_product_header(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
-		echo FF_Display::sc_product_header( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			'product' => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
-		) );
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
@@ -901,7 +909,19 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 		$show_latest   = ( ! isset( $s['show_latest'] ) || 'yes' === $s['show_latest'] ) ? 'yes' : 'no';
 		$show_products = ( ! isset( $s['show_products'] ) || 'yes' === $s['show_products'] ) ? 'yes' : 'no';
 
-		if ( $this->ffds_is_editor() && ! FF_Gating::can_view_members_area() ) {
+		$html = FF_Display::sc_home( array(
+			'latest'           => isset( $s['latest'] ) ? absint( $s['latest'] ) : 8,
+			'latest_heading'   => isset( $s['latest_heading'] ) ? $s['latest_heading'] : '',
+			'products_heading' => isset( $s['products_heading'] ) ? $s['products_heading'] : '',
+			'show_latest'      => $show_latest,
+			'show_products'    => $show_products,
+			'latest_listing'   => $this->ffds_listing_id( $s, 'latest_listing' ),
+			'products_listing' => $this->ffds_listing_id( $s, 'products_listing' ),
+			'latest_columns'   => isset( $s['latest_columns'] ) ? absint( $s['latest_columns'] ) : 1,
+			'products_columns' => isset( $s['products_columns'] ) ? absint( $s['products_columns'] ) : 1,
+		) );
+
+		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
 			echo '<div class="ff-home">';
 			if ( 'yes' === $show_latest ) {
 				echo '<section class="ff-home-latest"><h2 class="ff-home-heading ff-home-heading--latest">'
@@ -921,16 +941,6 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 			return;
 		}
 
-		echo FF_Display::sc_home( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			'latest'           => isset( $s['latest'] ) ? absint( $s['latest'] ) : 8,
-			'latest_heading'   => isset( $s['latest_heading'] ) ? $s['latest_heading'] : '',
-			'products_heading' => isset( $s['products_heading'] ) ? $s['products_heading'] : '',
-			'show_latest'      => $show_latest,
-			'show_products'    => $show_products,
-			'latest_listing'   => $this->ffds_listing_id( $s, 'latest_listing' ),
-			'products_listing' => $this->ffds_listing_id( $s, 'products_listing' ),
-			'latest_columns'   => isset( $s['latest_columns'] ) ? absint( $s['latest_columns'] ) : 1,
-			'products_columns' => isset( $s['products_columns'] ) ? absint( $s['products_columns'] ) : 1,
-		) );
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

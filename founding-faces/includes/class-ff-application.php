@@ -551,6 +551,15 @@ class FF_Application {
 			}
 		}
 
+		// In the Elementor editor there is no submission to respond to, so show
+		// the result notice and the "send it again" prompt as samples — they are
+		// otherwise invisible and impossible to style.
+		// The form is deliberately left in place alongside the sample, even with
+		// "hide the form" switched on, so every element stays styleable at once.
+		if ( '' === $result_html && ! empty( $atts['editor_preview'] ) ) {
+			$result_html = self::sample_status_result();
+		}
+
 		$out = '<div class="ff-status">';
 
 		if ( '' !== trim( $heading ) ) {
@@ -589,6 +598,23 @@ class FF_Application {
 		$out .= '</div>';
 
 		return $out;
+	}
+
+	/**
+	 * A sample status-lookup result, for the Elementor editor.
+	 *
+	 * The result notice, the "send it again" prompt and the button only ever
+	 * appear after a real submission, so there would otherwise be nothing on
+	 * screen to style them against. This renders the pending state in the exact
+	 * live markup.
+	 *
+	 * @return string
+	 */
+	public static function sample_status_result() {
+		return '<div class="ff-notice ff-notice--pending">'
+			. esc_html__( 'Your application is being reviewed. We\'ll email you as soon as there\'s news — thank you for your patience.', 'founding-faces' )
+			. '</div>'
+			. self::resend_form( 'sample@example.com' );
 	}
 
 	/**

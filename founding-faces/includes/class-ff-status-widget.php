@@ -288,6 +288,13 @@ class FF_Status_Widget extends \Elementor\Widget_Base {
 			$args['again_label'] = $s['again_label'];
 		}
 
+		// In the editor, stand in a sample result so the notice, the "send it
+		// again" prompt and the button are visible and styleable.
+		if ( \Elementor\Plugin::$instance->editor->is_edit_mode()
+			|| ( isset( $_REQUEST['action'] ) && 'elementor_ajax' === $_REQUEST['action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$args['editor_preview'] = 'yes';
+		}
+
 		echo FF_Application::render_status_lookup( $args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

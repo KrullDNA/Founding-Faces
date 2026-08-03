@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.48
+Stable tag: 1.0.49
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,19 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.49 =
+* Fix: the editor dummy content added in 1.0.45 never appeared for an
+  administrator. It was shown only when the viewer failed the members-area
+  check, and an administrator always passes it — so the person designing the
+  page was the one person who could never see the samples. The samples now key
+  off the render itself: if the real output is empty, a gate notice or an
+  empty state, the sample stands in.
+* New: the Status Lookup widget now previews its result in the editor — the
+  status notice, the "Didn't receive it?" prompt and the "Send it again" button
+  all appear as samples, since they otherwise only exist after a real
+  submission. The form stays visible alongside them, so everything can be
+  styled in one pass.
 
 = 1.0.48 =
 * Fix: declining an application sent no email at all, while the status lookup
