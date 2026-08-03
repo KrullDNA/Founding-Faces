@@ -531,10 +531,11 @@
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.ff-poll-option:hover:not(:disabled) {
-	border-color: var(--ff-poll-accent);
-	box-shadow: 0 0 0 3px rgba(58, 61, 68, 0.1);
-}
+/*
+ * Hover changes nothing on its own. The old ring and accent border ignored the
+ * button's own border and shadow settings; the Hover tab in the widget now
+ * owns every part of this state.
+ */
 
 .ff-poll-option:disabled {
 	opacity: 0.6;
@@ -618,9 +619,13 @@
 	transition: width 0.4s ease;
 }
 
+/*
+ * The member's own bar is distinguished by its colour control alone. It used
+ * to carry a white inner ring, which sat on top of whatever colour was chosen
+ * in the editor and could not be turned off.
+ */
 .ff-poll-result.is-mine .ff-poll-bar-fill {
 	background: var(--ff-poll-accent);
-	box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
 }
 
 .ff-poll-total {
@@ -629,11 +634,15 @@
 	color: var(--ff-muted);
 }
 
+/*
+ * No border here. The block gets spacing and a background so it reads as a
+ * block at all; every edge treatment is a decision for the widget's Border,
+ * corner-radius and shadow controls to make, not this file.
+ */
 .ff-poll-outcome {
 	margin-top: var(--ff-poll-gap);
 	padding: 1rem 1.1rem;
 	background: var(--ff-bg);
-	border-left: 3px solid var(--ff-poll-accent);
 	border-radius: 4px;
 }
 

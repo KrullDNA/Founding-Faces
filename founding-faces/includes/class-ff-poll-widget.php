@@ -30,6 +30,44 @@ trait FF_Poll_Style_Controls {
 	 */
 	protected function register_poll_style_controls() {
 
+		/* ============================= POLL CARD ============================ */
+		$this->start_controls_section( 'ff_poll_card', array(
+			'label' => __( 'Poll card', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+		$this->add_control( 'card_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'card_border',
+			'selector' => '{{WRAPPER}} .ff-poll',
+		) );
+		$this->add_responsive_control( 'card_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'card_shadow',
+			'selector' => '{{WRAPPER}} .ff-poll',
+		) );
+		$this->add_responsive_control( 'card_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'card_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		/* ============================ RESULT BARS =========================== */
 		$this->start_controls_section( 'ff_poll_bars', array(
 			'label' => __( 'Result bars', 'founding-faces' ),
@@ -74,11 +112,76 @@ trait FF_Poll_Style_Controls {
 			'label'    => __( '"Your choice" label text', 'founding-faces' ),
 			'selector' => '{{WRAPPER}} .ff-poll-yours',
 		) );
+		$this->add_control( 'yours_bg', array(
+			'label'     => __( '"Your choice" background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-yours' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'yours_border',
+			'selector' => '{{WRAPPER}} .ff-poll-yours',
+		) );
+		$this->add_responsive_control( 'yours_radius', array(
+			'label'      => __( '"Your choice" corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-yours' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'yours_shadow',
+			'selector' => '{{WRAPPER}} .ff-poll-yours',
+		) );
+		$this->add_responsive_control( 'yours_padding', array(
+			'label'      => __( '"Your choice" padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-yours' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'yours_margin', array(
+			'label'       => __( '"Your choice" margin', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units'  => array( 'px', 'em' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-poll-yours' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'description' => __( 'Overrides the gap below, which sets the left margin on its own.', 'founding-faces' ),
+		) );
+		$this->add_responsive_control( 'yours_valign', array(
+			'label'     => __( '"Your choice" baseline nudge', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => -20, 'max' => 20 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-yours' => 'position: relative; top: {{SIZE}}{{UNIT}};' ),
+		) );
 		$this->add_responsive_control( 'yours_gap', array(
 			'label'     => __( 'Gap before "your choice" label', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SLIDER,
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
 			'selectors' => array( '{{WRAPPER}} .ff-poll-yours' => 'margin-left: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'mine_row_heading', array(
+			'label'     => __( 'The row you voted for', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'mine_row_bg', array(
+			'label'     => __( 'Row background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-result.is-mine' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'mine_row_border',
+			'selector' => '{{WRAPPER}} .ff-poll-result.is-mine',
+		) );
+		$this->add_responsive_control( 'mine_row_radius', array(
+			'label'      => __( 'Row corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-result.is-mine' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'mine_row_padding', array(
+			'label'      => __( 'Row padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-result.is-mine' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 		$this->add_responsive_control( 'bar_height', array(
 			'label'     => __( 'Bar height', 'founding-faces' ),
@@ -111,6 +214,28 @@ trait FF_Poll_Style_Controls {
 			'label'     => __( 'Question colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-poll-question' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'question_align', array(
+			'label'     => __( 'Question alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-question' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'question_margin', array(
+			'label'      => __( 'Question margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-question' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'question_padding', array(
+			'label'      => __( 'Question padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-question' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 		$this->add_control( 'label_color', array(
 			'label'     => __( 'Option label colour', 'founding-faces' ),
@@ -181,11 +306,19 @@ trait FF_Poll_Style_Controls {
 			'size_units' => array( 'px', 'em' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-poll-status-badge' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'capsule_border',
+			'selector' => '{{WRAPPER}} .ff-poll-status-badge',
+		) );
 		$this->add_responsive_control( 'capsule_radius', array(
 			'label'      => __( 'Corner radius', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
 			'size_units' => array( 'px', '%' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-poll-status-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'capsule_shadow',
+			'selector' => '{{WRAPPER}} .ff-poll-status-badge',
 		) );
 		$this->add_responsive_control( 'capsule_gap', array(
 			'label'     => __( 'Space below capsule', 'founding-faces' ),
@@ -228,12 +361,27 @@ trait FF_Poll_Style_Controls {
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-poll-option:hover' => 'background-color: {{VALUE}};' ),
 		) );
+		// Hover does nothing until it's set here, so the button's own border
+		// and shadow are never overridden by something the editor can't see.
+		$this->add_control( 'opt_border_hover', array(
+			'label'     => __( 'Border colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-option:hover' => 'border-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'opt_shadow_hover',
+			'selector' => '{{WRAPPER}} .ff-poll-option:hover',
+		) );
 		$this->end_controls_tab();
 		$this->end_controls_tabs();
 		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
 			'name'      => 'opt_border',
 			'selector'  => '{{WRAPPER}} .ff-poll-option',
 			'separator' => 'before',
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'opt_shadow',
+			'selector' => '{{WRAPPER}} .ff-poll-option',
 		) );
 		$this->add_responsive_control( 'opt_radius', array(
 			'label'      => __( 'Corner radius', 'founding-faces' ),
@@ -316,7 +464,91 @@ trait FF_Poll_Style_Controls {
 			'size_units' => array( 'px', '%' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-poll-outcome' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
+		// The block ships with no border of its own, so every edge here — one
+		// side or four — is set in the editor.
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'      => 'outcome_border',
+			'selector'  => '{{WRAPPER}} .ff-poll-outcome',
+			'separator' => 'before',
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'outcome_shadow',
+			'selector' => '{{WRAPPER}} .ff-poll-outcome',
+		) );
+		$this->add_responsive_control( 'outcome_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-outcome' => 'text-align: {{VALUE}};' ),
+		) );
 		$this->end_controls_section();
+	}
+
+	/**
+	 * Register the Content-tab fields for every fixed phrase a poll says.
+	 *
+	 * Each field is pre-filled with the wording the plugin would use anyway, so
+	 * the panel shows what is on the page rather than an empty box. Clearing a
+	 * field removes that line altogether — it is a way to say nothing, not a
+	 * way to render an empty element.
+	 */
+	protected function register_poll_text_controls() {
+		$defaults = FF_Polls::text_defaults();
+
+		$this->start_controls_section( 'ff_poll_words', array(
+			'label' => __( 'Wording', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+		) );
+
+		$fields = array(
+			'closed'     => array( __( '"Poll closed" capsule', 'founding-faces' ), '' ),
+			'hint'       => array( __( 'Hint under the options', 'founding-faces' ), '' ),
+			'yours'      => array( __( '"Your choice" label', 'founding-faces' ), '' ),
+			'outcome'    => array( __( '"Where we landed" label', 'founding-faces' ), '' ),
+			'total_one'  => array( __( 'Vote count — one vote', 'founding-faces' ), __( '%s is replaced by the number.', 'founding-faces' ) ),
+			'total_many' => array( __( 'Vote count — several votes', 'founding-faces' ), __( '%s is replaced by the number.', 'founding-faces' ) ),
+		);
+
+		foreach ( $fields as $key => $field ) {
+			$this->add_control( 'text_' . $key, array(
+				'label'       => $field[0],
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'default'     => $defaults[ $key ],
+				'placeholder' => $defaults[ $key ],
+				'label_block' => true,
+				'description' => $field[1],
+			) );
+		}
+
+		$this->add_control( 'text_note', array(
+			'type'             => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'              => esc_html__( 'Clear a field to leave that line off the poll entirely.', 'founding-faces' ),
+			'content_classes'  => 'elementor-descriptor',
+		) );
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Pull the wording settings out of a widget's saved settings.
+	 *
+	 * @param array $settings The widget settings.
+	 * @return array Wording overrides, keyed as FF_Polls expects.
+	 */
+	protected function ffp_text( $settings ) {
+		$text = array();
+
+		foreach ( array_keys( FF_Polls::text_defaults() ) as $key ) {
+			if ( isset( $settings[ 'text_' . $key ] ) ) {
+				$text[ $key ] = $settings[ 'text_' . $key ];
+			}
+		}
+
+		return $text;
 	}
 
 	/**
@@ -411,6 +643,9 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 
 		$this->end_controls_section();
 
+		// Every fixed phrase the poll says, as editable fields.
+		$this->register_poll_text_controls();
+
 		// --- Style controls (Apotheca tokens as defaults) ---
 		$this->start_controls_section(
 			'ff_poll_style',
@@ -480,6 +715,7 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 
 		$poll_id = isset( $settings['poll_id'] ) ? absint( $settings['poll_id'] ) : 0;
 		$spacing = isset( $settings['spacing']['size'] ) ? absint( $settings['spacing']['size'] ) : 16;
+		$text    = $this->ffp_text( $settings );
 
 		// In the editor, show a sample poll when there's no real one to render,
 		// so every part (bars, labels, capsule, outcome) can be styled up front.
@@ -488,9 +724,9 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 				'accent'  => isset( $settings['accent'] ) ? $settings['accent'] : '#3a3d44',
 				'align'   => isset( $settings['align'] ) ? $settings['align'] : 'left',
 				'spacing' => $spacing,
-			) );
+			), $text );
 			if ( '' === trim( (string) $preview ) ) {
-				echo FF_Polls::sample_poll( 'results' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo FF_Polls::sample_poll( 'results', $text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				return;
 			}
 			echo $preview; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -504,7 +740,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 				'accent'  => isset( $settings['accent'] ) ? $settings['accent'] : '#3a3d44',
 				'align'   => isset( $settings['align'] ) ? $settings['align'] : 'left',
 				'spacing' => $spacing,
-			)
+			),
+			$text
 		);
 	}
 }
@@ -651,10 +888,12 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 		$headings = ( ! isset( $s['headings'] ) || 'yes' === $s['headings'] ) ? 'yes' : 'no';
 		$show     = isset( $s['show'] ) && in_array( $s['show'], array( 'both', 'open', 'past' ), true ) ? $s['show'] : 'both';
 
+		$text = $this->ffp_text( $s );
+
 		$html = FF_Polls::archive_shortcode( array(
 			'headings' => $headings,
 			'show'     => $show,
-		) );
+		), $text );
 
 		// Editor: fall back to a sample archive so the layout can be styled even
 		// before any polls exist (or when the designer isn't a member).
@@ -662,13 +901,13 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 			echo '<div class="ff-polls-archive">';
 			if ( 'yes' === $headings && 'past' !== $show ) {
 				echo '<h2 class="ff-polls-archive-heading">' . esc_html__( 'Open now', 'founding-faces' ) . '</h2>';
-				echo '<div class="ff-polls-archive-grid">' . FF_Polls::sample_poll( 'voting' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<div class="ff-polls-archive-grid">' . FF_Polls::sample_poll( 'voting', $text ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			if ( 'open' !== $show ) {
 				if ( 'yes' === $headings ) {
 					echo '<h2 class="ff-polls-archive-heading">' . esc_html__( 'Past polls', 'founding-faces' ) . '</h2>';
 				}
-				echo '<div class="ff-polls-archive-grid">' . FF_Polls::sample_poll( 'results' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<div class="ff-polls-archive-grid">' . FF_Polls::sample_poll( 'results', $text ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			echo '</div>';
 			return;

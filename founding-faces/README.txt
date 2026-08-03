@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.59
+Stable tag: 1.0.60
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,31 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.60 =
+* Removed the decorative left border from the poll outcome block. It was drawn
+  in the stylesheet where nothing in the editor could reach it; the block now
+  ships with no border and the widget carries Border, corner-radius and shadow
+  controls so any edge treatment is a decision made in Elementor.
+* Removed two other hardcoded treatments for the same reason: the white inner
+  ring on the member's own result bar, which sat on top of the bar colour set
+  in the editor, and the hover ring and accent border on the voting buttons,
+  which overrode the button's own border and shadow. The Hover tab now carries
+  border colour and box shadow, so hover is styled rather than assumed.
+* New: a "Poll card" style section — background, border, corner radius, box
+  shadow, padding and margin for the poll as a whole.
+* New: full box controls for the "Your choice" label — background, border,
+  radius, shadow, padding, margin and a baseline nudge — and for the result row
+  the member voted for: background, border, radius and padding.
+* Added the missing controls elsewhere in the poll: question alignment, margin
+  and padding; border and shadow on the "Poll closed" capsule; border, shadow
+  and alignment on the outcome block; box shadow on the voting buttons.
+* New: a "Wording" section in the poll widget's Content tab. Every fixed phrase
+  — "Poll closed", the hint under the options, "Your choice", "Where we landed"
+  and the vote-count line (singular and plural) — is now a field, pre-filled
+  with the wording it replaces. Clearing a field leaves that line off entirely.
+* The wording travels with the poll, so the results shown straight after a
+  member votes say the same things as the rest of the poll.
 
 = 1.0.59 =
 * The votes list now gives the poll question the full width of the row, and

@@ -463,7 +463,7 @@ class FF_Polls {
 	 * @param array $atts Shortcode attributes.
 	 * @return string
 	 */
-	public static function archive_shortcode( $atts ) {
+	public static function archive_shortcode( $atts, $text = array() ) {
 		$atts = shortcode_atts(
 			array(
 				'headings' => 'yes',
@@ -518,7 +518,7 @@ class FF_Polls {
 			}
 			$out .= '<div class="ff-polls-archive-grid">';
 			foreach ( $open as $id ) {
-				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id ) . '</div>';
+				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id, array(), $text ) . '</div>';
 			}
 			$out .= '</div>';
 		}
@@ -529,7 +529,7 @@ class FF_Polls {
 			}
 			$out .= '<div class="ff-polls-archive-grid">';
 			foreach ( $closed as $id ) {
-				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id ) . '</div>';
+				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id, array(), $text ) . '</div>';
 			}
 			$out .= '</div>';
 		}
@@ -590,9 +590,20 @@ class FF_Polls {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
 
+		// The widget's wording comes back with the vote, so the results that
+		// replace the buttons say what the rest of the poll says. It only ever
+		// shapes this member's own screen, and it is stripped and escaped like
+		// any other text before it is rendered.
+		$text = array();
+		foreach ( array_keys( self::text_defaults() ) as $key ) {
+			if ( isset( $_POST[ 'text_' . $key ] ) ) {
+				$text[ $key ] = sanitize_text_field( wp_unslash( $_POST[ 'text_' . $key ] ) );
+			}
+		}
+
 		// Reveal the aggregate results, marking the member's own choice.
 		wp_send_json_success( array(
-			'html' => self::render_results( $poll_id, $option_id, false ),
+			'html' => self::render_results( $poll_id, $option_id, false, $text ),
 		) );
 	}
 
@@ -624,7 +635,48 @@ class FF_Polls {
 	 * @param array $style   Optional style overrides: accent, align, spacing.
 	 * @return string
 	 */
-	public static function render_poll( $poll_id = 0, $style = array() ) {
+	/**
+	 * The fixed wording a poll uses, before any widget overrides it.
+	 *
+	 * Every one of these is a phrase Nick may want to say differently, so each
+	 * is a field in the widget rather than a string only a developer can reach.
+	 *
+	 * @return array Key => default text.
+	 */
+	public static function text_defaults() {
+		return array(
+			'closed'     => __( 'Poll closed', 'founding-faces' ),
+			'hint'       => __( 'Results are revealed once you vote.', 'founding-faces' ),
+			'yours'      => __( 'Your choice', 'founding-faces' ),
+			'total_one'  => __( '%s vote', 'founding-faces' ),
+			'total_many' => __( '%s votes', 'founding-faces' ),
+			'outcome'    => __( 'Where we landed', 'founding-faces' ),
+		);
+	}
+
+	/**
+	 * Resolve a set of wording overrides against the defaults.
+	 *
+	 * A key that isn't supplied keeps its default. A key supplied as an empty
+	 * string is a deliberate choice to say nothing, and that line is dropped
+	 * from the markup entirely rather than rendered blank.
+	 *
+	 * @param array $overrides Widget-supplied wording.
+	 * @return array
+	 */
+	public static function text( $overrides = array() ) {
+		$text = self::text_defaults();
+
+		foreach ( $text as $key => $default ) {
+			if ( isset( $overrides[ $key ] ) ) {
+				$text[ $key ] = trim( wp_strip_all_tags( (string) $overrides[ $key ] ) );
+			}
+		}
+
+		return $text;
+	}
+
+	public static function render_poll( $poll_id = 0, $style = array(), $text = array() ) {
 		self::enqueue_front();
 
 		if ( ! $poll_id ) {
@@ -661,9 +713,18 @@ class FF_Polls {
 			esc_attr( $align )
 		);
 
-		$inner = self::render_inner( $poll_id );
+		$text  = self::text( $text );
+		$inner = self::render_inner( $poll_id, $text );
 
-		return '<div class="ff-poll" data-poll="' . esc_attr( $poll_id ) . '" style="' . esc_attr( $wrapper_style ) . '">'
+		// The wording travels with the markup so the results returned after a
+		// vote — rendered by an AJAX call that knows nothing about this widget
+		// — come back saying the same things this poll says now.
+		$data = '';
+		foreach ( $text as $key => $value ) {
+			$data .= ' data-text-' . esc_attr( str_replace( '_', '-', $key ) ) . '="' . esc_attr( $value ) . '"';
+		}
+
+		return '<div class="ff-poll" data-poll="' . esc_attr( $poll_id ) . '" style="' . esc_attr( $wrapper_style ) . '"' . $data . '>'
 			. $inner
 			. '</div>';
 	}
@@ -674,22 +735,23 @@ class FF_Polls {
 	 * @param int $poll_id The poll id.
 	 * @return string
 	 */
-	private static function render_inner( $poll_id ) {
+	private static function render_inner( $poll_id, $text = array() ) {
 		$state     = self::poll_state( $poll_id );
 		$member_id = get_current_user_id();
+		$text      = self::text( $text );
 
 		// Closed: show results and Nick's reasoning to everyone in the audience.
 		if ( 'closed' === $state ) {
-			return self::render_results( $poll_id, self::member_vote( $poll_id, $member_id ), true );
+			return self::render_results( $poll_id, self::member_vote( $poll_id, $member_id ), true, $text );
 		}
 
 		// Open and already voted: show results, marking their choice.
 		if ( self::has_voted( $poll_id, $member_id ) ) {
-			return self::render_results( $poll_id, self::member_vote( $poll_id, $member_id ), false );
+			return self::render_results( $poll_id, self::member_vote( $poll_id, $member_id ), false, $text );
 		}
 
 		// Open and not voted: show the voting form.
-		return self::render_form( $poll_id );
+		return self::render_form( $poll_id, $text );
 	}
 
 	/**
@@ -702,8 +764,9 @@ class FF_Polls {
 	 * @param string $state 'results' or 'voting'.
 	 * @return string
 	 */
-	public static function sample_poll( $state = 'results' ) {
-		$out = '<div class="ff-poll ff-poll--sample">';
+	public static function sample_poll( $state = 'results', $text = array() ) {
+		$text = self::text( $text );
+		$out  = '<div class="ff-poll ff-poll--sample">';
 
 		if ( 'voting' === $state ) {
 			$out .= '<div class="ff-poll-inner">';
@@ -713,13 +776,17 @@ class FF_Polls {
 				$out .= '<button type="button" class="ff-poll-option"><span class="ff-poll-option-label">' . esc_html( $label ) . '</span></button>';
 			}
 			$out .= '</div>';
-			$out .= '<p class="ff-poll-hint">' . esc_html__( 'Results are revealed once you vote.', 'founding-faces' ) . '</p>';
+			if ( '' !== $text['hint'] ) {
+				$out .= '<p class="ff-poll-hint">' . esc_html( $text['hint'] ) . '</p>';
+			}
 			$out .= '</div></div>';
 			return $out;
 		}
 
 		$out .= '<div class="ff-poll-inner">';
-		$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">' . esc_html__( 'Poll closed', 'founding-faces' ) . '</span></div>';
+		if ( '' !== $text['closed'] ) {
+			$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">' . esc_html( $text['closed'] ) . '</span></div>';
+		}
 		$out .= '<h3 class="ff-poll-question">' . esc_html__( 'Which shade should we take into the well-aging product?', 'founding-faces' ) . '</h3>';
 
 		// Three options: the first is both the leader and the member's choice.
@@ -739,8 +806,8 @@ class FF_Polls {
 			$out .= '<div class="' . esc_attr( $classes ) . '">';
 			$out .= '<div class="ff-poll-result-head">';
 			$out .= '<span class="ff-poll-result-label">' . esc_html( $row[0] );
-			if ( $row[3] ) {
-				$out .= '<span class="ff-poll-yours">' . esc_html__( 'Your choice', 'founding-faces' ) . '</span>';
+			if ( $row[3] && '' !== $text['yours'] ) {
+				$out .= '<span class="ff-poll-yours">' . esc_html( $text['yours'] ) . '</span>';
 			}
 			$out .= '</span>';
 			$out .= '<span class="ff-poll-result-percent">' . esc_html( $row[1] ) . '%</span>';
@@ -749,9 +816,13 @@ class FF_Polls {
 			$out .= '</div>';
 		}
 
-		$out .= '<p class="ff-poll-total">' . esc_html__( '100 votes', 'founding-faces' ) . '</p>';
+		if ( '' !== $text['total_many'] ) {
+			$out .= '<p class="ff-poll-total">' . str_replace( '%s', esc_html( number_format_i18n( 100 ) ), esc_html( $text['total_many'] ) ) . '</p>';
+		}
 		$out .= '<div class="ff-poll-outcome">';
-		$out .= '<span class="ff-poll-outcome-label">' . esc_html__( 'Where we landed', 'founding-faces' ) . '</span>';
+		if ( '' !== $text['outcome'] ) {
+			$out .= '<span class="ff-poll-outcome-label">' . esc_html( $text['outcome'] ) . '</span>';
+		}
 		$out .= '<p>' . esc_html__( 'Sample outcome text, so the reasoning block can be styled too.', 'founding-faces' ) . '</p>';
 		$out .= '</div>';
 		$out .= '</div></div>';
@@ -765,7 +836,8 @@ class FF_Polls {
 	 * @param int $poll_id The poll id.
 	 * @return string
 	 */
-	private static function render_form( $poll_id ) {
+	private static function render_form( $poll_id, $text = array() ) {
+		$text    = self::text( $text );
 		$options = self::get_options( $poll_id );
 
 		$out  = '<div class="ff-poll-inner">';
@@ -786,7 +858,9 @@ class FF_Polls {
 		}
 
 		$out .= '</div>';
-		$out .= '<p class="ff-poll-hint">' . esc_html__( 'Results are revealed once you vote.', 'founding-faces' ) . '</p>';
+		if ( '' !== $text['hint'] ) {
+			$out .= '<p class="ff-poll-hint">' . esc_html( $text['hint'] ) . '</p>';
+		}
 		$out .= '</div>';
 		return $out;
 	}
@@ -802,7 +876,8 @@ class FF_Polls {
 	 * @param bool $closed      Whether the poll is closed.
 	 * @return string
 	 */
-	public static function render_results( $poll_id, $member_vote = 0, $closed = false ) {
+	public static function render_results( $poll_id, $member_vote = 0, $closed = false, $text = array() ) {
+		$text = self::text( $text );
 		$options = self::get_options( $poll_id );
 		$tally   = self::tally( $poll_id );
 		$total   = array_sum( $tally );
@@ -810,10 +885,11 @@ class FF_Polls {
 
 		$out = '<div class="ff-poll-inner ff-poll-results">';
 
-		// Closed capsule, above the question. Stylable via the widget controls.
-		if ( $closed ) {
+		// Closed capsule, above the question. Its wording and styling both come
+		// from the widget; cleared wording means no capsule at all.
+		if ( $closed && '' !== $text['closed'] ) {
 			$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">'
-				. esc_html__( 'Poll closed', 'founding-faces' ) . '</span></div>';
+				. esc_html( $text['closed'] ) . '</span></div>';
 		}
 
 		$out .= '<h3 class="ff-poll-question">' . esc_html( get_the_title( $poll_id ) ) . '</h3>';
@@ -834,8 +910,8 @@ class FF_Polls {
 			$out .= '<div class="' . esc_attr( $classes ) . '">';
 			$out .= '<div class="ff-poll-result-head">';
 			$out .= '<span class="ff-poll-result-label">' . esc_html( $opt['label'] );
-			if ( $mine ) {
-				$out .= '<span class="ff-poll-yours">' . esc_html__( 'Your choice', 'founding-faces' ) . '</span>';
+			if ( $mine && '' !== $text['yours'] ) {
+				$out .= '<span class="ff-poll-yours">' . esc_html( $text['yours'] ) . '</span>';
 			}
 			$out .= '</span>';
 			$out .= '<span class="ff-poll-result-percent">' . esc_html( $percent ) . '%</span>';
@@ -844,11 +920,16 @@ class FF_Polls {
 			$out .= '</div>';
 		}
 
-		$out .= '<p class="ff-poll-total">' . sprintf(
-			/* translators: %s is the number of votes. */
-			esc_html( _n( '%s vote', '%s votes', $total, 'founding-faces' ) ),
-			esc_html( number_format_i18n( $total ) )
-		) . '</p>';
+		// str_replace, not sprintf: the wording is Nick's to write, and a stray
+		// per-cent sign in it should read as a per-cent sign, not crash a format.
+		$count_text = ( 1 === $total ) ? $text['total_one'] : $text['total_many'];
+		if ( '' !== $count_text ) {
+			$out .= '<p class="ff-poll-total">' . str_replace(
+				'%s',
+				esc_html( number_format_i18n( $total ) ),
+				esc_html( $count_text )
+			) . '</p>';
+		}
 
 		// On close, show the outcome and Nick's reasoning (the "closed" status is
 		// now shown as the capsule above the question).
@@ -856,7 +937,9 @@ class FF_Polls {
 			$outcome = get_post_meta( $poll_id, self::META_OUTCOME, true );
 			if ( trim( (string) $outcome ) !== '' ) {
 				$out .= '<div class="ff-poll-outcome">';
-				$out .= '<span class="ff-poll-outcome-label">' . esc_html__( 'Where we landed', 'founding-faces' ) . '</span>';
+				if ( '' !== $text['outcome'] ) {
+					$out .= '<span class="ff-poll-outcome-label">' . esc_html( $text['outcome'] ) . '</span>';
+				}
 				$out .= wpautop( wp_kses_post( $outcome ) );
 				$out .= '</div>';
 			}
