@@ -137,13 +137,13 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$this->add_control( 'preview_mode', array(
 			'label'       => __( 'Editor preview', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SELECT,
-			'default'     => 'auto',
+			'default'     => 'sample',
 			'separator'   => 'before',
 			'options'     => array(
-				'auto'   => __( 'Your own data, samples if there is none', 'founding-faces' ),
-				'sample' => __( 'Always show sample content', 'founding-faces' ),
+				'sample' => __( 'Sample content', 'founding-faces' ),
+				'real'   => __( 'Your own record', 'founding-faces' ),
 			),
-			'description' => __( 'Affects the editor only. Choose samples to style a full page of notes, the filters and the "Load more" button without waiting for enough real notes to exist.', 'founding-faces' ),
+			'description' => __( 'The editor shows samples so a full page of notes, the filters and the "Load more" button can all be styled. The front end always shows each member their own record.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'show_line', array(
@@ -886,9 +886,9 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			$out .= $sample ? FF_History::sample_feedback( $h ) : FF_History::render_feedback( $mid, $h );
 		}
 		if ( 'all' === $section || 'messages' === $section ) {
-			// The message centre self-detects the member (or shows a sample in
-			// the editor), so the same call is right for both.
-			$out .= FF_Messages::sc_messages();
+			// The message centre self-detects the member; in the editor it
+			// follows the same sample-first rule as the sections above.
+			$out .= FF_Messages::sc_messages( ! $sample );
 		}
 
 		$out .= '</div>';
@@ -903,12 +903,12 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$s = $this->get_settings_for_display();
 
 		$editing = FF_History::is_editor();
-		$forced  = isset( $s['preview_mode'] ) && 'sample' === $s['preview_mode'];
+		$real    = isset( $s['preview_mode'] ) && 'real' === $s['preview_mode'];
 
-		// Asked for samples in the editor: show them whatever the member's own
-		// record holds. A member with two notes can't otherwise see what ten
-		// notes and a "Load more" button look like.
-		if ( $editing && $forced ) {
+		// Samples are what the editor shows. Nick's own record holds whatever
+		// it happens to hold — two notes, no votes — and a design made against
+		// that is a design with no page of notes, no badge and no button in it.
+		if ( $editing && ! $real ) {
 			echo $this->build( $s, null, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}

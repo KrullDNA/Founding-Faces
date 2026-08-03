@@ -197,13 +197,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 == Changelog ==
 
 = 1.0.63 =
-* New: an "Editor preview" control on the Member Archive widget and all five
-  display widgets — "Real content, samples if there is none" (the behaviour so
-  far) or "Always show sample content". The editor only ever fell back to
-  samples when the real render came back empty, so an account with two real
-  notes could never see what a full page of ten and its "Load more" button
-  look like. Now it can be asked for.
-* The front end is untouched by the setting: it always shows the real thing.
+* The Elementor editor now shows sample content by default, on the Member
+  Archive widget, all five display widgets and the message centre. Samples used
+  to appear only when the real render came back empty, so an account holding
+  two real notes rendered two real notes — no full page, no "Load more" button,
+  nothing to design against. The editor is where the design is made, so it
+  shows the full case.
+* New "Editor preview" control on each of those widgets, should the real
+  content be wanted on the canvas instead.
+* The front end is untouched by the setting: every member always sees their own
+  real record.
 
 = 1.0.62 =
 * "You chose: …" in the votes list is now its own box, the way the Unread

@@ -318,26 +318,33 @@ trait FF_Display_Style_Controls {
 		$this->add_control( 'preview_mode', array(
 			'label'       => __( 'Editor preview', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SELECT,
-			'default'     => 'auto',
+			'default'     => 'sample',
 			'separator'   => 'before',
 			'options'     => array(
-				'auto'   => __( 'Real content, samples if there is none', 'founding-faces' ),
-				'sample' => __( 'Always show sample content', 'founding-faces' ),
+				'sample' => __( 'Sample content', 'founding-faces' ),
+				'real'   => __( 'The real content on this site', 'founding-faces' ),
 			),
-			'description' => __( 'Affects the editor only; the front end always shows the real thing.', 'founding-faces' ),
+			'description' => __( 'The editor shows samples so every element can be styled. The front end always shows the real thing, whichever is chosen here.', 'founding-faces' ),
 		) );
 	}
 
 	/**
-	 * Whether the editor has been told to show samples regardless.
+	 * Whether the editor should draw sample content rather than the real thing.
+	 *
+	 * Samples are the default, not the fallback. The editor is where the design
+	 * is made, and a design has to cover the full case — every badge, a whole
+	 * page of rows, the button under them — not whatever this site's records
+	 * happen to hold today. Choosing "the real content" opts out.
 	 *
 	 * @param array $settings The widget settings.
 	 * @return bool
 	 */
 	protected function ffds_force_sample( $settings ) {
-		return $this->ffds_is_editor()
-			&& isset( $settings['preview_mode'] )
-			&& 'sample' === $settings['preview_mode'];
+		if ( ! $this->ffds_is_editor() ) {
+			return false;
+		}
+
+		return ! isset( $settings['preview_mode'] ) || 'real' !== $settings['preview_mode'];
 	}
 
 	protected function ffds_needs_sample( $html ) {
