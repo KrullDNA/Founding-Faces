@@ -1245,6 +1245,20 @@
 	font-weight: 700;
 }
 
+/*
+ * The product a note belongs to, above its title. align-self keeps it hugging
+ * its own text inside the flex column, so a background or border set in the
+ * editor wraps the words rather than the whole row.
+ */
+.ff-note-product {
+	align-self: flex-start;
+	color: var(--ff-muted);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
 /* "Load more" on the member's notes list. ------------------------------------ */
 .ff-notes-more {
 	margin-top: 1rem;

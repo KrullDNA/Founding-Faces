@@ -84,6 +84,15 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition'    => array( 'section' => array( 'all', 'notes' ) ),
 		) );
 
+		$this->add_control( 'show_note_product', array(
+			'label'        => __( 'Show the product above each note', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+			'condition'    => array( 'section' => array( 'all', 'notes' ) ),
+			'description'  => __( 'Notes with no product attached simply skip the line.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'notes_per_page', array(
 			'label'       => __( 'Notes per page', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::NUMBER,
@@ -538,6 +547,55 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->end_controls_section();
 
+		/* ========================= PRODUCT LABEL =========================== */
+		$this->start_controls_section( 'ff_ma_product_style', array(
+			'label'     => __( 'Product label', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array(
+				'section'           => array( 'all', 'notes' ),
+				'show_note_product' => 'yes',
+			),
+		) );
+		$this->add_control( 'np_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-product' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'np_typo',
+			'label'    => __( 'Typography', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-note-product',
+		) );
+		$this->add_control( 'np_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'separator' => 'before',
+			'selectors' => array( '{{WRAPPER}} .ff-note-product' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'np_border',
+			'selector' => '{{WRAPPER}} .ff-note-product',
+		) );
+		$this->add_responsive_control( 'np_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-product' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'np_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-product' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'np_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-product' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		/* ========================== UNREAD BADGE =========================== */
 		$this->start_controls_section( 'ff_ma_unread_style', array(
 			'label'     => __( '"Unread" badge', 'founding-faces' ),
@@ -765,9 +823,10 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 				'sort'    => ( isset( $s['filter_sort'] ) && 'yes' === $s['filter_sort'] ),
 			);
 			$show  = array_filter( $show );
+			$prod  = ! isset( $s['show_note_product'] ) || 'yes' === $s['show_note_product'];
 			$out  .= $sample
-				? FF_History::sample_notes( $h, $link, $per, $show )
-				: FF_History::render_notes( $mid, $h, $link, $per, $show );
+				? FF_History::sample_notes( $h, $link, $per, $show, $prod )
+				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod );
 		}
 		if ( 'all' === $section || 'feedback' === $section ) {
 			$h    = ( 'feedback' === $section ) ? $heading : '';
