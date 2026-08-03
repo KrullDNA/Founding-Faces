@@ -62,7 +62,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 				'all'      => __( 'Full record (all sections)', 'founding-faces' ),
 				'header'   => __( 'Number & group header', 'founding-faces' ),
 				'votes'    => __( 'Votes', 'founding-faces' ),
-				'notes'    => __( 'Notes you\'ve read', 'founding-faces' ),
+				'notes'    => __( 'Notes (unread first)', 'founding-faces' ),
 				'feedback' => __( 'Feedback', 'founding-faces' ),
 				'messages' => __( 'Private messages (conversations)', 'founding-faces' ),
 			),
@@ -372,6 +372,64 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$this->end_controls_section();
 
 		/* ============================ ITEM TEXT ============================ */
+		/* ========================== UNREAD BADGE =========================== */
+		$this->start_controls_section( 'ff_ma_unread_style', array(
+			'label'     => __( '"Unread" badge', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
+		$this->add_control( 'unread_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-unread-badge' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'unread_color', array(
+			'label'     => __( 'Text colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-unread-badge' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'unread_typo',
+			'label'    => __( 'Badge text', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-unread-badge',
+		) );
+		$this->add_responsive_control( 'unread_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-unread-badge' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'unread_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-unread-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'unread_gap', array(
+			'label'     => __( 'Gap from the title', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-unread-badge' => 'margin-left: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'unread_row_h', array(
+			'label'     => __( 'Unread row', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'unread_row_bg', array(
+			'label'     => __( 'Row background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-row.is-unread' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'unread_row_weight', array(
+			'label'     => __( 'Bold the unread titles', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => '700',
+			'default'   => '700',
+			'selectors' => array( '{{WRAPPER}} .ff-note-row.is-unread .ff-history-item-main' => 'font-weight: {{VALUE}};' ),
+		) );
+		$this->end_controls_section();
+
 		$this->start_controls_section( 'ff_ma_text_style', array(
 			'label'     => __( 'Item text', 'founding-faces' ),
 			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,

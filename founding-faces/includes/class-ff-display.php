@@ -232,7 +232,6 @@ class FF_Display {
 				$out .= self::render_note_card( $note );
 			}
 			$out .= '</div>';
-			self::mark_viewed( $notes );
 			// Optional "view all" link, e.g. on a hub page's latest-notes block.
 			if ( '' !== trim( (string) $atts['view_all_url'] ) ) {
 				$label = '' !== trim( (string) $atts['view_all_text'] ) ? $atts['view_all_text'] : __( 'View all notes', 'founding-faces' );
@@ -296,7 +295,6 @@ class FF_Display {
 				$out .= self::render_note_card( $note );
 			}
 			$out .= '</div>';
-			self::mark_viewed( $notes );
 		}
 		$out .= '</div>';
 
@@ -476,7 +474,6 @@ class FF_Display {
 						$out .= self::render_note_card( $note );
 					}
 					$out .= '</div>';
-					self::mark_viewed( $latest );
 				}
 			}
 			$out .= '</section>';
@@ -558,25 +555,14 @@ class FF_Display {
 		return apply_filters( 'ff_render_note', $out, $note );
 	}
 
-	/**
-	 * Record that a member has now seen these notes.
-	 *
-	 * A note card renders the note's full body, so a member who is shown one in
-	 * a list has read it in every sense that matters here — the same as opening
-	 * its own page. Recording it keeps the "unread notes" menu bubble honest:
-	 * it counts notes the member has never been shown, and clears as they work
-	 * through them, rather than resetting on every login.
-	 *
-	 * @param WP_Post[] $notes The notes that were rendered.
+	/*
+	 * A note counts as read only when the member opens its own page, not when a
+	 * card appears in a list. Marking on list render looked reasonable, but it
+	 * emptied the unread list the moment a member landed on the hub — the feed
+	 * there would have silently marked everything read before they had chosen to
+	 * read anything. sc_note() records the view instead, so "unread" keeps
+	 * meaning something and the count bubble stays honest.
 	 */
-	private static function mark_viewed( $notes ) {
-		$member_id = get_current_user_id();
-		if ( ! $member_id || empty( $notes ) ) {
-			return;
-		}
-
-		FF_Interactions::log_once_many( $member_id, 'note_viewed', wp_list_pluck( $notes, 'ID' ) );
-	}
 
 	/*
 	 * -----------------------------------------------------------------------

@@ -172,21 +172,26 @@ class FF_History {
 	 * @return string
 	 */
 	public static function sample_notes( $heading = '', $link = true ) {
-		$heading = '' !== $heading ? $heading : __( 'Notes you\'ve read', 'founding-faces' );
-		$titles  = array(
-			__( 'Trial 12 — stability at 40°C', 'founding-faces' ),
-			__( 'Switching to a mild preservative system', 'founding-faces' ),
-			__( 'Why we rejected the first serum base', 'founding-faces' ),
+		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
+		$rows    = array(
+			array( __( 'Trial 14 — the new emulsifier', 'founding-faces' ), true ),
+			array( __( 'Switching to a mild preservative system', 'founding-faces' ), true ),
+			array( __( 'Trial 12 — stability at 40°C', 'founding-faces' ), false ),
+			array( __( 'Why we rejected the first serum base', 'founding-faces' ), false ),
 		);
 
 		$out  = '<section class="ff-history-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
-		$out .= '<ul class="ff-history-list">';
-		foreach ( $titles as $i => $title ) {
-			$main = $link ? '<a href="#">' . esc_html( $title ) . '</a>' : esc_html( $title );
-			$out .= '<li class="ff-history-item">';
+		$out .= '<ul class="ff-history-list ff-notes-read-list">';
+		foreach ( $rows as $i => $row ) {
+			$main = $link ? '<a href="#">' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
+			$out .= '<li class="ff-history-item ff-note-row' . ( $row[1] ? ' is-unread' : '' ) . '">';
 			$out .= '<div class="ff-history-item-body">';
-			$out .= '<span class="ff-history-item-main">' . $main . '</span>';
+			$out .= '<span class="ff-history-item-main">' . $main;
+			if ( $row[1] ) {
+				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
+			}
+			$out .= '</span>';
 			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
@@ -360,37 +365,76 @@ class FF_History {
 	 * @return string
 	 */
 	public static function render_notes( $member_id, $heading = '', $link = true ) {
-		$rows    = FF_Interactions::get_for_member( $member_id, 'note_viewed' );
-		$heading = '' !== $heading ? $heading : __( 'Notes you\'ve read', 'founding-faces' );
+		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 
-		if ( empty( $rows ) ) {
-			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t opened any notes yet.', 'founding-faces' ) . '</p>';
+		// Every note this member is allowed to see, newest first. The gate runs
+		// per note, so a Circle member never sees a 35-only note here.
+		$note_ids = get_posts( array(
+			'post_type'      => FF_Post_Types::NOTE_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => 200,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'fields'         => 'ids',
+		) );
+		$note_ids = array_values( array_filter( $note_ids, array( 'FF_Gating', 'can_view_note' ) ) );
+
+		if ( empty( $note_ids ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
 			return $out . '</section>';
 		}
 
-		$out .= '<ul class="ff-history-list">';
-		foreach ( $rows as $row ) {
-			$ref   = (int) $row->reference_id;
-			$title = get_the_title( $ref );
-			$title = $title ? $title : __( '(note removed)', 'founding-faces' );
+		// When each note was read, so the read ones can carry their own date and
+		// be ordered by when this member actually opened them.
+		$read_dates = array();
+		foreach ( FF_Interactions::get_for_member( $member_id, 'note_viewed' ) as $row ) {
+			$read_dates[ (int) $row->reference_id ] = $row->created_at;
+		}
 
-			// Link the title to the note's own page when asked and possible.
+		$unread = array();
+		$read   = array();
+		foreach ( $note_ids as $note_id ) {
+			$note_id = (int) $note_id;
+			if ( isset( $read_dates[ $note_id ] ) ) {
+				$read[] = array( $note_id, $read_dates[ $note_id ] );
+			} else {
+				$unread[] = array( $note_id, get_post_time( 'Y-m-d H:i:s', false, $note_id ) );
+			}
+		}
+
+		// Most recently read first; unread are already newest-note-first.
+		usort( $read, function ( $a, $b ) {
+			return strcmp( $b[1], $a[1] );
+		} );
+
+		$out .= '<ul class="ff-history-list ff-notes-read-list">';
+		foreach ( array_merge( $unread, $read ) as $entry ) {
+			list( $note_id, $date ) = $entry;
+			$is_unread = ! isset( $read_dates[ $note_id ] );
+
+			$title = get_the_title( $note_id );
+			$title = $title ? $title : __( '(untitled note)', 'founding-faces' );
+
 			$main = esc_html( $title );
 			if ( $link ) {
-				$url = get_permalink( $ref );
+				$url = get_permalink( $note_id );
 				if ( $url ) {
 					$main = '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a>';
 				}
 			}
 
-			$out .= '<li class="ff-history-item">';
+			$out .= '<li class="ff-history-item ff-note-row' . ( $is_unread ? ' is-unread' : '' ) . '">';
 			$out .= '<div class="ff-history-item-body">';
-			$out .= '<span class="ff-history-item-main">' . $main . '</span>';
+			$out .= '<span class="ff-history-item-main">' . $main;
+			if ( $is_unread ) {
+				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
+			}
+			$out .= '</span>';
 			$out .= '</div>';
-			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $row->created_at ) ) . '</span>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $date ) ) . '</span>';
 			$out .= '</li>';
 		}
 		$out .= '</ul>';

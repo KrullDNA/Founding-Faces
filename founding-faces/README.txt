@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.53
+Stable tag: 1.0.54
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.54 =
+* Change: the Member Archive's "Notes you've read" section is now simply
+  "Notes". It lists every note the member is allowed to see — unread ones first,
+  each with an "Unread" badge and a bolder title, then the read ones ordered by
+  when they were opened. Previously it only listed notes already read, which is
+  the one thing a member doesn't need help finding.
+* Change: a note counts as read only when the member opens its own page, not
+  when a card appears in a list. Marking on list render (added in 1.0.47)
+  emptied the unread list the moment a member landed on the hub, since the feed
+  there silently marked everything read before they had chosen to read anything.
+  This also keeps the menu count bubble honest.
+* New: style controls for the "Unread" badge on the Member Archive widget —
+  background, text colour, typography, padding, radius and gap — plus an unread
+  row background and a bold-the-unread-titles switch.
 
 = 1.0.53 =
 * New: a Founding Faces Nav Menu widget. It renders a WordPress menu from
