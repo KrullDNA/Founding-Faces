@@ -1032,7 +1032,7 @@
 	box-sizing: border-box;
 	min-width: var(--ff-badge-size, 1.35em);
 	height: var(--ff-badge-size, 1.35em);
-	padding: 0 0.4em;
+	padding: var(--ff-badge-pad-y, 0) var(--ff-badge-pad-x, 0.4em);
 	margin-left: var(--ff-badge-gap, 0.45em);
 	border-radius: var(--ff-badge-radius, 999px);
 	background: var(--ff-badge-bg, var(--ff-accent, #3a3d44));
@@ -1041,7 +1041,11 @@
 	font-weight: 700;
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
-	vertical-align: middle;
+	vertical-align: var(--ff-badge-valign, middle);
+	/* Baseline nudge: raise or lower the bubble relative to the menu text
+	 * without affecting the line box, so nothing else in the menu shifts. */
+	position: relative;
+	top: var(--ff-badge-shift, 0);
 }
 
 /* Login form ---------------------------------------------------------------- */

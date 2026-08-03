@@ -61,6 +61,10 @@ class FF_Menu_Items {
 	const OPT_BADGE_FONT   = 'ff_badge_font_size';
 	const OPT_BADGE_RADIUS = 'ff_badge_radius';
 	const OPT_BADGE_GAP    = 'ff_badge_gap';
+	const OPT_BADGE_SHIFT  = 'ff_badge_shift';
+	const OPT_BADGE_VALIGN = 'ff_badge_valign';
+	const OPT_BADGE_PAD_X  = 'ff_badge_pad_x';
+	const OPT_BADGE_PAD_Y  = 'ff_badge_pad_y';
 
 	/**
 	 * Whether we're rendering inside a design surface (Elementor editor or
@@ -120,7 +124,18 @@ class FF_Menu_Items {
 			'--ff-badge-font'   => trim( (string) get_option( self::OPT_BADGE_FONT, '' ) ),
 			'--ff-badge-radius' => trim( (string) get_option( self::OPT_BADGE_RADIUS, '' ) ),
 			'--ff-badge-gap'    => trim( (string) get_option( self::OPT_BADGE_GAP, '' ) ),
+			'--ff-badge-valign' => trim( (string) get_option( self::OPT_BADGE_VALIGN, '' ) ),
+			'--ff-badge-pad-x'  => trim( (string) get_option( self::OPT_BADGE_PAD_X, '' ) ),
+			'--ff-badge-pad-y'  => trim( (string) get_option( self::OPT_BADGE_PAD_Y, '' ) ),
 		);
+
+		// The baseline nudge is entered as "how far to raise it", so a positive
+		// number lifts the bubble above the text. CSS 'top' works the other way,
+		// hence the inversion here rather than in the field.
+		$shift = trim( (string) get_option( self::OPT_BADGE_SHIFT, '' ) );
+		if ( '' !== $shift ) {
+			$vars['--ff-badge-shift'] = ( 0 - (float) $shift ) . 'px';
+		}
 
 		$css = '';
 		foreach ( $vars as $name => $value ) {
@@ -128,7 +143,7 @@ class FF_Menu_Items {
 				continue;
 			}
 			// The numeric ones carry a unit; colours are passed through as-is.
-			if ( in_array( $name, array( '--ff-badge-size', '--ff-badge-font', '--ff-badge-radius', '--ff-badge-gap' ), true ) ) {
+			if ( in_array( $name, array( '--ff-badge-size', '--ff-badge-font', '--ff-badge-radius', '--ff-badge-gap', '--ff-badge-pad-x', '--ff-badge-pad-y' ), true ) ) {
 				$value = (float) $value . 'px';
 			}
 			$css .= $name . ':' . $value . ';';

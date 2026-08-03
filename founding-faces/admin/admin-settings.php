@@ -110,6 +110,10 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_FONT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_RADIUS, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_GAP, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_SHIFT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_VALIGN, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_PAD_X, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_PAD_Y, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Which connector is active (core). The connector add-on plugins register
 		// their own API-key settings against this same group via 'admin_init'.
@@ -490,6 +494,52 @@ class FF_Settings {
 					<input type="number" min="0" max="40" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_GAP ); ?>"
 						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_GAP ); ?>"
 						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_GAP, '' ) ); ?>" />
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_SHIFT ); ?>"><?php esc_html_e( 'Raise above the text (px)', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" min="-30" max="30" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_SHIFT ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_SHIFT ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_SHIFT, '' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'A positive number lifts the bubble above the text, superscript style; a negative one drops it below. The menu line itself never moves.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_VALIGN ); ?>"><?php esc_html_e( 'Vertical alignment', 'founding-faces' ); ?></label></th>
+				<td>
+					<select id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_VALIGN ); ?>" name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_VALIGN ); ?>">
+						<?php
+						$valign  = (string) get_option( FF_Menu_Items::OPT_BADGE_VALIGN, '' );
+						$choices = array(
+							''            => __( 'Middle (default)', 'founding-faces' ),
+							'top'         => __( 'Top', 'founding-faces' ),
+							'super'       => __( 'Superscript', 'founding-faces' ),
+							'text-top'    => __( 'Top of the text', 'founding-faces' ),
+							'baseline'    => __( 'Baseline', 'founding-faces' ),
+							'text-bottom' => __( 'Bottom of the text', 'founding-faces' ),
+						);
+						foreach ( $choices as $key => $label ) :
+							?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $valign, $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<p class="description"><?php esc_html_e( 'Sets the starting position; the nudge above fine-tunes it from there.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_X ); ?>"><?php esc_html_e( 'Inner padding (px)', 'founding-faces' ); ?></label></th>
+				<td>
+					<label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_X ); ?>"><?php esc_html_e( 'Left / right', 'founding-faces' ); ?></label>
+					<input type="number" min="0" max="30" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_X ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_X ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_PAD_X, '' ) ); ?>" />
+					&nbsp;
+					<label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_Y ); ?>"><?php esc_html_e( 'Top / bottom', 'founding-faces' ); ?></label>
+					<input type="number" min="0" max="30" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_Y ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_PAD_Y ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_PAD_Y, '' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'Breathing room around the number. The number stays centred whatever you set — if the circle looks lopsided, clear the "Circle size" field and let the padding decide the size instead.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>
