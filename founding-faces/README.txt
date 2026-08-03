@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.52
+Stable tag: 1.0.53
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.53 =
+* New: a Founding Faces Nav Menu widget. It renders a WordPress menu from
+  Appearance → Menus, with every per-item setting intact (group visibility, the
+  login/logout swap, the count bubble), but as an Elementor widget — so the
+  links and the count circle are both styled in the editor, live, instead of
+  through a settings page. Full controls for the links (typography, normal /
+  hover / active colours and backgrounds, underline, padding, radius), the
+  layout (direction, alignment, gap), hover sub-menus, and the circle
+  (background, number colour and typography, size, inner padding, radius,
+  border, gap, vertical alignment and the raise-above-the-text nudge).
+* Change: the global "Unread count bubble" settings are gone, replaced by the
+  widget's own controls. The bubble keeps sensible built-in defaults wherever it
+  appears, so a theme-rendered menu still looks right; style it by using the Nav
+  Menu widget.
 
 = 1.0.52 =
 * New: baseline controls for the unread count bubble, so it can sit above the

@@ -51,20 +51,6 @@ class FF_Menu_Items {
 	const OPT_LOGIN_LABEL    = 'ff_login_label';
 	const OPT_LOGOUT_LABEL   = 'ff_logout_label';
 
-	// The count bubble's appearance. The nav-menu bubble is injected into the
-	// theme's (or Elementor's) own menu markup, which has no Founding Faces
-	// controls of its own — so these live in Settings and apply site-wide. The
-	// Member Bar widget has its own Elementor controls and overrides them.
-	const OPT_BADGE_BG     = 'ff_badge_bg';
-	const OPT_BADGE_COLOR  = 'ff_badge_color';
-	const OPT_BADGE_SIZE   = 'ff_badge_size';
-	const OPT_BADGE_FONT   = 'ff_badge_font_size';
-	const OPT_BADGE_RADIUS = 'ff_badge_radius';
-	const OPT_BADGE_GAP    = 'ff_badge_gap';
-	const OPT_BADGE_SHIFT  = 'ff_badge_shift';
-	const OPT_BADGE_VALIGN = 'ff_badge_valign';
-	const OPT_BADGE_PAD_X  = 'ff_badge_pad_x';
-	const OPT_BADGE_PAD_Y  = 'ff_badge_pad_y';
 
 	/**
 	 * Whether we're rendering inside a design surface (Elementor editor or
@@ -105,55 +91,6 @@ class FF_Menu_Items {
 		// Send a failed login back to the page the form was on, not to
 		// wp-login.php, so a custom login page stays the login page.
 		add_action( 'wp_login_failed', array( __CLASS__, 'login_failed' ) );
-
-		// The bubble's site-wide appearance, for menus we don't control.
-		add_action( 'wp_head', array( __CLASS__, 'badge_styles' ), 20 );
-	}
-
-	/**
-	 * Print the count bubble's site-wide appearance.
-	 *
-	 * Written as custom properties on :root so the Member Bar widget's own
-	 * Elementor controls, which set the real properties, always win.
-	 */
-	public static function badge_styles() {
-		$vars = array(
-			'--ff-badge-bg'     => trim( (string) get_option( self::OPT_BADGE_BG, '' ) ),
-			'--ff-badge-ink'    => trim( (string) get_option( self::OPT_BADGE_COLOR, '' ) ),
-			'--ff-badge-size'   => trim( (string) get_option( self::OPT_BADGE_SIZE, '' ) ),
-			'--ff-badge-font'   => trim( (string) get_option( self::OPT_BADGE_FONT, '' ) ),
-			'--ff-badge-radius' => trim( (string) get_option( self::OPT_BADGE_RADIUS, '' ) ),
-			'--ff-badge-gap'    => trim( (string) get_option( self::OPT_BADGE_GAP, '' ) ),
-			'--ff-badge-valign' => trim( (string) get_option( self::OPT_BADGE_VALIGN, '' ) ),
-			'--ff-badge-pad-x'  => trim( (string) get_option( self::OPT_BADGE_PAD_X, '' ) ),
-			'--ff-badge-pad-y'  => trim( (string) get_option( self::OPT_BADGE_PAD_Y, '' ) ),
-		);
-
-		// The baseline nudge is entered as "how far to raise it", so a positive
-		// number lifts the bubble above the text. CSS 'top' works the other way,
-		// hence the inversion here rather than in the field.
-		$shift = trim( (string) get_option( self::OPT_BADGE_SHIFT, '' ) );
-		if ( '' !== $shift ) {
-			$vars['--ff-badge-shift'] = ( 0 - (float) $shift ) . 'px';
-		}
-
-		$css = '';
-		foreach ( $vars as $name => $value ) {
-			if ( '' === $value ) {
-				continue;
-			}
-			// The numeric ones carry a unit; colours are passed through as-is.
-			if ( in_array( $name, array( '--ff-badge-size', '--ff-badge-font', '--ff-badge-radius', '--ff-badge-gap', '--ff-badge-pad-x', '--ff-badge-pad-y' ), true ) ) {
-				$value = (float) $value . 'px';
-			}
-			$css .= $name . ':' . $value . ';';
-		}
-
-		if ( '' === $css ) {
-			return;
-		}
-
-		echo '<style id="ff-badge-vars">:root{' . esc_html( $css ) . '}</style>' . "\n";
 	}
 
 	/**
@@ -183,8 +120,10 @@ class FF_Menu_Items {
 	public static function register_widgets( $widgets_manager ) {
 		require_once FF_PATH . 'includes/class-ff-login-widget.php';
 		require_once FF_PATH . 'includes/class-ff-member-bar-widget.php';
+		require_once FF_PATH . 'includes/class-ff-nav-widget.php';
 		$widgets_manager->register( new FF_Login_Widget() );
 		$widgets_manager->register( new FF_Member_Bar_Widget() );
+		$widgets_manager->register( new FF_Nav_Widget() );
 	}
 
 	/*
