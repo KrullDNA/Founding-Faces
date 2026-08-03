@@ -163,21 +163,25 @@ class FF_History {
 	public static function sample_votes( $heading = '' ) {
 		$heading = '' !== $heading ? $heading : __( 'Your votes', 'founding-faces' );
 		$rows    = array(
-			array( __( 'The Serum — accent colour', 'founding-faces' ), __( 'Darker grey', 'founding-faces' ) ),
-			array( __( 'The Cleanser — texture', 'founding-faces' ), __( 'Gel-cream', 'founding-faces' ) ),
-			array( __( 'The Mist — fragrance', 'founding-faces' ), __( 'Unscented', 'founding-faces' ) ),
+			// Full questions, not labels: poll questions run to a sentence, and
+			// the editor should show how one of those actually sits in the row.
+			array( __( 'What colour would you like for the accent on a well-aging product?', 'founding-faces' ), __( 'Darker grey', 'founding-faces' ) ),
+			array( __( 'Which texture would you reach for first thing in the morning?', 'founding-faces' ), __( 'Gel-cream', 'founding-faces' ) ),
+			array( __( 'Should the mist carry a scent at all?', 'founding-faces' ), __( 'Unscented', 'founding-faces' ) ),
 		);
 
 		$out  = '<section class="ff-history-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $rows as $i => $row ) {
-			$out .= '<li class="ff-history-item">';
+			$out .= '<li class="ff-history-item ff-history-item--vote">';
 			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . esc_html( $row[0] ) . '</span>';
+			$out .= '<div class="ff-history-vote-foot">';
 			$out .= '<span class="ff-history-item-detail">' . sprintf( esc_html__( 'You chose: %s', 'founding-faces' ), esc_html( $row[1] ) ) . '</span>';
-			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
+			$out .= '</div>';
+			$out .= '</div>';
 			$out .= '</li>';
 		}
 		$out .= '</ul></section>';
@@ -423,9 +427,13 @@ class FF_History {
 			$question = get_the_title( (int) $vote->poll_id );
 			$choice   = FF_Polls::option_label( (int) $vote->poll_id, (int) $vote->option_id );
 
-			$out .= '<li class="ff-history-item">';
+			// The question gets the full width — poll questions are sentences,
+			// and reserving a column for the date wrapped them early. The date
+			// sits on the answer line instead, where there is room for it.
+			$out .= '<li class="ff-history-item ff-history-item--vote">';
 			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . esc_html( $question ? $question : __( '(poll removed)', 'founding-faces' ) ) . '</span>';
+			$out .= '<div class="ff-history-vote-foot">';
 			if ( '' !== $choice ) {
 				$out .= '<span class="ff-history-item-detail">' . sprintf(
 					/* translators: %s is the option the member chose. */
@@ -433,8 +441,9 @@ class FF_History {
 					esc_html( $choice )
 				) . '</span>';
 			}
-			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $vote->voted_at ) ) . '</span>';
+			$out .= '</div>';
+			$out .= '</div>';
 			$out .= '</li>';
 		}
 		$out .= '</ul>';

@@ -752,6 +752,27 @@
 	white-space: nowrap;
 }
 
+/*
+ * Vote items give the question the full row. A poll question is a sentence,
+ * so holding a column open for the date wrapped it two words in. The date
+ * drops to the answer line, which is short and has room to spare.
+ */
+.ff-history-item--vote .ff-history-item-body {
+	flex: 1 1 auto;
+}
+
+.ff-history-vote-foot {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 1rem;
+}
+
+/* Keeps the date to the right even on a vote with no recorded choice. */
+.ff-history-vote-foot .ff-history-item-date {
+	margin-left: auto;
+}
+
 /* Feedback items stack: a heading + date row, then full-width feedback text. */
 .ff-history-item--feedback {
 	flex-direction: column;

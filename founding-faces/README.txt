@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.58
+Stable tag: 1.0.59
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,13 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.59 =
+* The votes list now gives the poll question the full width of the row, and
+  drops the date onto the "You chose" line beside the answer. Poll questions
+  are sentences, and holding a column open for the date wrapped them early.
+* The editor's sample votes use full questions rather than short labels, so
+  the row can be styled against the length it will really carry.
 
 = 1.0.58 =
 * The editor now draws a full page of sample notes at the widget's own page
