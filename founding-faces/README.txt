@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.61
+Stable tag: 1.0.62
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.62 =
+* "You chose: …" in the votes list is now its own box, the way the Unread
+  badge and the poll's closed capsule are. New controls under Item text:
+  background, border, corner radius, box shadow, padding and margin, on top of
+  the typography and colour already there.
+* It hugs its own text rather than stretching the row, and carries no
+  background until one is set, so nothing changes until it is styled.
 
 = 1.0.61 =
 * New: a "Field wording" section in the application form widget's Content tab.

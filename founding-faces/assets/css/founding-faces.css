@@ -799,6 +799,16 @@
 	margin-left: auto;
 }
 
+/*
+ * "You chose: …" is its own box, like the Unread badge and the poll's closed
+ * capsule. inline-block so a background, border or padding set in the editor
+ * wraps the words instead of the whole row; no background of its own, so it
+ * only becomes a box once someone makes it one.
+ */
+.ff-vote-choice {
+	display: inline-block;
+}
+
 /* Feedback items stack: a heading + date row, then full-width feedback text. */
 .ff-history-item--feedback {
 	flex-direction: column;

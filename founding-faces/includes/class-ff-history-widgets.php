@@ -692,6 +692,47 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition' => array( 'section' => array( 'all', 'votes' ) ),
 		) );
 
+		// The same box treatment the Unread badge and the poll's closed capsule
+		// get, so "You chose: …" can be made to stand out rather than read as
+		// another line of body copy.
+		$this->add_control( 'choice_bg', array(
+			'label'     => __( 'Box background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-vote-choice' => 'background-color: {{VALUE}};' ),
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'      => 'choice_border',
+			'selector'  => '{{WRAPPER}} .ff-vote-choice',
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_responsive_control( 'choice_radius', array(
+			'label'      => __( 'Box corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-vote-choice' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'condition'  => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'      => 'choice_shadow',
+			'selector'  => '{{WRAPPER}} .ff-vote-choice',
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_responsive_control( 'choice_padding', array(
+			'label'      => __( 'Box padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-vote-choice' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'condition'  => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_responsive_control( 'choice_margin', array(
+			'label'      => __( 'Box margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-vote-choice' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'condition'  => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+
 		$this->add_control( 'date_h', array(
 			'label'     => __( 'Date', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,

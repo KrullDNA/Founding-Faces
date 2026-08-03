@@ -178,7 +178,7 @@ class FF_History {
 			$out .= '<div class="ff-history-item-body">';
 			$out .= '<span class="ff-history-item-main">' . esc_html( $row[0] ) . '</span>';
 			$out .= '<div class="ff-history-vote-foot">';
-			$out .= '<span class="ff-history-item-detail">' . sprintf( esc_html__( 'You chose: %s', 'founding-faces' ), esc_html( $row[1] ) ) . '</span>';
+			$out .= '<span class="ff-history-item-detail ff-vote-choice">' . sprintf( esc_html__( 'You chose: %s', 'founding-faces' ), esc_html( $row[1] ) ) . '</span>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</div>';
 			$out .= '</div>';
@@ -435,7 +435,7 @@ class FF_History {
 			$out .= '<span class="ff-history-item-main">' . esc_html( $question ? $question : __( '(poll removed)', 'founding-faces' ) ) . '</span>';
 			$out .= '<div class="ff-history-vote-foot">';
 			if ( '' !== $choice ) {
-				$out .= '<span class="ff-history-item-detail">' . sprintf(
+				$out .= '<span class="ff-history-item-detail ff-vote-choice">' . sprintf(
 					/* translators: %s is the option the member chose. */
 					esc_html__( 'You chose: %s', 'founding-faces' ),
 					esc_html( $choice )
