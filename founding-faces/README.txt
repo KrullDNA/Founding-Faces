@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.53
+Stable tag: 1.0.56
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,54 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.56 =
+* New: filters on the member's notes list, each switchable on the widget —
+  read/unread, product, type (development stage), date period (last 30 days,
+  3 months, 12 months) and sort (unread first, newest, oldest). Changing one
+  refreshes the list in place over AJAX, without a page reload and without
+  losing the filter bar.
+* Product and stage filtering happens in the database rather than by fetching
+  everything and sifting in PHP, and the date filter measures the note's own
+  date, not when it happened to be read.
+* Sorting by newest or oldest treats the list as one run ordered by the note's
+  date; "unread first" keeps the two groups apart. Read rows show when the
+  member opened them, unread rows show the note's own date.
+* New: full style controls for the filter bar — label colour and typography,
+  select background, text, border, radius and padding, plus gap and margin.
+* Every filter value is validated server-side against the offered options, so a
+  hand-edited request can't reach for anything the bar doesn't offer, and the
+  group gate still runs on every note.
+
+= 1.0.55 =
+* New: the Member Archive notes list is paged, with a "Load more" button that
+  fetches the next batch over AJAX without reloading the page. Set the batch
+  size on the widget ("Notes per page", 10 by default; 0 shows everything at
+  once). Each request returns only that next batch, so a member with hundreds of
+  notes never waits on one long list, and the unread-first order holds across
+  pages.
+* New: full style controls for the "Load more" button — typography, normal and
+  hover colours, border, radius, padding, alignment and margin — and it shows in
+  the Elementor editor whatever the page size, so it can be styled without first
+  creating enough notes to trigger it.
+* The AJAX endpoint takes the member id from the session, never the request, and
+  every note still passes the group gate, so it can only ever return the
+  caller's own list.
+
+= 1.0.54 =
+* Change: the Member Archive's "Notes you've read" section is now simply
+  "Notes". It lists every note the member is allowed to see — unread ones first,
+  each with an "Unread" badge and a bolder title, then the read ones ordered by
+  when they were opened. Previously it only listed notes already read, which is
+  the one thing a member doesn't need help finding.
+* Change: a note counts as read only when the member opens its own page, not
+  when a card appears in a list. Marking on list render (added in 1.0.47)
+  emptied the unread list the moment a member landed on the hub, since the feed
+  there silently marked everything read before they had chosen to read anything.
+  This also keeps the menu count bubble honest.
+* New: style controls for the "Unread" badge on the Member Archive widget —
+  background, text colour, typography, padding, radius and gap — plus an unread
+  row background and a bold-the-unread-titles switch.
 
 = 1.0.53 =
 * New: a Founding Faces Nav Menu widget. It renders a WordPress menu from

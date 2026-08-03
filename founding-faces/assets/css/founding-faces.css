@@ -1225,3 +1225,88 @@
 	top: 0;
 	left: 100%;
 }
+
+/* Unread notes in the member's own notes list. ------------------------------- */
+.ff-unread-badge {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--ff-accent);
+	color: var(--ff-accent-ink);
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	vertical-align: middle;
+}
+
+.ff-note-row.is-unread .ff-history-item-main {
+	font-weight: 700;
+}
+
+/* "Load more" on the member's notes list. ------------------------------------ */
+.ff-notes-more {
+	margin-top: 1rem;
+}
+
+.ff-notes-more-button {
+	font-family: inherit;
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: var(--ff-accent);
+	background: transparent;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 0.55rem 1.3rem;
+	cursor: pointer;
+}
+
+.ff-notes-more-button:hover {
+	border-color: var(--ff-accent);
+}
+
+.ff-notes-more-button[disabled] {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.ff-notes-more-error {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	color: var(--ff-error-ink);
+}
+
+/* Filter bar above the member's notes list. ---------------------------------- */
+.ff-note-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 0.9rem;
+	margin: 0 0 1.25rem;
+}
+
+.ff-note-filters .ff-filter {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	font-size: 0.82rem;
+	color: var(--ff-muted);
+}
+
+.ff-note-filters select {
+	font-family: inherit;
+	font-size: 0.92rem;
+	color: var(--ff-ink);
+	background: var(--ff-bg);
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 0.45rem 0.6rem;
+}
+
+/* A quiet fade while a filter change is in flight, so the list doesn't
+ * appear to jump for no reason. */
+.ff-notes-section.is-loading .ff-notes-results {
+	opacity: 0.45;
+	transition: opacity 0.15s ease;
+}
