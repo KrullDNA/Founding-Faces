@@ -1022,26 +1022,30 @@
  * Menu extras: the unread count bubble and the login form.
  * ========================================================================== */
 
-/* The mini-cart style count bubble on a nav menu item. Inherits the link's
- * colour by default so it sits inside any theme's menu without configuration;
- * override --ff-badge-bg / --ff-badge-ink to brand it. */
+/* The mini-cart style count bubble on a nav menu item. These are only the
+ * defaults: the Founding Faces Nav Menu and Member Bar widgets set the real
+ * properties from their own Elementor controls. */
 .ff-menu-badge {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
-	min-width: var(--ff-badge-size, 1.35em);
-	height: var(--ff-badge-size, 1.35em);
+	min-width: 1.35em;
+	height: 1.35em;
 	padding: 0 0.4em;
-	margin-left: var(--ff-badge-gap, 0.45em);
-	border-radius: var(--ff-badge-radius, 999px);
-	background: var(--ff-badge-bg, var(--ff-accent, #3a3d44));
-	color: var(--ff-badge-ink, #ffffff);
-	font-size: var(--ff-badge-font, 0.7em);
+	margin-left: 0.45em;
+	border-radius: 999px;
+	background: var(--ff-accent, #3a3d44);
+	color: #ffffff;
+	font-size: 0.7em;
 	font-weight: 700;
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
 	vertical-align: middle;
+	/* Positioned so the widgets' "raise above the text" control can nudge the
+	 * bubble without affecting the line box — nothing else in the menu shifts. */
+	position: relative;
+	top: 0;
 }
 
 /* Login form ---------------------------------------------------------------- */
@@ -1155,4 +1159,69 @@
 
 .ff-thread-product {
 	font-weight: 600;
+}
+
+/* Nav Menu widget: a WordPress menu, styled in Elementor. -------------------- */
+.ff-nav-menu {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	gap: 32px;
+}
+
+.ff-nav-menu li {
+	position: relative;
+	margin: 0;
+	list-style: none;
+}
+
+.ff-nav-menu a {
+	display: inline-flex;
+	align-items: center;
+	text-decoration: none;
+	color: inherit;
+	line-height: 1.2;
+}
+
+/* Hover dropdowns, one level, no JavaScript. */
+.ff-nav-menu .sub-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 99;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	min-width: 220px;
+	margin: 0;
+	padding: 0.5rem 0;
+	list-style: none;
+	background: #fff;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(4px);
+	transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.ff-nav-menu--dropdowns li:hover > .sub-menu,
+.ff-nav-menu--dropdowns li:focus-within > .sub-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.ff-nav-menu .sub-menu a {
+	display: flex;
+	width: 100%;
+	padding: 0.45rem 1rem;
+	box-sizing: border-box;
+}
+
+/* A nested panel opens to the side, not underneath. */
+.ff-nav-menu .sub-menu .sub-menu {
+	top: 0;
+	left: 100%;
 }

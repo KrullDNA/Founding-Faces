@@ -245,6 +245,13 @@ class FF_Member_Bar_Widget extends \Elementor\Widget_Base {
 			'size_units' => array( 'px', '%' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-menu-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
+		$this->add_responsive_control( 'badge_padding', array(
+			'label'       => __( 'Inner padding', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units'  => array( 'px', 'em' ),
+			'description' => __( 'Breathing room around the number, which stays centred whatever you set. For a circle sized purely by its padding, clear the circle size above.', 'founding-faces' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-menu-badge' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
 		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
 			'name'     => 'badge_border',
 			'selector' => '{{WRAPPER}} .ff-menu-badge',
@@ -266,6 +273,29 @@ class FF_Member_Bar_Widget extends \Elementor\Widget_Base {
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
 			'condition' => array( 'badge_position' => 'inline' ),
 			'selectors' => array( '{{WRAPPER}} .ff-menu-badge' => 'margin-left: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'badge_valign', array(
+			'label'     => __( 'Vertical alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'middle',
+			'condition' => array( 'badge_position' => 'inline' ),
+			'options'   => array(
+				'middle'      => __( 'Middle', 'founding-faces' ),
+				'top'         => __( 'Top', 'founding-faces' ),
+				'super'       => __( 'Superscript', 'founding-faces' ),
+				'text-top'    => __( 'Top of the text', 'founding-faces' ),
+				'baseline'    => __( 'Baseline', 'founding-faces' ),
+				'text-bottom' => __( 'Bottom of the text', 'founding-faces' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-menu-badge' => 'vertical-align: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'badge_shift', array(
+			'label'       => __( 'Raise above the text', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SLIDER,
+			'range'       => array( 'px' => array( 'min' => -30, 'max' => 30 ) ),
+			'condition'   => array( 'badge_position' => 'inline' ),
+			'description' => __( 'Lifts the bubble without moving the line it sits on.', 'founding-faces' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-menu-badge' => 'top: calc(0px - {{SIZE}}{{UNIT}});' ),
 		) );
 		$this->add_responsive_control( 'badge_offset_x', array(
 			'label'     => __( 'Nudge right', 'founding-faces' ),
