@@ -53,6 +53,111 @@ class FF_JetEngine {
 	}
 
 	/**
+	 * Whether JetEngine is active on this site.
+	 *
+	 * @return bool
+	 */
+	public static function is_active() {
+		return function_exists( 'jet_engine' );
+	}
+
+	/**
+	 * JetEngine listing templates as id => title, for a widget dropdown.
+	 *
+	 * Returns just a "not installed" note if JetEngine isn't present, so the
+	 * control still renders cleanly.
+	 *
+	 * @return array
+	 */
+	public static function listing_choices() {
+		if ( ! self::is_active() ) {
+			return array( 0 => __( '— JetEngine not installed —', 'founding-faces' ) );
+		}
+
+		$choices  = array( 0 => __( '— Select a listing —', 'founding-faces' ) );
+		$listings = get_posts( array(
+			'post_type'      => 'jet-engine',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		) );
+		foreach ( $listings as $listing ) {
+			$choices[ $listing->ID ] = $listing->post_title ? $listing->post_title : sprintf( __( 'Listing #%d', 'founding-faces' ), $listing->ID );
+		}
+		return $choices;
+	}
+
+	/**
+	 * Render a JetEngine Listing Grid for a set of posts.
+	 *
+	 * Used for the list contexts (a product's notes, the home "latest" feed):
+	 * the listing's own Query Builder query drives what appears; we just pass a
+	 * post count and column count. Returns '' if JetEngine or the listing is
+	 * missing, so the caller can fall back to the built-in layout.
+	 *
+	 * @param int $listing_id The jet-engine listing post id.
+	 * @param int $posts_num  How many items to show.
+	 * @param int $columns    Grid columns.
+	 * @return string
+	 */
+	public static function render_grid( $listing_id, $posts_num = 6, $columns = 1 ) {
+		$listing_id = absint( $listing_id );
+		if ( ! self::is_active() || ! $listing_id || ! shortcode_exists( 'jet_engine_listing_grid' ) ) {
+			return '';
+		}
+		return do_shortcode( sprintf(
+			'[jet_engine_listing_grid listing_id="%d" columns="%d" posts_num="%d"]',
+			$listing_id,
+			max( 1, absint( $columns ) ),
+			max( 1, absint( $posts_num ) )
+		) );
+	}
+
+	/**
+	 * Render a single post through a JetEngine listing template.
+	 *
+	 * JetEngine listings are normally loops, but a single "listing item" design
+	 * can be applied to one specific post by setting it as the current object
+	 * and asking JetEngine for that item's content. Guarded on every JetEngine
+	 * method so an API change (or JetEngine being absent) just returns '' and
+	 * the caller falls back to the built-in note template.
+	 *
+	 * @param int     $listing_id The jet-engine listing post id.
+	 * @param WP_Post $post       The post to render.
+	 * @return string
+	 */
+	public static function render_single( $listing_id, $post ) {
+		$listing_id = absint( $listing_id );
+		if ( ! self::is_active() || ! $listing_id || ! $post ) {
+			return '';
+		}
+
+		$engine = jet_engine();
+		if ( ! isset( $engine->listings ) || ! isset( $engine->listings->data ) || ! isset( $engine->listings->frontend ) ) {
+			return '';
+		}
+
+		$data     = $engine->listings->data;
+		$frontend = $engine->listings->frontend;
+		if ( ! method_exists( $data, 'set_listing' ) || ! method_exists( $data, 'set_current_object' ) || ! method_exists( $frontend, 'get_listing_item_content' ) ) {
+			return '';
+		}
+
+		$listing_post = get_post( $listing_id );
+		if ( ! $listing_post ) {
+			return '';
+		}
+
+		// Remember, swap in, render, restore.
+		$data->set_listing( $listing_post );
+		$data->set_current_object( $post );
+		$html = $frontend->get_listing_item_content();
+
+		return is_string( $html ) ? $html : '';
+	}
+
+	/**
 	 * Turn a stage key into its human label.
 	 *
 	 * @param string $value The stored stage key (e.g. "in_development").

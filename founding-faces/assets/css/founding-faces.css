@@ -27,8 +27,6 @@
 .ff-form {
 	font-family: var(--ff-font);
 	color: var(--ff-ink);
-	max-width: 560px;
-	margin: 0 auto;
 }
 
 /* When rendered by an Elementor widget, let the container govern the width
@@ -44,13 +42,21 @@
 /* Make the plugin's widgets fill their Elementor container even when that
  * container is a horizontal (row) flexbox — where a widget would otherwise
  * shrink to its content width and never reach 100%. This is the usual reason
- * a form looks half-width no matter what "Max width" is set to. */
-.elementor-widget-ff_application_form,
-.elementor-widget-ff_status_lookup,
-.elementor-widget-ff_account,
-.elementor-widget-ff_member_archive {
+ * a form looks half-width no matter what "Max width" is set to.
+ *
+ * The attribute selector covers every Founding Faces widget (ff_ and ff-
+ * prefixed) rather than a hand-kept list that new widgets fall off. The
+ * container governs the width; adjust the container, not the widget. */
+[class*="elementor-widget-ff_"],
+[class*="elementor-widget-ff-"] {
 	width: 100%;
+	max-width: 100%;
 }
+
+/* The components themselves impose no width cap either: an Elementor container
+ * (or the theme's content width) decides how wide they are, exactly as every
+ * other widget on the page behaves. Each component's own rule below is written
+ * without a max-width for this reason. */
 
 .ff-field {
 	display: flex;
@@ -149,8 +155,7 @@
 	border: 1px solid var(--ff-line);
 	border-radius: var(--ff-radius);
 	padding: 0.9rem 1.1rem;
-	margin: 0 auto 1.25rem;
-	max-width: 560px;
+	margin: 0 0 1.25rem;
 }
 
 .ff-notice ul {
@@ -180,8 +185,6 @@
 .ff-product-header {
 	font-family: var(--ff-font);
 	color: var(--ff-ink);
-	max-width: 760px;
-	margin: 0 auto;
 }
 
 /* Note card ---------------------------------------------------------------- */
@@ -331,6 +334,13 @@
 
 /* Notes/polls grids: let the columns control (grid gap) own the spacing, and
  * let each item fill its cell rather than keeping its own max-width/margin. */
+.ff-notes-cards {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.25rem;
+	align-items: start;
+}
+
 .ff-notes-cards .ff-note {
 	margin-bottom: 0;
 }
@@ -393,7 +403,7 @@
 .ff-product-header {
 	margin-bottom: 1.5rem;
 	padding-bottom: 1rem;
-	border-bottom: 1px solid var(--ff-line);
+	border-bottom-width: 0;
 }
 
 .ff-product-name {
@@ -420,13 +430,13 @@
 }
 
 /* Home screen -------------------------------------------------------------- */
+/* No decorative underline by default — the widget's heading controls add one
+ * (colour, thickness, gap) only when the "Underline" switch is turned on. */
 .ff-home-heading {
 	font-size: 1.15rem;
 	font-weight: 700;
 	margin: 0 0 1rem;
-	padding-bottom: 0.4rem;
-	border-bottom: 2px solid var(--ff-accent);
-	display: inline-block;
+	border-bottom-width: 0;
 }
 
 .ff-home-products {
@@ -439,12 +449,14 @@
 	padding: 0;
 }
 
+/* No divider by default in the CSS — the Home widget's "Divider lines" switch
+ * (on by default) supplies the style and thickness, so it can be turned off. */
 .ff-product-item {
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
 	padding: 0.7rem 0;
-	border-bottom: 1px solid var(--ff-line);
+	border-bottom: 0 solid var(--ff-line);
 }
 
 .ff-product-item-name {
@@ -471,8 +483,6 @@
 	--ff-poll-gap: 16px;
 	font-family: var(--ff-font);
 	color: var(--ff-ink);
-	max-width: 560px;
-	margin: 0 auto;
 }
 
 .ff-poll-question {
@@ -700,9 +710,7 @@
 	font-size: 1.05rem;
 	font-weight: 700;
 	margin: 0 0 0.9rem;
-	padding-bottom: 0.4rem;
-	border-bottom: 2px solid var(--ff-accent);
-	display: inline-block;
+	border-bottom-width: 0;
 }
 
 .ff-history-list {
@@ -884,8 +892,7 @@
  * ========================================================================== */
 
 .ff-map-wrap {
-	max-width: 960px;
-	margin: 0 auto;
+	max-width: none;
 }
 
 .ff-members-map {
@@ -937,8 +944,6 @@
 .ff-account {
 	font-family: var(--ff-font);
 	color: var(--ff-ink);
-	max-width: 560px;
-	margin: 0 auto;
 }
 
 .ff-account-title {

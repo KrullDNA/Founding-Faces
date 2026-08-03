@@ -239,15 +239,57 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-heading' => 'color: {{VALUE}};' ),
 		) );
+		$this->add_responsive_control( 'heading_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-history-heading' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'heading_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-heading' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'heading_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-heading' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		// Underline: off by default, since the built-in accent rule is gone.
+		$this->add_control( 'heading_ul', array(
+			'label'        => __( 'Underline', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'separator'    => 'before',
+			'selectors'    => array( '{{WRAPPER}} .ff-history-heading' => 'display: inline-block; border-bottom-style: solid;' ),
+		) );
 		$this->add_control( 'heading_underline', array(
 			'label'     => __( 'Underline colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
+			'condition' => array( 'heading_ul' => 'yes' ),
 			'selectors' => array( '{{WRAPPER}} .ff-history-heading' => 'border-bottom-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'heading_ul_width', array(
+			'label'     => __( 'Underline thickness', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 1, 'max' => 10 ) ),
+			'default'   => array( 'size' => 2, 'unit' => 'px' ),
+			'condition' => array( 'heading_ul' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .ff-history-heading' => 'border-bottom-width: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->add_responsive_control( 'heading_spacing', array(
 			'label'      => __( 'Spacing below', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::SLIDER,
 			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'separator'  => 'before',
 			'selectors'  => array( '{{WRAPPER}} .ff-history-heading' => 'margin-bottom: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->end_controls_section();

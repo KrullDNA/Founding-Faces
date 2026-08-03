@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.44
+Stable tag: 1.0.45
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,29 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.45 =
+* Change: decorative underlines removed from the built-in design (the accent rule
+  under the Home and Member Archive section headings, and the line under the
+  product header). Every heading now has an "Underline" switch instead, with its
+  own colour, thickness and gap, so it's there only when wanted.
+* New: full Style tabs on the display widgets — Notes, Notes Archive, Single Note,
+  Product Header and Home now control the card (background, border, radius,
+  shadow, padding, margin), the title, the meta row, badges and chips, the body,
+  the gallery, the filter bar/chips and the "View all" link, each with typography,
+  colour, alignment, margin and padding.
+* New: the Poll and Polls Archive widgets gained voting-button, outcome-block and
+  section-heading style controls, plus a gap control for the archive grid.
+* New: representative dummy content in the Elementor editor. Notes, note cards,
+  product headers, the products list, filter bars and polls all preview with
+  sample data in the real markup, so every element can be styled before any real
+  content exists (or when the designer isn't a member).
+* New: the Single Note widget and each section of the Home widget (latest notes,
+  products) can now render through a JetEngine listing template instead of the
+  default layout, falling back to the default if the listing is missing.
+* Fix: every Founding Faces widget now fills its container's width. The
+  components no longer impose their own max-width, so the Elementor container
+  governs the width as it does for any other widget.
 
 = 1.0.44 =
 * Change: the poll "your choice" label is now stored as "Your choice" (capital

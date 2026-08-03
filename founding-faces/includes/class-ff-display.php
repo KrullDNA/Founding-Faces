@@ -138,7 +138,7 @@ class FF_Display {
 	public static function sc_note( $atts ) {
 		self::enqueue();
 
-		$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'ff_note' );
+		$atts = shortcode_atts( array( 'id' => 0, 'listing' => 0 ), $atts, 'ff_note' );
 		$id   = absint( $atts['id'] );
 
 		// Everything here is members-only.
@@ -158,6 +158,17 @@ class FF_Display {
 
 		// Record the first time this member views this note.
 		FF_Interactions::log_once( get_current_user_id(), 'note_viewed', $id );
+
+		// A JetEngine listing template takes over the layout when chosen; if it
+		// returns nothing (JetEngine gone, listing deleted) we fall back to the
+		// built-in card, so the note is never simply missing.
+		$listing = absint( $atts['listing'] );
+		if ( $listing ) {
+			$html = FF_JetEngine::render_single( $listing, $note );
+			if ( '' !== trim( $html ) ) {
+				return '<div class="ff-notes-single ff-notes-single--jet">' . $html . '</div>';
+			}
+		}
 
 		return '<div class="ff-notes-single">' . self::render_note_card( $note ) . '</div>';
 	}
@@ -421,7 +432,22 @@ class FF_Display {
 	public static function sc_home( $atts ) {
 		self::enqueue();
 
-		$atts = shortcode_atts( array( 'latest' => 8 ), $atts, 'ff_home' );
+		$atts = shortcode_atts(
+			array(
+				'latest'           => 8,
+				'latest_heading'   => '',
+				'products_heading' => '',
+				'show_latest'      => 'yes',
+				'show_products'    => 'yes',
+				// A JetEngine listing template per section, each optional.
+				'latest_listing'   => 0,
+				'products_listing' => 0,
+				'latest_columns'   => 1,
+				'products_columns' => 1,
+			),
+			$atts,
+			'ff_home'
+		);
 
 		if ( ! FF_Gating::can_view_members_area() ) {
 			return self::members_only_notice();
@@ -430,23 +456,39 @@ class FF_Display {
 		$out = '<div class="ff-home">';
 
 		// Latest notes across all products the member may see.
-		$latest = self::get_viewable_notes( 0, '', absint( $atts['latest'] ) );
-		$out   .= '<section class="ff-home-latest">';
-		$out   .= '<h2 class="ff-home-heading">' . esc_html__( 'Latest notes', 'founding-faces' ) . '</h2>';
-		if ( empty( $latest ) ) {
-			$out .= '<p class="ff-empty-note">' . esc_html__( 'Nothing new just yet — check back soon.', 'founding-faces' ) . '</p>';
-		} else {
-			foreach ( $latest as $note ) {
-				$out .= self::render_note_card( $note );
+		if ( 'no' !== $atts['show_latest'] ) {
+			$heading = '' !== trim( (string) $atts['latest_heading'] ) ? $atts['latest_heading'] : __( 'Latest notes', 'founding-faces' );
+			$out    .= '<section class="ff-home-latest">';
+			$out    .= '<h2 class="ff-home-heading ff-home-heading--latest">' . esc_html( $heading ) . '</h2>';
+
+			$jet = FF_JetEngine::render_grid( $atts['latest_listing'], absint( $atts['latest'] ), $atts['latest_columns'] );
+			if ( '' !== trim( $jet ) ) {
+				$out .= $jet;
+			} else {
+				$latest = self::get_viewable_notes( 0, '', absint( $atts['latest'] ) );
+				if ( empty( $latest ) ) {
+					$out .= '<p class="ff-empty-note">' . esc_html__( 'Nothing new just yet — check back soon.', 'founding-faces' ) . '</p>';
+				} else {
+					$out .= '<div class="ff-notes-cards">';
+					foreach ( $latest as $note ) {
+						$out .= self::render_note_card( $note );
+					}
+					$out .= '</div>';
+				}
 			}
+			$out .= '</section>';
 		}
-		$out .= '</section>';
 
 		// The products list beneath, each with its current stage.
-		$out .= '<section class="ff-home-products">';
-		$out .= '<h2 class="ff-home-heading">' . esc_html__( 'Products', 'founding-faces' ) . '</h2>';
-		$out .= self::products_list_html();
-		$out .= '</section>';
+		if ( 'no' !== $atts['show_products'] ) {
+			$heading = '' !== trim( (string) $atts['products_heading'] ) ? $atts['products_heading'] : __( 'Products', 'founding-faces' );
+			$out    .= '<section class="ff-home-products">';
+			$out    .= '<h2 class="ff-home-heading ff-home-heading--products">' . esc_html( $heading ) . '</h2>';
+
+			$jet = FF_JetEngine::render_grid( $atts['products_listing'], 50, $atts['products_columns'] );
+			$out .= ( '' !== trim( $jet ) ) ? $jet : self::products_list_html();
+			$out .= '</section>';
+		}
 
 		$out .= '</div>';
 		return $out;
@@ -511,6 +553,128 @@ class FF_Display {
 		 * @param WP_Post $note The note being rendered.
 		 */
 		return apply_filters( 'ff_render_note', $out, $note );
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Editor dummy content.
+	 *
+	 * In the Elementor editor a widget may have nothing real to show yet — no
+	 * note chosen, no products created, or the designer isn't a member — which
+	 * would leave nothing to style. These build representative markup using the
+	 * exact same classes as the live output, so every element can be styled up
+	 * front and looks identical once real content arrives.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * A sample note card, in the real template's markup.
+	 *
+	 * @param string $title The sample title.
+	 * @param string $stage The sample stage key.
+	 * @param string $trial The sample trial number.
+	 * @param bool   $vault Whether to show the "The 35 vault" chip.
+	 * @return string
+	 */
+	public static function sample_note_card( $title = '', $stage = 'stability_testing', $trial = '4', $vault = false ) {
+		$title = '' !== $title ? $title : __( 'Sample note — batch reformulation', 'founding-faces' );
+
+		$out  = '<article class="ff-note">';
+		$out .= '<header class="ff-note-head">';
+		$out .= '<h3 class="ff-note-title">' . esc_html( $title ) . '</h3>';
+		$out .= '<div class="ff-note-meta">';
+		$out .= self::stage_badge( $stage );
+		$out .= '<span class="ff-note-trial">' . sprintf( /* translators: %s is a trial number. */ esc_html__( 'Trial %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+		$out .= '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>';
+		if ( $vault ) {
+			$out .= '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+		}
+		$out .= '</div></header>';
+		$out .= '<div class="ff-note-body"><p>' . esc_html__( 'This is sample text so you can style the note body before a real note is chosen. It uses exactly the same markup as a published note, so what you design here is what members will see.', 'founding-faces' ) . '</p></div>';
+		$out .= '</article>';
+
+		return $out;
+	}
+
+	/**
+	 * A grid of sample note cards.
+	 *
+	 * @param int $count How many cards.
+	 * @return string
+	 */
+	public static function sample_note_cards( $count = 3 ) {
+		$samples = array(
+			array( __( 'Sample note — batch reformulation', 'founding-faces' ), 'stability_testing', '4', false ),
+			array( __( 'Sample note — actives at 2%', 'founding-faces' ), 'passed', '3', true ),
+			array( __( 'Sample note — texture trial', 'founding-faces' ), 'in_development', '2', false ),
+			array( __( 'Sample note — preservative swap', 'founding-faces' ), 'failed', '1', false ),
+		);
+
+		$out = '<div class="ff-notes-cards">';
+		for ( $i = 0; $i < max( 1, (int) $count ); $i++ ) {
+			$s    = $samples[ $i % count( $samples ) ];
+			$out .= self::sample_note_card( $s[0], $s[1], $s[2], $s[3] );
+		}
+		$out .= '</div>';
+		return $out;
+	}
+
+	/**
+	 * A sample products list, in the real markup.
+	 *
+	 * @return string
+	 */
+	public static function sample_products_list() {
+		$rows = array(
+			array( __( 'Sample product — Renewal Serum', 'founding-faces' ), 'stability_testing' ),
+			array( __( 'Sample product — Barrier Cream', 'founding-faces' ), 'passed' ),
+			array( __( 'Sample product — Gentle Cleanser', 'founding-faces' ), 'in_development' ),
+		);
+
+		$out = '<ul class="ff-products">';
+		foreach ( $rows as $row ) {
+			$out .= '<li class="ff-product-item">';
+			$out .= '<span class="ff-product-item-name">' . esc_html( $row[0] ) . '</span> ';
+			$out .= self::stage_badge( $row[1] );
+			$out .= '</li>';
+		}
+		$out .= '</ul>';
+		return $out;
+	}
+
+	/**
+	 * A sample product header, in the real markup.
+	 *
+	 * @return string
+	 */
+	public static function sample_product_header() {
+		$out  = '<div class="ff-product-header">';
+		$out .= '<h2 class="ff-product-name">' . esc_html__( 'Sample product — Renewal Serum', 'founding-faces' ) . '</h2>';
+		$out .= '<div class="ff-product-meta">' . self::stage_badge( 'stability_testing' );
+		$out .= '<span class="ff-product-status">' . esc_html__( 'Currently in eight-week stability testing', 'founding-faces' ) . '</span></div>';
+		$out .= '<div class="ff-product-intro"><p>' . esc_html__( 'Sample introduction copy so the product header can be styled before a real product is chosen.', 'founding-faces' ) . '</p></div>';
+		$out .= '</div>';
+		return $out;
+	}
+
+	/**
+	 * The stage filter chips, with nothing selected — for the editor preview.
+	 *
+	 * @return string
+	 */
+	public static function sample_filter_chips() {
+		return self::stage_filter_chips( '' );
+	}
+
+	/**
+	 * The archive filter bar, with nothing selected — for the editor preview.
+	 *
+	 * @param array $atts Which filters to show.
+	 * @return string
+	 */
+	public static function sample_filter_bar( $atts ) {
+		$atts = wp_parse_args( $atts, array( 'show_product' => 'yes', 'show_stage' => 'yes', 'show_sort' => 'yes' ) );
+		return self::archive_filter_bar( $atts, 0, '', 'DESC' );
 	}
 
 	/*
