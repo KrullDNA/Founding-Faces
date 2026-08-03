@@ -58,19 +58,32 @@ class FF_Application_Widget extends \Elementor\Widget_Base {
 			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
 		) );
 
+		$defaults = FF_Application::text_defaults();
+
+		// These two keep their original control names so the wording already
+		// saved on a live page survives the update; FF_Application::text()
+		// maps both onto the keys it uses internally.
 		$this->add_control( 'button_label', array(
 			'label'       => __( 'Button text', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::TEXT,
-			'default'     => __( 'Submit application', 'founding-faces' ),
-			'placeholder' => __( 'Submit application', 'founding-faces' ),
+			'default'     => $defaults['button'],
+			'placeholder' => $defaults['button'],
+			'label_block' => true,
 		) );
 
 		$this->add_control( 'success_message', array(
 			'label'       => __( 'Thank-you message', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::TEXTAREA,
 			'rows'        => 3,
-			'default'     => '',
-			'placeholder' => __( 'Shown after a successful submission. Leave blank for the default.', 'founding-faces' ),
+			'default'     => $defaults['success'],
+			'placeholder' => $defaults['success'],
+		) );
+
+		$this->add_control( 'required_mark', array(
+			'label'       => __( 'Required-field marker', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => $defaults['required_mark'],
+			'description' => __( 'Clear it to drop the marker from every required field.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'editor_note', array(
@@ -78,6 +91,61 @@ class FF_Application_Widget extends \Elementor\Widget_Base {
 			'raw'             => __( 'The live form appears on the front end. What you see in the editor is a preview for styling.', 'founding-faces' ),
 			'content_classes' => 'elementor-descriptor',
 		) );
+
+		$this->end_controls_section();
+
+		/* =============================== FIELDS ============================== */
+		// One group per field: its label, its placeholder and the hint beneath
+		// it. Clearing a hint or a placeholder removes it; clearing a label
+		// hides it on screen but keeps the field named for screen readers.
+		$this->start_controls_section( 'ff_af_words', array(
+			'label' => __( 'Field wording', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+		) );
+
+		$groups = array(
+			'name'      => __( 'Full name', 'founding-faces' ),
+			'email'     => __( 'Email address', 'founding-faces' ),
+			'postcode'  => __( 'Postcode', 'founding-faces' ),
+			'instagram' => __( 'Instagram handle', 'founding-faces' ),
+			'concerns'  => __( 'Skin concerns', 'founding-faces' ),
+			'answers'   => __( 'About your skin', 'founding-faces' ),
+			'consent'   => __( 'Consent checkbox', 'founding-faces' ),
+		);
+
+		foreach ( $groups as $key => $group_label ) {
+			$this->add_control( $key . '_group', array(
+				'label'     => $group_label,
+				'type'      => \Elementor\Controls_Manager::HEADING,
+				'separator' => 'before',
+			) );
+
+			$this->add_control( $key . '_label', array(
+				'label'       => __( 'Label', 'founding-faces' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'default'     => $defaults[ $key . '_label' ],
+				'placeholder' => $defaults[ $key . '_label' ],
+				'label_block' => true,
+			) );
+
+			// The consent line is the label; it has no field of its own to fill.
+			if ( 'consent' !== $key ) {
+				$this->add_control( $key . '_placeholder', array(
+					'label'       => __( 'Placeholder', 'founding-faces' ),
+					'type'        => \Elementor\Controls_Manager::TEXT,
+					'default'     => $defaults[ $key . '_placeholder' ],
+					'label_block' => true,
+				) );
+			}
+
+			$this->add_control( $key . '_hint', array(
+				'label'       => __( 'Hint below', 'founding-faces' ),
+				'type'        => \Elementor\Controls_Manager::TEXTAREA,
+				'rows'        => 2,
+				'default'     => $defaults[ $key . '_hint' ],
+				'label_block' => true,
+			) );
+		}
 
 		$this->end_controls_section();
 
@@ -94,11 +162,18 @@ class FF_Application_Widget extends \Elementor\Widget_Base {
 		$s = $this->get_settings_for_display();
 
 		$args = array( 'form_class' => 'ff-form--full' );
-		if ( ! empty( $s['button_label'] ) ) {
-			$args['button_label'] = $s['button_label'];
-		}
-		if ( ! empty( $s['success_message'] ) ) {
-			$args['success_message'] = $s['success_message'];
+
+		// Every wording control shares its name with the key the form expects,
+		// so the whole set carries over without a mapping table.
+		$keys = array_merge(
+			array_keys( FF_Application::text_defaults() ),
+			array( 'button_label', 'success_message' )
+		);
+
+		foreach ( $keys as $key ) {
+			if ( isset( $s[ $key ] ) ) {
+				$args[ $key ] = $s[ $key ];
+			}
 		}
 
 		echo FF_Application::render_form( $args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

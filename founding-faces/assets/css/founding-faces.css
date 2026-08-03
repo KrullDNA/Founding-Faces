@@ -118,6 +118,23 @@
 	color: var(--ff-error-ink);
 }
 
+/*
+ * A label whose wording has been cleared in the editor. It stays in the markup
+ * so screen readers can still name the field — a field nobody can name is a
+ * field nobody can fill in — but takes no space on screen.
+ */
+.ff-sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 /* Honeypot: pushed off-screen rather than display:none, since some bots skip
  * fields that are explicitly hidden. Real people never see or fill it. */
 .ff-hp {

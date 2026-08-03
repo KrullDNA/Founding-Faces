@@ -164,6 +164,113 @@ class FF_Application {
 	 */
 
 	/**
+	 * Every phrase the application form says, before anything overrides it.
+	 *
+	 * This is the whole of the form's language in one place: labels, the two
+	 * placeholders, the hints under the private fields, the consent line, the
+	 * button and the thank-you notice. Each is a field in the widget, because
+	 * the words an applicant reads are Nick's to choose, not the plugin's.
+	 *
+	 * @return array Key => default text.
+	 */
+	public static function text_defaults() {
+		return array(
+			'name_label'             => __( 'Full name', 'founding-faces' ),
+			'name_placeholder'       => '',
+			'email_label'            => __( 'Email address', 'founding-faces' ),
+			'email_placeholder'      => '',
+			'postcode_label'         => __( 'Postcode', 'founding-faces' ),
+			'postcode_placeholder'   => __( 'e.g. 2000', 'founding-faces' ),
+			'postcode_hint'          => __( 'Four digits. Used only for the anonymous members map.', 'founding-faces' ),
+			'instagram_label'        => __( 'Instagram handle', 'founding-faces' ),
+			'instagram_placeholder'  => __( '@yourhandle', 'founding-faces' ),
+			'instagram_hint'         => __( 'Optional, and only used privately to review your application — it\'s never shown to other members or on the map.', 'founding-faces' ),
+			'concerns_label'         => __( 'Your main skin concerns', 'founding-faces' ),
+			'concerns_placeholder'   => '',
+			'concerns_hint'          => '',
+			'answers_label'          => __( 'Tell us a little about your skin and why you\'d like to join', 'founding-faces' ),
+			'answers_placeholder'    => '',
+			'answers_hint'           => '',
+			'consent_label'          => __( 'I consent to receiving programme emails from Apotheca.', 'founding-faces' ),
+			'consent_hint'           => '',
+			'required_mark'          => '*',
+			'button'                 => __( 'Submit application', 'founding-faces' ),
+			'success'                => __( 'Thank you. Your application has been received and is now being reviewed. We\'ll be in touch by email.', 'founding-faces' ),
+		);
+	}
+
+	/**
+	 * Resolve wording overrides against the defaults.
+	 *
+	 * A key that isn't supplied keeps its default. A key supplied empty is a
+	 * deliberate choice to say nothing: hints and placeholders disappear, and a
+	 * label stays in the markup for screen readers but is hidden on screen —
+	 * a field nobody can name is a field nobody can fill in.
+	 *
+	 * 'button_label' and 'success_message' are the names the shortcode has
+	 * always used, so they keep working.
+	 *
+	 * @param array $overrides Supplied wording.
+	 * @return array
+	 */
+	public static function text( $overrides = array() ) {
+		$overrides = is_array( $overrides ) ? $overrides : array();
+
+		// The older att names, mapped onto the keys used here.
+		foreach ( array( 'button_label' => 'button', 'success_message' => 'success' ) as $old => $new ) {
+			if ( ! isset( $overrides[ $new ] ) && ! empty( $overrides[ $old ] ) ) {
+				$overrides[ $new ] = $overrides[ $old ];
+			}
+		}
+
+		$text = self::text_defaults();
+		foreach ( $text as $key => $default ) {
+			if ( isset( $overrides[ $key ] ) ) {
+				$text[ $key ] = trim( wp_strip_all_tags( (string) $overrides[ $key ] ) );
+			}
+		}
+
+		return $text;
+	}
+
+	/**
+	 * One form label, hidden on screen when its wording has been cleared.
+	 *
+	 * @param string $for   The field id.
+	 * @param string $label The label text.
+	 * @param string $mark  The required marker, or '' for an optional field.
+	 * @param string $key   The wording key, used to name the field when cleared.
+	 * @return string
+	 */
+	private static function label( $for, $label, $mark = '', $key = '' ) {
+		$defaults = self::text_defaults();
+		$class    = ( '' === $label ) ? ' class="ff-sr-only"' : '';
+		$text     = $label;
+
+		if ( '' === $text ) {
+			$text = isset( $defaults[ $key ] ) ? $defaults[ $key ] : $for;
+		}
+
+		$out = '<label for="' . esc_attr( $for ) . '"' . $class . '>' . esc_html( $text );
+
+		if ( '' !== $mark ) {
+			$out .= ' <span class="ff-required">' . esc_html( $mark ) . '</span>';
+		}
+
+		return $out . '</label>';
+	}
+
+	/**
+	 * One hint line, or nothing when its wording has been cleared.
+	 *
+	 * @param string $hint The hint text.
+	 * @return string
+	 */
+	private static function hint( $hint ) {
+		return ( '' === $hint ) ? '' : '<span class="ff-hint">' . esc_html( $hint ) . '</span>';
+	}
+
+	/**
 	 * Render the application form shortcode.
 	 *
 	 * Shows a success message after a good submission, or the form (with any
@@ -181,9 +288,11 @@ class FF_Application {
 		// Shortcode hands atts as '' when none are given; normalise to an array.
 		$atts = is_array( $atts ) ? $atts : array();
 
-		$button_label = ! empty( $atts['button_label'] )
-			? $atts['button_label']
-			: __( 'Submit application', 'founding-faces' );
+		// Every phrase the form says, with anything the widget or shortcode
+		// supplied taking precedence over the defaults.
+		$t            = self::text( $atts );
+		$button_label = $t['button'];
+		$mark         = $t['required_mark'];
 
 		// The Elementor widget passes a modifier class so the form fills its
 		// container (the container then governs width) instead of the 560px cap.
@@ -199,11 +308,8 @@ class FF_Application {
 
 		// A good submission: thank the applicant and stop, no form shown.
 		if ( 'success' === $state ) {
-			$success = ! empty( $atts['success_message'] )
-				? $atts['success_message']
-				: __( 'Thank you. Your application has been received and is now being reviewed. We\'ll be in touch by email.', 'founding-faces' );
 			return '<div class="ff-notice ff-notice--success">'
-				. esc_html( $success )
+				. esc_html( $t['success'] )
 				. '</div>';
 		}
 
@@ -234,10 +340,7 @@ class FF_Application {
 		// exists after a real submission, and it replaces the form), so show it
 		// as a sample above the form — both are then styleable at once.
 		if ( '' === $state && FF_History::is_editor() ) {
-			$sample = ! empty( $atts['success_message'] )
-				? $atts['success_message']
-				: __( 'Thank you. Your application has been received and is now being reviewed. We\'ll be in touch by email.', 'founding-faces' );
-			$output .= '<div class="ff-notice ff-notice--success">' . esc_html( $sample ) . '</div>';
+			$output .= '<div class="ff-notice ff-notice--success">' . esc_html( $t['success'] ) . '</div>';
 		}
 
 		// A small helper to safely echo a previously entered value back in.
@@ -269,45 +372,55 @@ class FF_Application {
 			</div>
 
 			<p class="ff-field">
-				<label for="ff-name"><?php esc_html_e( 'Full name', 'founding-faces' ); ?> <span class="ff-required">*</span></label>
-				<input type="text" id="ff-name" name="ff_name" value="<?php echo $val( 'name' ); ?>" required />
+				<?php echo self::label( 'ff-name', $t['name_label'], $mark, 'name_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<input type="text" id="ff-name" name="ff_name" value="<?php echo $val( 'name' ); ?>"
+					placeholder="<?php echo esc_attr( $t['name_placeholder'] ); ?>" required />
 			</p>
 
 			<p class="ff-field">
-				<label for="ff-email"><?php esc_html_e( 'Email address', 'founding-faces' ); ?> <span class="ff-required">*</span></label>
-				<input type="email" id="ff-email" name="ff_email" value="<?php echo $val( 'email' ); ?>" required />
+				<?php echo self::label( 'ff-email', $t['email_label'], $mark, 'email_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<input type="email" id="ff-email" name="ff_email" value="<?php echo $val( 'email' ); ?>"
+					placeholder="<?php echo esc_attr( $t['email_placeholder'] ); ?>" required />
 			</p>
 
 			<p class="ff-field">
-				<label for="ff-postcode"><?php esc_html_e( 'Postcode', 'founding-faces' ); ?> <span class="ff-required">*</span></label>
+				<?php echo self::label( 'ff-postcode', $t['postcode_label'], $mark, 'postcode_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="text" id="ff-postcode" name="ff_postcode" value="<?php echo $val( 'postcode' ); ?>"
 					inputmode="numeric" pattern="\d{4}" maxlength="4"
-					placeholder="<?php esc_attr_e( 'e.g. 2000', 'founding-faces' ); ?>" required />
-				<span class="ff-hint"><?php esc_html_e( 'Four digits. Used only for the anonymous members map.', 'founding-faces' ); ?></span>
+					placeholder="<?php echo esc_attr( $t['postcode_placeholder'] ); ?>" required />
+				<?php echo self::hint( $t['postcode_hint'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</p>
 
 			<p class="ff-field">
-				<label for="ff-instagram"><?php esc_html_e( 'Instagram handle', 'founding-faces' ); ?></label>
+				<?php echo self::label( 'ff-instagram', $t['instagram_label'], '', 'instagram_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="text" id="ff-instagram" name="ff_instagram" value="<?php echo $val( 'instagram' ); ?>"
-					placeholder="<?php esc_attr_e( '@yourhandle', 'founding-faces' ); ?>" />
-				<span class="ff-hint"><?php esc_html_e( 'Optional, and only used privately to review your application — it\'s never shown to other members or on the map.', 'founding-faces' ); ?></span>
+					placeholder="<?php echo esc_attr( $t['instagram_placeholder'] ); ?>" />
+				<?php echo self::hint( $t['instagram_hint'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</p>
 
 			<p class="ff-field">
-				<label for="ff-skin-concerns"><?php esc_html_e( 'Your main skin concerns', 'founding-faces' ); ?></label>
-				<textarea id="ff-skin-concerns" name="ff_skin_concerns" rows="4"><?php echo $textval( 'skin_concerns' ); ?></textarea>
+				<?php echo self::label( 'ff-skin-concerns', $t['concerns_label'], '', 'concerns_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<textarea id="ff-skin-concerns" name="ff_skin_concerns" rows="4"
+					placeholder="<?php echo esc_attr( $t['concerns_placeholder'] ); ?>"><?php echo $textval( 'skin_concerns' ); ?></textarea>
+				<?php echo self::hint( $t['concerns_hint'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</p>
 
 			<p class="ff-field">
-				<label for="ff-answers"><?php esc_html_e( 'Tell us a little about your skin and why you\'d like to join', 'founding-faces' ); ?></label>
-				<textarea id="ff-answers" name="ff_answers" rows="5"><?php echo $textval( 'answers' ); ?></textarea>
+				<?php echo self::label( 'ff-answers', $t['answers_label'], '', 'answers_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<textarea id="ff-answers" name="ff_answers" rows="5"
+					placeholder="<?php echo esc_attr( $t['answers_placeholder'] ); ?>"><?php echo $textval( 'answers' ); ?></textarea>
+				<?php echo self::hint( $t['answers_hint'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</p>
 
 			<p class="ff-field ff-field--checkbox">
 				<label>
 					<input type="checkbox" name="ff_consent" value="1" required />
-					<?php esc_html_e( 'I consent to receiving programme emails from Apotheca.', 'founding-faces' ); ?> <span class="ff-required">*</span>
+					<?php echo esc_html( $t['consent_label'] ); ?>
+					<?php if ( '' !== $mark ) : ?>
+						<span class="ff-required"><?php echo esc_html( $mark ); ?></span>
+					<?php endif; ?>
 				</label>
+				<?php echo self::hint( $t['consent_hint'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</p>
 
 			<p class="ff-submit">

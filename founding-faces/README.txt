@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.60
+Stable tag: 1.0.61
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,23 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.61 =
+* New: a "Field wording" section in the application form widget's Content tab.
+  Every field gets three fields of its own — its label, its placeholder and the
+  hint below it — covering all six questions and the consent checkbox. The
+  required-field marker is editable too, and clearing it drops it everywhere.
+* Every field is pre-filled with the wording it replaces, so the panel shows
+  what is actually on the page. Clearing a hint or a placeholder removes it.
+* Clearing a label hides it on screen but keeps it in the markup for screen
+  readers, so a field styled down to a placeholder is still one a screen-reader
+  user can identify.
+* Name, email, skin concerns and "about your skin" gained placeholders, and
+  every field gained an optional hint line; previously only postcode and
+  Instagram had either.
+* The existing Button text and Thank-you message controls keep their saved
+  values, and the shortcode's button_label and success_message attributes still
+  work as before.
 
 = 1.0.60 =
 * Removed the decorative left border from the poll outcome block. It was drawn
