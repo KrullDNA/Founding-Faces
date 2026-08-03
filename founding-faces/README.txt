@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.63
+Stable tag: 1.0.64
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,14 +196,32 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 == Changelog ==
 
+= 1.0.64 =
+* New: numbered pages on the member's notes list, as an alternative to the
+  "Load more" button or alongside it. A new Paging control offers "Load more"
+  button, Page numbers, or both — with both, a member can jump to roughly the
+  right page and then keep loading from there.
+* Long lists show a window of numbers rather than all of them: the first and
+  last pages, the two either side of the current one, and a "…" where pages
+  have been left out.
+* The numbers are built on the server and returned with every request, so a
+  filter that changes how many pages there are comes back with a pager that
+  already matches. Jumping to a page loads only that page's rows.
+* New "Page numbers" style section: alignment, typography, Normal/Hover/Current
+  colours and borders, corner radius, padding, the gap between numbers, margin,
+  and the colour of the "…".
+
 = 1.0.63 =
-* New: an "Editor preview" control on the Member Archive widget and all five
-  display widgets — "Real content, samples if there is none" (the behaviour so
-  far) or "Always show sample content". The editor only ever fell back to
-  samples when the real render came back empty, so an account with two real
-  notes could never see what a full page of ten and its "Load more" button
-  look like. Now it can be asked for.
-* The front end is untouched by the setting: it always shows the real thing.
+* The Elementor editor now shows sample content by default, on the Member
+  Archive widget, all five display widgets and the message centre. Samples used
+  to appear only when the real render came back empty, so an account holding
+  two real notes rendered two real notes — no full page, no "Load more" button,
+  nothing to design against. The editor is where the design is made, so it
+  shows the full case.
+* New "Editor preview" control on each of those widgets, should the real
+  content be wanted on the canvas instead.
+* The front end is untouched by the setting: every member always sees their own
+  real record.
 
 = 1.0.62 =
 * "You chose: …" in the votes list is now its own box, the way the Unread

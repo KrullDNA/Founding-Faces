@@ -238,7 +238,7 @@ class FF_Messages {
 	public static function register() {
 		add_shortcode( 'ff_feedback', array( __CLASS__, 'sc_feedback' ) );
 		add_shortcode( 'ff_ask', array( __CLASS__, 'sc_ask' ) );
-		add_shortcode( 'ff_messages', array( __CLASS__, 'sc_messages' ) );
+		add_shortcode( 'ff_messages', array( __CLASS__, 'shortcode_messages' ) );
 
 		// Members are logged in, so only the priv handlers are needed.
 		add_action( 'admin_post_' . self::ACTION_SUBMIT, array( __CLASS__, 'handle_submit' ) );
@@ -878,10 +878,32 @@ class FF_Messages {
 	 *
 	 * @return string
 	 */
-	public static function sc_messages() {
+	public static function shortcode_messages( $atts = array() ) {
+		// A shortcode is handed its attributes as the first argument, which is
+		// not what sc_messages() takes — so the two are kept apart rather than
+		// letting an attribute array read as "show the real thing".
+		unset( $atts );
+		return self::sc_messages();
+	}
+
+	/**
+	 * The message centre.
+	 *
+	 * @param bool $editor_real In the editor, render the real thread list
+	 *                          instead of the sample.
+	 * @return string
+	 */
+	public static function sc_messages( $editor_real = false ) {
 		self::enqueue();
 
 		$editing = FF_History::is_editor();
+
+		// The editor shows the sample unless it has been asked for the real
+		// thread list. Designing against whatever happens to be in one
+		// account's inbox is designing against an accident.
+		if ( $editing && ! $editor_real ) {
+			return self::render_sample_messages();
+		}
 
 		if ( ! FF_Gating::is_member() ) {
 			if ( $editing ) {
@@ -892,9 +914,8 @@ class FF_Messages {
 
 		$member_id = get_current_user_id();
 
-		// A member with no messages yet — which includes Nick previewing his own
-		// portal — would otherwise see only "You have no messages yet", leaving
-		// the threads and badge impossible to style. Stand in the sample.
+		// Asked for the real list but there is nothing in it: the threads and
+		// the badge still need something to be styled against.
 		if ( $editing && empty( self::threads_for_member( $member_id ) ) ) {
 			return self::render_sample_messages();
 		}
