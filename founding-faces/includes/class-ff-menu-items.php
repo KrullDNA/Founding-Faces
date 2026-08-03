@@ -51,6 +51,17 @@ class FF_Menu_Items {
 	const OPT_LOGIN_LABEL    = 'ff_login_label';
 	const OPT_LOGOUT_LABEL   = 'ff_logout_label';
 
+	// The count bubble's appearance. The nav-menu bubble is injected into the
+	// theme's (or Elementor's) own menu markup, which has no Founding Faces
+	// controls of its own — so these live in Settings and apply site-wide. The
+	// Member Bar widget has its own Elementor controls and overrides them.
+	const OPT_BADGE_BG     = 'ff_badge_bg';
+	const OPT_BADGE_COLOR  = 'ff_badge_color';
+	const OPT_BADGE_SIZE   = 'ff_badge_size';
+	const OPT_BADGE_FONT   = 'ff_badge_font_size';
+	const OPT_BADGE_RADIUS = 'ff_badge_radius';
+	const OPT_BADGE_GAP    = 'ff_badge_gap';
+
 	/**
 	 * Whether we're rendering inside a design surface (Elementor editor or
 	 * preview, or the Customizer) rather than for a real visitor.
@@ -90,6 +101,44 @@ class FF_Menu_Items {
 		// Send a failed login back to the page the form was on, not to
 		// wp-login.php, so a custom login page stays the login page.
 		add_action( 'wp_login_failed', array( __CLASS__, 'login_failed' ) );
+
+		// The bubble's site-wide appearance, for menus we don't control.
+		add_action( 'wp_head', array( __CLASS__, 'badge_styles' ), 20 );
+	}
+
+	/**
+	 * Print the count bubble's site-wide appearance.
+	 *
+	 * Written as custom properties on :root so the Member Bar widget's own
+	 * Elementor controls, which set the real properties, always win.
+	 */
+	public static function badge_styles() {
+		$vars = array(
+			'--ff-badge-bg'     => trim( (string) get_option( self::OPT_BADGE_BG, '' ) ),
+			'--ff-badge-ink'    => trim( (string) get_option( self::OPT_BADGE_COLOR, '' ) ),
+			'--ff-badge-size'   => trim( (string) get_option( self::OPT_BADGE_SIZE, '' ) ),
+			'--ff-badge-font'   => trim( (string) get_option( self::OPT_BADGE_FONT, '' ) ),
+			'--ff-badge-radius' => trim( (string) get_option( self::OPT_BADGE_RADIUS, '' ) ),
+			'--ff-badge-gap'    => trim( (string) get_option( self::OPT_BADGE_GAP, '' ) ),
+		);
+
+		$css = '';
+		foreach ( $vars as $name => $value ) {
+			if ( '' === $value ) {
+				continue;
+			}
+			// The numeric ones carry a unit; colours are passed through as-is.
+			if ( in_array( $name, array( '--ff-badge-size', '--ff-badge-font', '--ff-badge-radius', '--ff-badge-gap' ), true ) ) {
+				$value = (float) $value . 'px';
+			}
+			$css .= $name . ':' . $value . ';';
+		}
+
+		if ( '' === $css ) {
+			return;
+		}
+
+		echo '<style id="ff-badge-vars">:root{' . esc_html( $css ) . '}</style>' . "\n";
 	}
 
 	/**
