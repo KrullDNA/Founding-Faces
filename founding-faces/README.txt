@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.50
+Stable tag: 1.0.51
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,19 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.51 =
+* New: a message thread now shows which product and note it is about, under the
+  subject. Feedback is always left on a note, and a note carries its product, so
+  the chain note to product tells a member (and Nick) what the conversation
+  concerns. A general question has no reference, so it shows no context line
+  rather than a misleading one.
+* New: the unread count bubble can be styled on the Settings page — background,
+  number colour, circle size, number size, corner radius and the gap from the
+  label. Nav menu items are rendered by the theme (or Elementor's Nav Menu
+  widget), which has no Founding Faces controls of its own, so the bubble is
+  styled globally instead. The Member Bar widget's own Elementor controls still
+  override these wherever it is used.
 
 = 1.0.50 =
 * Fix: editor dummy content now covers every widget, and no longer depends on

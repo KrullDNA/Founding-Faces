@@ -1026,20 +1026,18 @@
  * colour by default so it sits inside any theme's menu without configuration;
  * override --ff-badge-bg / --ff-badge-ink to brand it. */
 .ff-menu-badge {
-	--ff-badge-bg: var(--ff-accent, #3a3d44);
-	--ff-badge-ink: #ffffff;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
-	min-width: 1.35em;
-	height: 1.35em;
+	min-width: var(--ff-badge-size, 1.35em);
+	height: var(--ff-badge-size, 1.35em);
 	padding: 0 0.4em;
-	margin-left: 0.45em;
-	border-radius: 999px;
-	background: var(--ff-badge-bg);
-	color: var(--ff-badge-ink);
-	font-size: 0.7em;
+	margin-left: var(--ff-badge-gap, 0.45em);
+	border-radius: var(--ff-badge-radius, 999px);
+	background: var(--ff-badge-bg, var(--ff-accent, #3a3d44));
+	color: var(--ff-badge-ink, #ffffff);
+	font-size: var(--ff-badge-font, 0.7em);
 	font-weight: 700;
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
@@ -1144,5 +1142,17 @@
 .ff-status-again-link {
 	color: var(--ff-accent);
 	text-decoration: none;
+	font-weight: 600;
+}
+
+/* Which product (and note) a message thread is about. ------------------------ */
+.ff-thread-context {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: 0.82rem;
+	color: var(--ff-muted);
+}
+
+.ff-thread-product {
 	font-weight: 600;
 }

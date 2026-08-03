@@ -104,6 +104,12 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGOUT_REDIRECT, array( 'sanitize_callback' => 'esc_url_raw' ) );
 		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGIN_LABEL, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( self::GROUP, FF_Menu_Items::OPT_LOGOUT_LABEL, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_BG, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_COLOR, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_SIZE, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_FONT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_RADIUS, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Menu_Items::OPT_BADGE_GAP, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Which connector is active (core). The connector add-on plugins register
 		// their own API-key settings against this same group via 'admin_init'.
@@ -424,6 +430,66 @@ class FF_Settings {
 						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGOUT_LABEL, '' ) ); ?>"
 						placeholder="<?php esc_attr_e( 'Log out', 'founding-faces' ); ?>" />
 					<p class="description"><?php esc_html_e( 'Shown when logged in.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
+		<h2><?php esc_html_e( 'Unread count bubble', 'founding-faces' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( 'The circled number on a nav menu item. Menu items are rendered by your theme (or Elementor\'s Nav Menu widget), which has no Founding Faces controls — so the bubble is styled here instead, and applies everywhere it appears. The Founding Faces Member Bar widget has its own Elementor style controls, which override these.', 'founding-faces' ); ?>
+		</p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_BG ); ?>"><?php esc_html_e( 'Background colour', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_BG ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_BG ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_BG, '' ) ); ?>"
+						placeholder="#3a3d44" />
+					<p class="description"><?php esc_html_e( 'Any CSS colour, e.g. #c8102e or rgb(200,16,46). Leave empty for the brand accent.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_COLOR ); ?>"><?php esc_html_e( 'Number colour', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_COLOR ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_COLOR ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_COLOR, '' ) ); ?>"
+						placeholder="#ffffff" />
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_SIZE ); ?>"><?php esc_html_e( 'Circle size (px)', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" min="10" max="60" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_SIZE ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_SIZE ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_SIZE, '' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'Leave empty to scale with the menu text. The circle grows past this if the number is long.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_FONT ); ?>"><?php esc_html_e( 'Number size (px)', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" min="6" max="30" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_FONT ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_FONT ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_FONT, '' ) ); ?>" />
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_RADIUS ); ?>"><?php esc_html_e( 'Corner radius (px)', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" min="0" max="99" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_RADIUS ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_RADIUS ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_RADIUS, '' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'Leave empty for a full circle. Set 0 for a square chip.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_GAP ); ?>"><?php esc_html_e( 'Gap from the label (px)', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" min="0" max="40" step="1" class="small-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_GAP ); ?>"
+						name="<?php echo esc_attr( FF_Menu_Items::OPT_BADGE_GAP ); ?>"
+						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_BADGE_GAP, '' ) ); ?>" />
 				</td>
 			</tr>
 		</table>

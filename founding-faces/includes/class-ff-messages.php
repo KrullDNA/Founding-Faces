@@ -930,8 +930,9 @@ class FF_Messages {
 	 */
 	private static function render_sample_messages() {
 		$rows = array(
-			array( __( 'Feedback: Trial 12 — stability at 40°C', 'founding-faces' ), true ),
-			array( __( 'Your question', 'founding-faces' ), false ),
+			array( __( 'Feedback: Trial 12 — stability at 40°C', 'founding-faces' ), true, __( 'Renewal Serum', 'founding-faces' ), __( 'Trial 12 — stability at 40°C', 'founding-faces' ) ),
+			array( __( 'Feedback: Texture after 6 weeks', 'founding-faces' ), false, __( 'Barrier Cream', 'founding-faces' ), __( 'Trial 4 — texture', 'founding-faces' ) ),
+			array( __( 'Your question', 'founding-faces' ), false, '', '' ),
 		);
 		$out  = '<div class="ff-messages"><h3 class="ff-history-heading">' . esc_html__( 'Your messages', 'founding-faces' ) . '</h3>';
 		$out .= '<ul class="ff-history-list ff-message-threads">';
@@ -941,7 +942,12 @@ class FF_Messages {
 			if ( $r[1] ) {
 				$out .= ' <span class="ff-message-badge">' . esc_html__( 'New message', 'founding-faces' ) . '</span>';
 			}
-			$out .= '</span></div><span class="ff-history-item-date">' . esc_html( self::format_date( current_time( 'mysql' ) ) ) . '</span></li>';
+			$out .= '</span>';
+			if ( '' !== $r[2] ) {
+				$out .= '<span class="ff-thread-context"><span class="ff-thread-product">' . esc_html( $r[2] )
+					. '</span><span class="ff-thread-sep"> — </span><span class="ff-thread-note">' . esc_html( $r[3] ) . '</span></span>';
+			}
+			$out .= '</div><span class="ff-history-item-date">' . esc_html( self::format_date( current_time( 'mysql' ) ) ) . '</span></li>';
 		}
 		$out .= '</ul></div>';
 		return $out;
@@ -988,6 +994,7 @@ class FF_Messages {
 				$out .= ' <span class="ff-message-badge">' . esc_html__( 'New message', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
+			$out .= self::thread_context_html( $t );
 			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $t->created_at ) ) . '</span>';
 			$out .= '</li>';
@@ -1078,6 +1085,38 @@ class FF_Messages {
 				: __( 'Feedback', 'founding-faces' );
 		}
 		return '' !== trim( (string) $root->subject ) ? $root->subject : __( 'Your question', 'founding-faces' );
+	}
+
+	/**
+	 * The product (and note) a thread is about, for display.
+	 *
+	 * Feedback threads carry the note they were left on in reference_id, and a
+	 * note carries its product — so the chain note -> product tells us what the
+	 * conversation is really about. A general question has no reference, so it
+	 * gets no context line rather than a misleading one.
+	 *
+	 * @param object $root The thread's opening message row.
+	 * @return string Escaped HTML, or '' when there's nothing to say.
+	 */
+	public static function thread_context_html( $root ) {
+		if ( ! $root || empty( $root->reference_id ) ) {
+			return '';
+		}
+
+		$ref_id = (int) $root->reference_id;
+		if ( FF_Post_Types::NOTE_CPT !== get_post_type( $ref_id ) ) {
+			return '';
+		}
+
+		$product_id = (int) get_post_meta( $ref_id, FF_Post_Types::META_NOTE_PRODUCT, true );
+		$parts      = array();
+
+		if ( $product_id ) {
+			$parts[] = '<span class="ff-thread-product">' . esc_html( get_the_title( $product_id ) ) . '</span>';
+		}
+		$parts[] = '<span class="ff-thread-note">' . esc_html( get_the_title( $ref_id ) ) . '</span>';
+
+		return '<span class="ff-thread-context">' . implode( '<span class="ff-thread-sep"> — </span>', $parts ) . '</span>';
 	}
 
 	/**
