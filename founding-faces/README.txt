@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.57
+Stable tag: 1.0.63
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,83 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.63 =
+* New: an "Editor preview" control on the Member Archive widget and all five
+  display widgets — "Real content, samples if there is none" (the behaviour so
+  far) or "Always show sample content". The editor only ever fell back to
+  samples when the real render came back empty, so an account with two real
+  notes could never see what a full page of ten and its "Load more" button
+  look like. Now it can be asked for.
+* The front end is untouched by the setting: it always shows the real thing.
+
+= 1.0.62 =
+* "You chose: …" in the votes list is now its own box, the way the Unread
+  badge and the poll's closed capsule are. New controls under Item text:
+  background, border, corner radius, box shadow, padding and margin, on top of
+  the typography and colour already there.
+* It hugs its own text rather than stretching the row, and carries no
+  background until one is set, so nothing changes until it is styled.
+
+= 1.0.61 =
+* New: a "Field wording" section in the application form widget's Content tab.
+  Every field gets three fields of its own — its label, its placeholder and the
+  hint below it — covering all six questions and the consent checkbox. The
+  required-field marker is editable too, and clearing it drops it everywhere.
+* Every field is pre-filled with the wording it replaces, so the panel shows
+  what is actually on the page. Clearing a hint or a placeholder removes it.
+* Clearing a label hides it on screen but keeps it in the markup for screen
+  readers, so a field styled down to a placeholder is still one a screen-reader
+  user can identify.
+* Name, email, skin concerns and "about your skin" gained placeholders, and
+  every field gained an optional hint line; previously only postcode and
+  Instagram had either.
+* The existing Button text and Thank-you message controls keep their saved
+  values, and the shortcode's button_label and success_message attributes still
+  work as before.
+
+= 1.0.60 =
+* Removed the decorative left border from the poll outcome block. It was drawn
+  in the stylesheet where nothing in the editor could reach it; the block now
+  ships with no border and the widget carries Border, corner-radius and shadow
+  controls so any edge treatment is a decision made in Elementor.
+* Removed two other hardcoded treatments for the same reason: the white inner
+  ring on the member's own result bar, which sat on top of the bar colour set
+  in the editor, and the hover ring and accent border on the voting buttons,
+  which overrode the button's own border and shadow. The Hover tab now carries
+  border colour and box shadow, so hover is styled rather than assumed.
+* New: a "Poll card" style section — background, border, corner radius, box
+  shadow, padding and margin for the poll as a whole.
+* New: full box controls for the "Your choice" label — background, border,
+  radius, shadow, padding, margin and a baseline nudge — and for the result row
+  the member voted for: background, border, radius and padding.
+* Added the missing controls elsewhere in the poll: question alignment, margin
+  and padding; border and shadow on the "Poll closed" capsule; border, shadow
+  and alignment on the outcome block; box shadow on the voting buttons.
+* New: a "Wording" section in the poll widget's Content tab. Every fixed phrase
+  — "Poll closed", the hint under the options, "Your choice", "Where we landed"
+  and the vote-count line (singular and plural) — is now a field, pre-filled
+  with the wording it replaces. Clearing a field leaves that line off entirely.
+* The wording travels with the poll, so the results shown straight after a
+  member votes say the same things as the rest of the poll.
+
+= 1.0.59 =
+* The votes list now gives the poll question the full width of the row, and
+  drops the date onto the "You chose" line beside the answer. Poll questions
+  are sentences, and holding a column open for the date wrapped them early.
+* The editor's sample votes use full questions rather than short labels, so
+  the row can be styled against the length it will really carry.
+
+= 1.0.58 =
+* The editor now draws a full page of sample notes at the widget's own page
+  size, instead of four token rows, so the batch size and the "Load more"
+  button can be judged on the canvas before a single real note exists. The
+  sample titles and products vary rather than repeating one row, and the
+  unread ones sit at the top where the real ordering puts them.
+* Sample pages are capped at 30 rows, so setting the page size to 100 doesn't
+  bury the editor.
+* The sample list's button and filters are inert on the canvas: clicking them
+  no longer returns a loading error where there is nothing to load.
 
 = 1.0.57 =
 * New: each note in the member's notes list can name its product on a small

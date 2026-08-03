@@ -42,6 +42,15 @@
 		body.append( 'poll_id', pollId );
 		body.append( 'option_id', optionId );
 
+		// Carry this poll's wording back to the server, so the results that
+		// replace the buttons use the same words the widget was set to.
+		Object.keys( poll.dataset ).forEach( function ( key ) {
+			if ( 0 === key.indexOf( 'text' ) && key.length > 4 ) {
+				var name = key.slice( 4 ).replace( /([A-Z])/g, '_$1' ).toLowerCase();
+				body.append( 'text' + name, poll.dataset[ key ] );
+			}
+		} );
+
 		fetch( ffPolls.ajaxUrl, {
 			method: 'POST',
 			credentials: 'same-origin',

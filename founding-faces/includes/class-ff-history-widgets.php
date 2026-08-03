@@ -134,6 +134,18 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition'   => array( 'section' => array( 'all', 'header' ) ),
 		) );
 
+		$this->add_control( 'preview_mode', array(
+			'label'       => __( 'Editor preview', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'auto',
+			'separator'   => 'before',
+			'options'     => array(
+				'auto'   => __( 'Your own data, samples if there is none', 'founding-faces' ),
+				'sample' => __( 'Always show sample content', 'founding-faces' ),
+			),
+			'description' => __( 'Affects the editor only. Choose samples to style a full page of notes, the filters and the "Load more" button without waiting for enough real notes to exist.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'show_line', array(
 			'label'        => __( 'Line under header', 'founding-faces' ),
 			'type'         => \Elementor\Controls_Manager::SWITCHER,
@@ -692,6 +704,47 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'condition' => array( 'section' => array( 'all', 'votes' ) ),
 		) );
 
+		// The same box treatment the Unread badge and the poll's closed capsule
+		// get, so "You chose: …" can be made to stand out rather than read as
+		// another line of body copy.
+		$this->add_control( 'choice_bg', array(
+			'label'     => __( 'Box background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-vote-choice' => 'background-color: {{VALUE}};' ),
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'      => 'choice_border',
+			'selector'  => '{{WRAPPER}} .ff-vote-choice',
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_responsive_control( 'choice_radius', array(
+			'label'      => __( 'Box corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-vote-choice' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'condition'  => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'      => 'choice_shadow',
+			'selector'  => '{{WRAPPER}} .ff-vote-choice',
+			'condition' => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_responsive_control( 'choice_padding', array(
+			'label'      => __( 'Box padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-vote-choice' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'condition'  => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+		$this->add_responsive_control( 'choice_margin', array(
+			'label'      => __( 'Box margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-vote-choice' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'condition'  => array( 'section' => array( 'all', 'votes' ) ),
+		) );
+
 		$this->add_control( 'date_h', array(
 			'label'     => __( 'Date', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
@@ -850,6 +903,15 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$s = $this->get_settings_for_display();
 
 		$editing = FF_History::is_editor();
+		$forced  = isset( $s['preview_mode'] ) && 'sample' === $s['preview_mode'];
+
+		// Asked for samples in the editor: show them whatever the member's own
+		// record holds. A member with two notes can't otherwise see what ten
+		// notes and a "Load more" button look like.
+		if ( $editing && $forced ) {
+			echo $this->build( $s, null, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return;
+		}
 
 		if ( FF_Gating::is_member() ) {
 			$html = $this->build( $s, get_current_user_id(), false );
