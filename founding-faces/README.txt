@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.62
+Stable tag: 1.0.63
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.63 =
+* New: an "Editor preview" control on the Member Archive widget and all five
+  display widgets — "Real content, samples if there is none" (the behaviour so
+  far) or "Always show sample content". The editor only ever fell back to
+  samples when the real render came back empty, so an account with two real
+  notes could never see what a full page of ten and its "Load more" button
+  look like. Now it can be asked for.
+* The front end is untouched by the setting: it always shows the real thing.
 
 = 1.0.62 =
 * "You chose: …" in the votes list is now its own box, the way the Unread

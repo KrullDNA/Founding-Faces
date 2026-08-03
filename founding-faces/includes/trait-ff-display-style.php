@@ -307,6 +307,39 @@ trait FF_Display_Style_Controls {
 	 * @param string $html The real render output.
 	 * @return bool
 	 */
+	/**
+	 * The "Editor preview" control: real data, or always the sample.
+	 *
+	 * Auto only falls back to samples when the real render comes back empty,
+	 * which is right most of the time — but a page with two real notes on it
+	 * can never show what ten look like. This is how that is asked for.
+	 */
+	protected function ffds_preview_control() {
+		$this->add_control( 'preview_mode', array(
+			'label'       => __( 'Editor preview', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'auto',
+			'separator'   => 'before',
+			'options'     => array(
+				'auto'   => __( 'Real content, samples if there is none', 'founding-faces' ),
+				'sample' => __( 'Always show sample content', 'founding-faces' ),
+			),
+			'description' => __( 'Affects the editor only; the front end always shows the real thing.', 'founding-faces' ),
+		) );
+	}
+
+	/**
+	 * Whether the editor has been told to show samples regardless.
+	 *
+	 * @param array $settings The widget settings.
+	 * @return bool
+	 */
+	protected function ffds_force_sample( $settings ) {
+		return $this->ffds_is_editor()
+			&& isset( $settings['preview_mode'] )
+			&& 'sample' === $settings['preview_mode'];
+	}
+
 	protected function ffds_needs_sample( $html ) {
 		$html = (string) $html;
 

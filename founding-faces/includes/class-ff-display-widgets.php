@@ -393,6 +393,8 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .ff-notes-cards' => 'gap: {{SIZE}}{{UNIT}};' ),
 		) );
 
+		$this->ffds_preview_control();
+
 		$this->end_controls_section();
 
 		$this->register_note_card_style();
@@ -420,7 +422,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 
 		// In the editor, stand in sample cards when the real render had nothing
 		// to show, so every element can be styled up front.
-		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
+		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo '<div class="ff-notes-list">';
 			if ( ! isset( $s['filters'] ) || 'yes' === $s['filters'] ) {
 				echo FF_Display::sample_filter_chips(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -511,6 +513,8 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'default'   => array( 'size' => 20, 'unit' => 'px' ),
 			'selectors' => array( '{{WRAPPER}} .ff-notes-cards' => 'gap: {{SIZE}}{{UNIT}};' ),
 		) );
+		$this->ffds_preview_control();
+
 		$this->end_controls_section();
 
 		$this->register_note_card_style();
@@ -614,7 +618,7 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'limit' => isset( $s['limit'] ) ? absint( $s['limit'] ) : 30,
 		) ) );
 
-		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
+		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo '<div class="ff-notes-archive ff-notes-list">';
 			echo FF_Display::sample_filter_bar( $flags ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo FF_Display::sample_note_cards( 3 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -659,6 +663,8 @@ class FF_Note_Widget extends FF_Display_Widget_Base {
 			'options' => FF_Display::note_choices(),
 		) );
 		$this->ffds_layout_controls( 'listing', __( 'Layout', 'founding-faces' ) );
+		$this->ffds_preview_control();
+
 		$this->end_controls_section();
 
 		$this->register_note_card_style();
@@ -673,7 +679,7 @@ class FF_Note_Widget extends FF_Display_Widget_Base {
 			'listing' => $this->ffds_listing_id( $s, 'listing' ),
 		) );
 
-		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
+		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo '<div class="ff-notes-single">' . FF_Display::sample_note_card() . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
@@ -714,6 +720,8 @@ class FF_Product_Header_Widget extends FF_Display_Widget_Base {
 			'default' => 0,
 			'options' => FF_Display::product_choices(),
 		) );
+		$this->ffds_preview_control();
+
 		$this->end_controls_section();
 
 		$this->ffds_card_section( 'phwrap', '.ff-product-header', __( 'Header block', 'founding-faces' ) );
@@ -731,7 +739,7 @@ class FF_Product_Header_Widget extends FF_Display_Widget_Base {
 			'product' => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
 		) );
 
-		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
+		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo FF_Display::sample_product_header(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
@@ -819,6 +827,8 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 			'condition' => array( 'show_products' => 'yes' ),
 		) );
 		$this->ffds_layout_controls( 'products_listing', __( 'Layout', 'founding-faces' ), 'products_columns' );
+		$this->ffds_preview_control();
+
 		$this->end_controls_section();
 
 		/* ------------------------------- Style ------------------------------- */
@@ -921,7 +931,7 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 			'products_columns' => isset( $s['products_columns'] ) ? absint( $s['products_columns'] ) : 1,
 		) );
 
-		if ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) {
+		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo '<div class="ff-home">';
 			if ( 'yes' === $show_latest ) {
 				echo '<section class="ff-home-latest"><h2 class="ff-home-heading ff-home-heading--latest">'
