@@ -28,9 +28,21 @@ class FF_History {
 	/**
 	 * Register the personal-history shortcode and the Elementor widgets.
 	 */
+	/**
+	 * How many notes the unread-first ordering considers.
+	 *
+	 * The ordering needs the whole set to know what is unread, but this keeps
+	 * that bounded. Only the current page's rows are ever rendered.
+	 */
+	const NOTE_ORDER_LIMIT = 500;
+
 	public static function register() {
 		add_shortcode( 'ff_history', array( __CLASS__, 'shortcode' ) );
 		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widgets' ) );
+
+		// "Load more" on the member's own notes list. Logged-in only: a
+		// logged-out visitor has no notes list to page through.
+		add_action( 'wp_ajax_ff_load_notes', array( __CLASS__, 'ajax_load_notes' ) );
 	}
 
 	/**
@@ -171,7 +183,7 @@ class FF_History {
 	 * @param bool   $link    Whether to render the titles as links (to '#').
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '', $link = true ) {
+	public static function sample_notes( $heading = '', $link = true, $per_page = 0 ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 		$rows    = array(
 			array( __( 'Trial 14 — the new emulsifier', 'founding-faces' ), true ),
@@ -180,7 +192,7 @@ class FF_History {
 			array( __( 'Why we rejected the first serum base', 'founding-faces' ), false ),
 		);
 
-		$out  = '<section class="ff-history-section">';
+		$out  = '<section class="ff-history-section ff-notes-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 		$out .= '<ul class="ff-history-list ff-notes-read-list">';
 		foreach ( $rows as $i => $row ) {
@@ -196,7 +208,16 @@ class FF_History {
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
 		}
-		$out .= '</ul></section>';
+		$out .= '</ul>';
+
+		// The editor always shows the button, whatever the page size, so it can
+		// be styled without first creating enough notes to trigger it.
+		if ( absint( $per_page ) > 0 ) {
+			$out .= '<div class="ff-notes-more"><button type="button" class="ff-notes-more-button">'
+				. esc_html__( 'Load more', 'founding-faces' ) . '</button></div>';
+		}
+
+		$out .= '</section>';
 		return $out;
 	}
 
@@ -364,31 +385,83 @@ class FF_History {
 	 * @param bool   $link      Whether to link each note to its own page.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '', $link = true ) {
+	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0 ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 
-		$out  = '<section class="ff-history-section">';
+		$out  = '<section class="ff-history-section ff-notes-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
 
-		// Every note this member is allowed to see, newest first. The gate runs
-		// per note, so a Circle member never sees a 35-only note here.
-		$note_ids = get_posts( array(
-			'post_type'      => FF_Post_Types::NOTE_CPT,
-			'post_status'    => 'publish',
-			'posts_per_page' => 200,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'fields'         => 'ids',
-		) );
-		$note_ids = array_values( array_filter( $note_ids, array( 'FF_Gating', 'can_view_note' ) ) );
+		$entries = self::note_entries( $member_id );
 
-		if ( empty( $note_ids ) ) {
+		if ( empty( $entries ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
 			return $out . '</section>';
 		}
 
-		// When each note was read, so the read ones can carry their own date and
-		// be ordered by when this member actually opened them.
+		$per_page = absint( $per_page );
+		$total    = count( $entries );
+		$slice    = ( $per_page > 0 ) ? array_slice( $entries, 0, $per_page ) : $entries;
+
+		$out .= '<ul class="ff-history-list ff-notes-read-list">';
+		$out .= self::note_rows( $slice, $link );
+		$out .= '</ul>';
+
+		// Only offer "load more" when there is genuinely more to load.
+		if ( $per_page > 0 && $total > $per_page ) {
+			self::enqueue_load_more();
+			$out .= '<div class="ff-notes-more">';
+			$out .= '<button type="button" class="ff-notes-more-button"'
+				. ' data-offset="' . esc_attr( $per_page ) . '"'
+				. ' data-per-page="' . esc_attr( $per_page ) . '"'
+				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
+				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
+				. esc_html__( 'Load more', 'founding-faces' )
+				. '</button>';
+			$out .= '</div>';
+		}
+
+		return $out . '</section>';
+	}
+
+	/**
+	 * Every note this member may see, unread first, then read.
+	 *
+	 * Unread notes lead because they are the ones a member needs to find; they
+	 * keep the newest-note-first order. Read notes follow, ordered by when this
+	 * member actually opened them, most recent first.
+	 *
+	 * @param int $member_id The current member's id.
+	 * @return array[] Each entry is array( note id, date string, is unread ).
+	 */
+	public static function note_entries( $member_id ) {
+		// Ids only, never whole post objects: the unread-first order has to be
+		// worked out across the full set, but nothing is *rendered* here. Only
+		// the ten or so rows in the requested slice ever load a title or a
+		// permalink, so a member with a thousand notes still pages cheaply.
+		$note_ids = get_posts( array(
+			'post_type'              => FF_Post_Types::NOTE_CPT,
+			'post_status'            => 'publish',
+			'posts_per_page'         => self::NOTE_ORDER_LIMIT,
+			'orderby'                => 'date',
+			'order'                  => 'DESC',
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_term_cache' => false,
+		) );
+		if ( empty( $note_ids ) ) {
+			return array();
+		}
+
+		// One query for every note's meta, so the audience check below reads
+		// from cache instead of firing a query per note.
+		update_meta_cache( 'post', $note_ids );
+
+		// The gate runs per note, so a Circle member never sees a 35-only note.
+		$note_ids = array_values( array_filter( $note_ids, array( 'FF_Gating', 'can_view_note' ) ) );
+		if ( empty( $note_ids ) ) {
+			return array();
+		}
+
 		$read_dates = array();
 		foreach ( FF_Interactions::get_for_member( $member_id, 'note_viewed' ) as $row ) {
 			$read_dates[ (int) $row->reference_id ] = $row->created_at;
@@ -399,21 +472,31 @@ class FF_History {
 		foreach ( $note_ids as $note_id ) {
 			$note_id = (int) $note_id;
 			if ( isset( $read_dates[ $note_id ] ) ) {
-				$read[] = array( $note_id, $read_dates[ $note_id ] );
+				$read[] = array( $note_id, $read_dates[ $note_id ], false );
 			} else {
-				$unread[] = array( $note_id, get_post_time( 'Y-m-d H:i:s', false, $note_id ) );
+				$unread[] = array( $note_id, get_post_time( 'Y-m-d H:i:s', false, $note_id ), true );
 			}
 		}
 
-		// Most recently read first; unread are already newest-note-first.
 		usort( $read, function ( $a, $b ) {
 			return strcmp( $b[1], $a[1] );
 		} );
 
-		$out .= '<ul class="ff-history-list ff-notes-read-list">';
-		foreach ( array_merge( $unread, $read ) as $entry ) {
-			list( $note_id, $date ) = $entry;
-			$is_unread = ! isset( $read_dates[ $note_id ] );
+		return array_merge( $unread, $read );
+	}
+
+	/**
+	 * The <li> rows for a set of note entries.
+	 *
+	 * @param array[] $entries Entries from note_entries().
+	 * @param bool    $link    Whether to link each note to its own page.
+	 * @return string
+	 */
+	public static function note_rows( $entries, $link = true ) {
+		$out = '';
+
+		foreach ( $entries as $entry ) {
+			list( $note_id, $date, $is_unread ) = $entry;
 
 			$title = get_the_title( $note_id );
 			$title = $title ? $title : __( '(untitled note)', 'founding-faces' );
@@ -437,9 +520,56 @@ class FF_History {
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $date ) ) . '</span>';
 			$out .= '</li>';
 		}
-		$out .= '</ul>';
 
-		return $out . '</section>';
+		return $out;
+	}
+
+	/**
+	 * Enqueue the small "load more" script, once, only where it's needed.
+	 */
+	private static function enqueue_load_more() {
+		wp_enqueue_script(
+			'ff-notes-more',
+			FF_URL . 'assets/js/notes-more.js',
+			array(),
+			FF_VERSION,
+			true
+		);
+
+		wp_localize_script( 'ff-notes-more', 'ffNotesMore', array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'loading' => __( 'Loading…', 'founding-faces' ),
+			'error'   => __( 'Could not load more just now. Please try again.', 'founding-faces' ),
+		) );
+	}
+
+	/**
+	 * AJAX: return the next page of note rows for the current member.
+	 *
+	 * The member id always comes from the session, never the request, so this
+	 * can only ever return the caller's own list — and every note still passes
+	 * the group gate inside note_entries().
+	 */
+	public static function ajax_load_notes() {
+		check_ajax_referer( 'ff_load_notes', 'nonce' );
+
+		if ( ! FF_Gating::is_member() ) {
+			wp_send_json_error();
+		}
+
+		$offset   = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
+		$per_page = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 10;
+		$per_page = max( 1, min( 100, $per_page ) );
+		$link     = ! empty( $_POST['link'] );
+
+		$entries = self::note_entries( get_current_user_id() );
+		$slice   = array_slice( $entries, $offset, $per_page );
+
+		wp_send_json_success( array(
+			'html'    => self::note_rows( $slice, $link ),
+			'offset'  => $offset + count( $slice ),
+			'hasMore' => ( $offset + count( $slice ) ) < count( $entries ),
+		) );
 	}
 
 	/**

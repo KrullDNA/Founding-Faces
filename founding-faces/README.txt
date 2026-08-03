@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.54
+Stable tag: 1.0.55
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.55 =
+* New: the Member Archive notes list is paged, with a "Load more" button that
+  fetches the next batch over AJAX without reloading the page. Set the batch
+  size on the widget ("Notes per page", 10 by default; 0 shows everything at
+  once). Each request returns only that next batch, so a member with hundreds of
+  notes never waits on one long list, and the unread-first order holds across
+  pages.
+* New: full style controls for the "Load more" button — typography, normal and
+  hover colours, border, radius, padding, alignment and margin — and it shows in
+  the Elementor editor whatever the page size, so it can be styled without first
+  creating enough notes to trigger it.
+* The AJAX endpoint takes the member id from the session, never the request, and
+  every note still passes the group gate, so it can only ever return the
+  caller's own list.
 
 = 1.0.54 =
 * Change: the Member Archive's "Notes you've read" section is now simply

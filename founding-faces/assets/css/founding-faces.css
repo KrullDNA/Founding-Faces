@@ -1244,3 +1244,35 @@
 .ff-note-row.is-unread .ff-history-item-main {
 	font-weight: 700;
 }
+
+/* "Load more" on the member's notes list. ------------------------------------ */
+.ff-notes-more {
+	margin-top: 1rem;
+}
+
+.ff-notes-more-button {
+	font-family: inherit;
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: var(--ff-accent);
+	background: transparent;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 0.55rem 1.3rem;
+	cursor: pointer;
+}
+
+.ff-notes-more-button:hover {
+	border-color: var(--ff-accent);
+}
+
+.ff-notes-more-button[disabled] {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.ff-notes-more-error {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	color: var(--ff-error-ink);
+}
