@@ -183,13 +183,13 @@ class FF_History {
 	 * @param bool   $link    Whether to render the titles as links (to '#').
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array() ) {
+	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 		$rows    = array(
-			array( __( 'Trial 14 — the new emulsifier', 'founding-faces' ), true ),
-			array( __( 'Switching to a mild preservative system', 'founding-faces' ), true ),
-			array( __( 'Trial 12 — stability at 40°C', 'founding-faces' ), false ),
-			array( __( 'Why we rejected the first serum base', 'founding-faces' ), false ),
+			array( __( 'Trial 14 — the new emulsifier', 'founding-faces' ), true, __( 'The Barrier Cream', 'founding-faces' ) ),
+			array( __( 'Switching to a mild preservative system', 'founding-faces' ), true, __( 'The Cleansing Balm', 'founding-faces' ) ),
+			array( __( 'Trial 12 — stability at 40°C', 'founding-faces' ), false, __( 'The Barrier Cream', 'founding-faces' ) ),
+			array( __( 'Why we rejected the first serum base', 'founding-faces' ), false, __( 'The Serum', 'founding-faces' ) ),
 		);
 
 		$out  = '<section class="ff-history-section ff-notes-section">';
@@ -201,6 +201,9 @@ class FF_History {
 			$main = $link ? '<a href="#">' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
 			$out .= '<li class="ff-history-item ff-note-row' . ( $row[1] ? ' is-unread' : '' ) . '">';
 			$out .= '<div class="ff-history-item-body">';
+			if ( $show_product ) {
+				$out .= '<span class="ff-note-product">' . esc_html( $row[2] ) . '</span>';
+			}
 			$out .= '<span class="ff-history-item-main">' . $main;
 			if ( $row[1] ) {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
@@ -382,12 +385,15 @@ class FF_History {
 	/**
 	 * Render the notes the member has engaged with.
 	 *
-	 * @param int    $member_id The current member's id.
-	 * @param string $heading   Optional heading override.
-	 * @param bool   $link      Whether to link each note to its own page.
+	 * @param int    $member_id    The current member's id.
+	 * @param string $heading      Optional heading override.
+	 * @param bool   $link         Whether to link each note to its own page.
+	 * @param int    $per_page     How many rows per batch; 0 for all of them.
+	 * @param array  $show         Which filters to offer.
+	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array() ) {
+	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section ff-notes-section">';
@@ -407,7 +413,7 @@ class FF_History {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
 		} else {
 			$out .= '<ul class="ff-history-list ff-notes-read-list">';
-			$out .= self::note_rows( $slice, $link );
+			$out .= self::note_rows( $slice, $link, $show_product );
 			$out .= '</ul>';
 		}
 		$out .= '</div>';
@@ -425,6 +431,7 @@ class FF_History {
 				. ' data-offset="' . esc_attr( $per_page ) . '"'
 				. ' data-per-page="' . esc_attr( $per_page ) . '"'
 				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
+				. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
 				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
 				. esc_html__( 'Load more', 'founding-faces' )
 				. '</button>';
@@ -435,6 +442,7 @@ class FF_History {
 			$out .= '<button type="button" class="ff-notes-more-button"'
 				. ' data-offset="0" data-per-page="0"'
 				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
+				. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
 				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
 				. esc_html__( 'Load more', 'founding-faces' )
 				. '</button>';
@@ -669,12 +677,28 @@ class FF_History {
 	/**
 	 * The <li> rows for a set of note entries.
 	 *
-	 * @param array[] $entries Entries from note_entries().
-	 * @param bool    $link    Whether to link each note to its own page.
+	 * @param array[] $entries      Entries from note_entries().
+	 * @param bool    $link         Whether to link each note to its own page.
+	 * @param bool    $show_product Whether to name the product above the title.
 	 * @return string
 	 */
-	public static function note_rows( $entries, $link = true ) {
-		$out = '';
+	public static function note_rows( $entries, $link = true, $show_product = true ) {
+		$out      = '';
+		$products = array();
+
+		// Load the products named in this slice in one query, rather than one
+		// per row. Only the rows actually being rendered are looked up.
+		if ( $show_product ) {
+			foreach ( $entries as $entry ) {
+				$product_id = (int) get_post_meta( (int) $entry[0], FF_Post_Types::META_NOTE_PRODUCT, true );
+				if ( $product_id ) {
+					$products[ (int) $entry[0] ] = $product_id;
+				}
+			}
+			if ( $products ) {
+				_prime_post_caches( array_values( array_unique( $products ) ), false, false );
+			}
+		}
 
 		foreach ( $entries as $entry ) {
 			list( $note_id, $date, $is_unread ) = $entry;
@@ -692,6 +716,17 @@ class FF_History {
 
 			$out .= '<li class="ff-history-item ff-note-row' . ( $is_unread ? ' is-unread' : '' ) . '">';
 			$out .= '<div class="ff-history-item-body">';
+
+			// The product sits above the title: it says what the note is about
+			// before the note says what happened. A note with no product simply
+			// doesn't get the line, rather than getting an empty one.
+			if ( isset( $products[ $note_id ] ) ) {
+				$product = get_the_title( $products[ $note_id ] );
+				if ( $product ) {
+					$out .= '<span class="ff-note-product">' . esc_html( $product ) . '</span>';
+				}
+			}
+
 			$out .= '<span class="ff-history-item-main">' . $main;
 			if ( $is_unread ) {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
@@ -741,6 +776,7 @@ class FF_History {
 		$offset   = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
 		$per_page = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 10;
 		$link     = ! empty( $_POST['link'] );
+		$product  = ! empty( $_POST['show_product'] );
 
 		$options = self::note_filter_options();
 		$filters = array(
@@ -770,7 +806,7 @@ class FF_History {
 			? array_slice( $entries, $offset, min( 100, $per_page ) )
 			: $entries;
 
-		$rows = self::note_rows( $slice, $link );
+		$rows = self::note_rows( $slice, $link, $product );
 		$next = ( $per_page > 0 ) ? $offset + count( $slice ) : $total;
 
 		wp_send_json_success( array(

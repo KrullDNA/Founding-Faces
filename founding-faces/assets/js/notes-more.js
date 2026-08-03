@@ -43,6 +43,7 @@
 		body.append( 'offset', offset );
 		body.append( 'per_page', button.dataset.perPage );
 		body.append( 'link', button.dataset.link );
+		body.append( 'show_product', button.dataset.showProduct );
 
 		var filters = readFilters( section );
 		Object.keys( filters ).forEach( function ( key ) {

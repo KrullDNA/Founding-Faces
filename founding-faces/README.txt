@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.56
+Stable tag: 1.0.57
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.57 =
+* New: each note in the member's notes list can name its product on a small
+  line above the title, so a member can see what a note is about before they
+  read what happened. Notes with no product attached skip the line rather than
+  showing an empty one.
+* The line is switchable on the widget and has its own style section — colour,
+  typography, background, border, corner radius, padding and margin — and it
+  shows in the editor sample so it can be styled before there is any real data.
+* The products named in a batch of rows are loaded in one query, so the label
+  costs nothing per row as the list grows.
 
 = 1.0.56 =
 * New: filters on the member's notes list, each switchable on the widget —
