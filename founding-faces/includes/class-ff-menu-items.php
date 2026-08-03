@@ -588,6 +588,22 @@ class FF_Menu_Items {
 		$classes  = 'ff-login ff-form' . ( '' !== $atts['form_class'] ? ' ' . $atts['form_class'] : '' );
 
 		// Already signed in: show who they are and a way out, not a login form.
+		// In the editor both states are rendered instead — Nick is always signed
+		// in, so the form itself would otherwise never be visible to style.
+		if ( is_user_logged_in() && ! empty( $atts['editor_preview'] ) ) {
+			$text = '' !== trim( (string) $atts['logged_in_text'] )
+				? $atts['logged_in_text']
+				: __( "You're signed in.", 'founding-faces' );
+
+			$signed_in  = '<div class="' . esc_attr( $classes ) . ' ff-login--in">';
+			$signed_in .= '<p class="ff-login-status">' . esc_html( $text ) . '</p>';
+			$signed_in .= '<p class="ff-login-actions"><a class="ff-login-logout" href="#">'
+				. esc_html( self::logout_label() ) . '</a></p>';
+			$signed_in .= '</div>';
+
+			return $signed_in . self::login_form_html( $atts, $classes, false );
+		}
+
 		if ( is_user_logged_in() ) {
 			$text = '' !== trim( (string) $atts['logged_in_text'] )
 				? $atts['logged_in_text']
@@ -601,8 +617,26 @@ class FF_Menu_Items {
 			return $out;
 		}
 
-		// A failed attempt comes back with ?login=failed; say so plainly.
-		$failed = ( isset( $_GET['login'] ) && 'failed' === sanitize_key( wp_unslash( $_GET['login'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// A failed attempt comes back with ?login=failed; say so plainly. In the
+		// editor the error is shown as a sample, so it can be styled.
+		$failed = ( isset( $_GET['login'] ) && 'failed' === sanitize_key( wp_unslash( $_GET['login'] ) ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			|| ! empty( $atts['editor_preview'] );
+
+		return self::login_form_html( $atts, $classes, $failed );
+	}
+
+	/**
+	 * The login form markup.
+	 *
+	 * Split out so the editor can render it alongside the signed-in panel.
+	 *
+	 * @param array  $atts    The resolved attributes.
+	 * @param string $classes The wrapper classes.
+	 * @param bool   $failed  Whether to show the "didn't match" notice.
+	 * @return string
+	 */
+	private static function login_form_html( $atts, $classes, $failed ) {
+		$redirect = '' !== trim( (string) $atts['redirect'] ) ? $atts['redirect'] : self::login_redirect_url();
 
 		$out = '<div class="' . esc_attr( $classes ) . '">';
 		if ( $failed ) {

@@ -555,11 +555,21 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		FF_History::enqueue();
 		$s = $this->get_settings_for_display();
 
+		$editing = FF_History::is_editor();
+
 		if ( FF_Gating::is_member() ) {
-			echo $this->build( $s, get_current_user_id(), false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$html = $this->build( $s, get_current_user_id(), false );
+
+			// In the editor, a member with no history yet (Nick's own account,
+			// usually) leaves nothing to style — so fall back to the sample.
+			if ( $editing && FF_History::sample_needed( $html ) ) {
+				$html = $this->build( $s, null, true );
+			}
+
+			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
-		if ( FF_History::is_editor() ) {
+		if ( $editing ) {
 			echo $this->build( $s, null, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}

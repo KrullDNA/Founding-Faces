@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.49
+Stable tag: 1.0.50
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,25 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.50 =
+* Fix: editor dummy content now covers every widget, and no longer depends on
+  who is looking. The remaining widgets keyed off "is the viewer a member?",
+  which is true for Nick — so a member with no messages, no history or no
+  account activity yet saw a real empty state instead of the samples. They now
+  fall back to samples whenever the real render is empty:
+  * Messages — a sample conversation list with the "New message" badge.
+  * Member Archive — sample votes, notes and feedback.
+  * Account — the sample profile panel.
+* New: editor samples for the widgets that previously had none at all.
+  * Login — the form and the signed-in panel are both rendered, with a sample
+    error notice. Previously a signed-in administrator only ever saw the
+    "You're signed in" panel, so the form itself could never be styled.
+  * Members Map — sample dots across the Australian capitals, so dot colour,
+    size and opacity can be previewed before there are members.
+  * Application form — the success notice shown above the form as a sample (it
+    normally replaces the form, so it was impossible to style).
+  * Feedback and Ask — the "message sent" notice shown as a sample.
 
 = 1.0.49 =
 * Fix: the editor dummy content added in 1.0.45 never appeared for an

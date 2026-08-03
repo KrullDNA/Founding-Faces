@@ -815,6 +815,12 @@ class FF_Messages {
 		$is_feedback = ( 'feedback' === $context );
 		$state       = isset( $_GET['ff_msg'] ) ? sanitize_key( wp_unslash( $_GET['ff_msg'] ) ) : '';
 
+		// The sent/error notices only exist after a submission, so in the editor
+		// show one as a sample — otherwise it can never be styled.
+		if ( '' === $state && FF_History::is_editor() ) {
+			$state = 'sent';
+		}
+
 		ob_start();
 		if ( 'sent' === $state ) {
 			echo '<div class="ff-notice ff-notice--success">' . esc_html( $is_feedback
@@ -875,14 +881,23 @@ class FF_Messages {
 	public static function sc_messages() {
 		self::enqueue();
 
+		$editing = FF_History::is_editor();
+
 		if ( ! FF_Gating::is_member() ) {
-			if ( FF_History::is_editor() ) {
+			if ( $editing ) {
 				return self::render_sample_messages();
 			}
 			return FF_Display::members_only_notice();
 		}
 
 		$member_id = get_current_user_id();
+
+		// A member with no messages yet — which includes Nick previewing his own
+		// portal — would otherwise see only "You have no messages yet", leaving
+		// the threads and badge impossible to style. Stand in the sample.
+		if ( $editing && empty( self::threads_for_member( $member_id ) ) ) {
+			return self::render_sample_messages();
+		}
 
 		// Opening a thread marks its admin replies as read.
 		$open = isset( $_GET['ff_thread'] ) ? absint( wp_unslash( $_GET['ff_thread'] ) ) : 0;

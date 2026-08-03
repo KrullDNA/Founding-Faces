@@ -230,6 +230,16 @@ class FF_Application {
 			$output .= '</ul></div>';
 		}
 
+		// In the Elementor editor the success notice never appears (it only
+		// exists after a real submission, and it replaces the form), so show it
+		// as a sample above the form — both are then styleable at once.
+		if ( '' === $state && FF_History::is_editor() ) {
+			$sample = ! empty( $atts['success_message'] )
+				? $atts['success_message']
+				: __( 'Thank you. Your application has been received and is now being reviewed. We\'ll be in touch by email.', 'founding-faces' );
+			$output .= '<div class="ff-notice ff-notice--success">' . esc_html( $sample ) . '</div>';
+		}
+
 		// A small helper to safely echo a previously entered value back in.
 		$val = function ( $key ) use ( $old ) {
 			return isset( $old[ $key ] ) ? esc_attr( $old[ $key ] ) : '';

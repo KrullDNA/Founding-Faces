@@ -204,6 +204,9 @@ class FF_Login_Widget extends \Elementor\Widget_Base {
 			'lost_text'      => isset( $s['lost_text'] ) ? $s['lost_text'] : '',
 			'logged_in_text' => isset( $s['logged_in_text'] ) ? $s['logged_in_text'] : '',
 			'form_class'     => 'ff-form--full',
+			// In the editor render both states (signed-in panel and the form)
+			// with a sample error, so every part can be styled in one pass.
+			'editor_preview' => FF_History::is_editor() ? 'yes' : '',
 		) );
 	}
 }
