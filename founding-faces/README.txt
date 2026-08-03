@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.55
+Stable tag: 1.0.56
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,24 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.56 =
+* New: filters on the member's notes list, each switchable on the widget —
+  read/unread, product, type (development stage), date period (last 30 days,
+  3 months, 12 months) and sort (unread first, newest, oldest). Changing one
+  refreshes the list in place over AJAX, without a page reload and without
+  losing the filter bar.
+* Product and stage filtering happens in the database rather than by fetching
+  everything and sifting in PHP, and the date filter measures the note's own
+  date, not when it happened to be read.
+* Sorting by newest or oldest treats the list as one run ordered by the note's
+  date; "unread first" keeps the two groups apart. Read rows show when the
+  member opened them, unread rows show the note's own date.
+* New: full style controls for the filter bar — label colour and typography,
+  select background, text, border, radius and padding, plus gap and margin.
+* Every filter value is validated server-side against the offered options, so a
+  hand-edited request can't reach for anything the bar doesn't offer, and the
+  group gate still runs on every note.
 
 = 1.0.55 =
 * New: the Member Archive notes list is paged, with a "Load more" button that

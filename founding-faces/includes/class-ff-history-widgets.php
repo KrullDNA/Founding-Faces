@@ -94,6 +94,28 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'description' => __( 'A "Load more" button fetches the next batch of this size without reloading the page. Set 0 to show every note at once.', 'founding-faces' ),
 		) );
 
+		$this->add_control( 'filters_heading', array(
+			'label'     => __( 'Filters', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
+		foreach ( array(
+			'filter_status'  => array( __( 'Read / unread filter', 'founding-faces' ), 'yes' ),
+			'filter_product' => array( __( 'Product filter', 'founding-faces' ), 'yes' ),
+			'filter_stage'   => array( __( 'Type (stage) filter', 'founding-faces' ), '' ),
+			'filter_period'  => array( __( 'Date filter', 'founding-faces' ), 'yes' ),
+			'filter_sort'    => array( __( 'Sort', 'founding-faces' ), 'yes' ),
+		) as $key => $spec ) {
+			$this->add_control( $key, array(
+				'label'        => $spec[0],
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'default'      => $spec[1],
+				'return_value' => 'yes',
+				'condition'    => array( 'section' => array( 'all', 'notes' ) ),
+			) );
+		}
+
 		$this->add_control( 'header_subheading', array(
 			'label'       => __( 'Header subheading', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::TEXTAREA,
@@ -382,6 +404,69 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$this->end_controls_section();
 
 		/* ============================ ITEM TEXT ============================ */
+		/* =========================== FILTER BAR ============================ */
+		$this->start_controls_section( 'ff_ma_filters_style', array(
+			'label'     => __( 'Filter bar', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
+		$this->add_control( 'nf_label_color', array(
+			'label'     => __( 'Label colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-filters .ff-filter span' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'nf_label_typo',
+			'label'    => __( 'Label text', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-note-filters .ff-filter span',
+		) );
+		$this->add_control( 'nf_select_bg', array(
+			'label'     => __( 'Select background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'separator' => 'before',
+			'selectors' => array( '{{WRAPPER}} .ff-note-filters select' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'nf_select_color', array(
+			'label'     => __( 'Select text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-filters select' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'nf_select_typo',
+			'label'    => __( 'Select text style', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-note-filters select',
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'nf_select_border',
+			'selector' => '{{WRAPPER}} .ff-note-filters select',
+		) );
+		$this->add_responsive_control( 'nf_select_radius', array(
+			'label'      => __( 'Select corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-filters select' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'nf_select_padding', array(
+			'label'      => __( 'Select padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-filters select' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'nf_gap', array(
+			'label'     => __( 'Gap between filters', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'separator' => 'before',
+			'selectors' => array( '{{WRAPPER}} .ff-note-filters' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'nf_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-filters' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		/* ========================= LOAD MORE BUTTON ======================== */
 		$this->start_controls_section( 'ff_ma_more_style', array(
 			'label'     => __( '"Load more" button', 'founding-faces' ),
@@ -672,9 +757,17 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		if ( 'all' === $section || 'notes' === $section ) {
 			$h    = ( 'notes' === $section ) ? $heading : '';
 			$per   = isset( $s['notes_per_page'] ) ? absint( $s['notes_per_page'] ) : 10;
+			$show  = array(
+				'product' => ( isset( $s['filter_product'] ) && 'yes' === $s['filter_product'] ),
+				'stage'   => ( isset( $s['filter_stage'] ) && 'yes' === $s['filter_stage'] ),
+				'status'  => ( isset( $s['filter_status'] ) && 'yes' === $s['filter_status'] ),
+				'period'  => ( isset( $s['filter_period'] ) && 'yes' === $s['filter_period'] ),
+				'sort'    => ( isset( $s['filter_sort'] ) && 'yes' === $s['filter_sort'] ),
+			);
+			$show  = array_filter( $show );
 			$out  .= $sample
-				? FF_History::sample_notes( $h, $link, $per )
-				: FF_History::render_notes( $mid, $h, $link, $per );
+				? FF_History::sample_notes( $h, $link, $per, $show )
+				: FF_History::render_notes( $mid, $h, $link, $per, $show );
 		}
 		if ( 'all' === $section || 'feedback' === $section ) {
 			$h    = ( 'feedback' === $section ) ? $heading : '';

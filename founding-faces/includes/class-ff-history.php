@@ -183,7 +183,7 @@ class FF_History {
 	 * @param bool   $link    Whether to render the titles as links (to '#').
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '', $link = true, $per_page = 0 ) {
+	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array() ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 		$rows    = array(
 			array( __( 'Trial 14 — the new emulsifier', 'founding-faces' ), true ),
@@ -194,6 +194,8 @@ class FF_History {
 
 		$out  = '<section class="ff-history-section ff-notes-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= self::note_filter_bar( $show );
+		$out .= '<div class="ff-notes-results">';
 		$out .= '<ul class="ff-history-list ff-notes-read-list">';
 		foreach ( $rows as $i => $row ) {
 			$main = $link ? '<a href="#">' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
@@ -208,7 +210,7 @@ class FF_History {
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
 		}
-		$out .= '</ul>';
+		$out .= '</ul></div>';
 
 		// The editor always shows the button, whatever the page size, so it can
 		// be styled without first creating enough notes to trigger it.
@@ -385,34 +387,53 @@ class FF_History {
 	 * @param bool   $link      Whether to link each note to its own page.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0 ) {
+	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array() ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section ff-notes-section">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= self::note_filter_bar( $show );
 
 		$entries = self::note_entries( $member_id );
-
-		if ( empty( $entries ) ) {
-			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
-			return $out . '</section>';
-		}
 
 		$per_page = absint( $per_page );
 		$total    = count( $entries );
 		$slice    = ( $per_page > 0 ) ? array_slice( $entries, 0, $per_page ) : $entries;
 
-		$out .= '<ul class="ff-history-list ff-notes-read-list">';
-		$out .= self::note_rows( $slice, $link );
-		$out .= '</ul>';
+		// The list and the empty message both live inside the same wrapper, so
+		// a filter change can swap the contents without touching the filter bar.
+		$out .= '<div class="ff-notes-results">';
+		if ( empty( $entries ) ) {
+			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
+		} else {
+			$out .= '<ul class="ff-history-list ff-notes-read-list">';
+			$out .= self::note_rows( $slice, $link );
+			$out .= '</ul>';
+		}
+		$out .= '</div>';
 
-		// Only offer "load more" when there is genuinely more to load.
-		if ( $per_page > 0 && $total > $per_page ) {
+		// The button is always in the markup so a filter change can reveal it;
+		// it stays hidden until there is genuinely more to load.
+		$has_more = ( $per_page > 0 && $total > $per_page );
+		if ( $per_page > 0 || ! empty( $show ) ) {
 			self::enqueue_load_more();
-			$out .= '<div class="ff-notes-more">';
+		}
+
+		if ( $per_page > 0 ) {
+			$out .= '<div class="ff-notes-more"' . ( $has_more ? '' : ' hidden' ) . '>';
 			$out .= '<button type="button" class="ff-notes-more-button"'
 				. ' data-offset="' . esc_attr( $per_page ) . '"'
 				. ' data-per-page="' . esc_attr( $per_page ) . '"'
+				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
+				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
+				. esc_html__( 'Load more', 'founding-faces' )
+				. '</button>';
+			$out .= '</div>';
+		} elseif ( ! empty( $show ) ) {
+			// No paging, but the filters still need a nonce to talk to AJAX.
+			$out .= '<div class="ff-notes-more" hidden>';
+			$out .= '<button type="button" class="ff-notes-more-button"'
+				. ' data-offset="0" data-per-page="0"'
 				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
 				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
 				. esc_html__( 'Load more', 'founding-faces' )
@@ -433,12 +454,20 @@ class FF_History {
 	 * @param int $member_id The current member's id.
 	 * @return array[] Each entry is array( note id, date string, is unread ).
 	 */
-	public static function note_entries( $member_id ) {
+	public static function note_entries( $member_id, $filters = array() ) {
+		$filters = wp_parse_args( $filters, array(
+			'product' => 0,
+			'stage'   => '',
+			'status'  => '',      // '' | 'unread' | 'read'.
+			'period'  => '',      // '' | '30' | '90' | '365'.
+			'sort'    => 'unread', // 'unread' | 'newest' | 'oldest'.
+		) );
+
 		// Ids only, never whole post objects: the unread-first order has to be
 		// worked out across the full set, but nothing is *rendered* here. Only
-		// the ten or so rows in the requested slice ever load a title or a
-		// permalink, so a member with a thousand notes still pages cheaply.
-		$note_ids = get_posts( array(
+		// the rows in the requested slice ever load a title or a permalink, so
+		// a member with hundreds of notes still pages cheaply.
+		$args = array(
 			'post_type'              => FF_Post_Types::NOTE_CPT,
 			'post_status'            => 'publish',
 			'posts_per_page'         => self::NOTE_ORDER_LIMIT,
@@ -447,13 +476,34 @@ class FF_History {
 			'fields'                 => 'ids',
 			'no_found_rows'          => true,
 			'update_post_term_cache' => false,
-		) );
+		);
+
+		// Product and stage are indexed meta, so let the database do that work
+		// rather than fetching everything and filtering in PHP.
+		$meta_query = array();
+		if ( ! empty( $filters['product'] ) ) {
+			$meta_query[] = array(
+				'key'   => FF_Post_Types::META_NOTE_PRODUCT,
+				'value' => (int) $filters['product'],
+			);
+		}
+		if ( '' !== $filters['stage'] ) {
+			$meta_query[] = array(
+				'key'   => FF_Post_Types::META_NOTE_STAGE,
+				'value' => $filters['stage'],
+			);
+		}
+		if ( $meta_query ) {
+			$args['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery
+		}
+
+		$note_ids = get_posts( $args );
 		if ( empty( $note_ids ) ) {
 			return array();
 		}
 
-		// One query for every note's meta, so the audience check below reads
-		// from cache instead of firing a query per note.
+		// One query for every note's meta, so the audience check and the date
+		// lookup below read from cache instead of firing a query per note.
 		update_meta_cache( 'post', $note_ids );
 
 		// The gate runs per note, so a Circle member never sees a 35-only note.
@@ -467,22 +517,153 @@ class FF_History {
 			$read_dates[ (int) $row->reference_id ] = $row->created_at;
 		}
 
+		// A period filter measures the note's own date, not when it was read —
+		// "the last three months of work", not "what I happened to open".
+		$cutoff = '';
+		if ( '' !== $filters['period'] ) {
+			$days   = max( 1, absint( $filters['period'] ) );
+			$cutoff = gmdate( 'Y-m-d', time() - ( $days * DAY_IN_SECONDS ) );
+		}
+
 		$unread = array();
 		$read   = array();
 		foreach ( $note_ids as $note_id ) {
-			$note_id = (int) $note_id;
-			if ( isset( $read_dates[ $note_id ] ) ) {
-				$read[] = array( $note_id, $read_dates[ $note_id ], false );
+			$note_id   = (int) $note_id;
+			$is_unread = ! isset( $read_dates[ $note_id ] );
+
+			if ( 'unread' === $filters['status'] && ! $is_unread ) {
+				continue;
+			}
+			if ( 'read' === $filters['status'] && $is_unread ) {
+				continue;
+			}
+
+			$note_date = self::note_date_key( $note_id );
+			if ( '' !== $cutoff && $note_date < $cutoff ) {
+				continue;
+			}
+
+			// Unread rows carry the note's own date; read rows carry the date
+			// this member opened it, which is the more useful fact for those.
+			$entry = array( $note_id, $is_unread ? $note_date : $read_dates[ $note_id ], $is_unread, $note_date );
+
+			if ( $is_unread ) {
+				$unread[] = $entry;
 			} else {
-				$unread[] = array( $note_id, get_post_time( 'Y-m-d H:i:s', false, $note_id ), true );
+				$read[] = $entry;
 			}
 		}
 
+		// Sorting by date treats the two groups as one list, ordered by the
+		// note's own date; "unread first" keeps them apart.
+		if ( 'newest' === $filters['sort'] || 'oldest' === $filters['sort'] ) {
+			$all = array_merge( $unread, $read );
+			usort( $all, function ( $a, $b ) use ( $filters ) {
+				$cmp = strcmp( $b[3], $a[3] );
+				return ( 'oldest' === $filters['sort'] ) ? -$cmp : $cmp;
+			} );
+			return $all;
+		}
+
+		// Most recently read first; unread are already newest-note-first.
 		usort( $read, function ( $a, $b ) {
 			return strcmp( $b[1], $a[1] );
 		} );
 
 		return array_merge( $unread, $read );
+	}
+
+	/**
+	 * A note's own date, falling back to its publish date.
+	 *
+	 * @param int $note_id The note.
+	 * @return string A YYYY-MM-DD string.
+	 */
+	private static function note_date_key( $note_id ) {
+		$date = get_post_meta( $note_id, FF_Post_Types::META_NOTE_DATE, true );
+		return $date ? substr( (string) $date, 0, 10 ) : get_post_time( 'Y-m-d', false, $note_id );
+	}
+
+	/**
+	 * The filter choices offered above a member's notes list.
+	 *
+	 * @return array
+	 */
+	public static function note_filter_options() {
+		return array(
+			'status' => array(
+				''       => __( 'All notes', 'founding-faces' ),
+				'unread' => __( 'Unread only', 'founding-faces' ),
+				'read'   => __( 'Already read', 'founding-faces' ),
+			),
+			'period' => array(
+				''    => __( 'Any time', 'founding-faces' ),
+				'30'  => __( 'Last 30 days', 'founding-faces' ),
+				'90'  => __( 'Last 3 months', 'founding-faces' ),
+				'365' => __( 'Last 12 months', 'founding-faces' ),
+			),
+			'sort'   => array(
+				'unread' => __( 'Unread first', 'founding-faces' ),
+				'newest' => __( 'Newest first', 'founding-faces' ),
+				'oldest' => __( 'Oldest first', 'founding-faces' ),
+			),
+		);
+	}
+
+	/**
+	 * The filter bar above a member's notes list.
+	 *
+	 * Plain selects that drive the same AJAX endpoint as "load more", so
+	 * changing one refreshes the list in place without a page reload.
+	 *
+	 * @param array $show Which filters to render.
+	 * @return string
+	 */
+	public static function note_filter_bar( $show ) {
+		$options = self::note_filter_options();
+		$fields  = array();
+
+		if ( ! empty( $show['product'] ) ) {
+			$select = '<select class="ff-note-filter" data-filter="product">';
+			foreach ( FF_Display::product_choices_all() as $id => $label ) {
+				$select .= '<option value="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</option>';
+			}
+			$select .= '</select>';
+			$fields[] = array( __( 'Product', 'founding-faces' ), $select );
+		}
+
+		if ( ! empty( $show['stage'] ) ) {
+			$select = '<select class="ff-note-filter" data-filter="stage">';
+			foreach ( FF_Display::stage_choices() as $key => $label ) {
+				$select .= '<option value="' . esc_attr( $key ) . '">' . esc_html( $label ) . '</option>';
+			}
+			$select .= '</select>';
+			$fields[] = array( __( 'Type', 'founding-faces' ), $select );
+		}
+
+		foreach ( array( 'status' => __( 'Show', 'founding-faces' ), 'period' => __( 'Date', 'founding-faces' ), 'sort' => __( 'Sort', 'founding-faces' ) ) as $key => $label ) {
+			if ( empty( $show[ $key ] ) ) {
+				continue;
+			}
+			$select = '<select class="ff-note-filter" data-filter="' . esc_attr( $key ) . '">';
+			foreach ( $options[ $key ] as $value => $text ) {
+				$select .= '<option value="' . esc_attr( $value ) . '">' . esc_html( $text ) . '</option>';
+			}
+			$select .= '</select>';
+			$fields[] = array( $label, $select );
+		}
+
+		if ( empty( $fields ) ) {
+			return '';
+		}
+
+		$out = '<div class="ff-note-filters">';
+		foreach ( $fields as $field ) {
+			$out .= '<label class="ff-filter"><span>' . esc_html( $field[0] ) . '</span>' . $field[1] . '</label>';
+		}
+		$out .= '</div>';
+
+		return $out;
 	}
 
 	/**
@@ -559,16 +740,44 @@ class FF_History {
 
 		$offset   = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
 		$per_page = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 10;
-		$per_page = max( 1, min( 100, $per_page ) );
 		$link     = ! empty( $_POST['link'] );
 
-		$entries = self::note_entries( get_current_user_id() );
-		$slice   = array_slice( $entries, $offset, $per_page );
+		$options = self::note_filter_options();
+		$filters = array(
+			'product' => isset( $_POST['product'] ) ? absint( $_POST['product'] ) : 0,
+			'stage'   => isset( $_POST['stage'] ) ? sanitize_key( wp_unslash( $_POST['stage'] ) ) : '',
+			'status'  => isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '',
+			'period'  => isset( $_POST['period'] ) ? sanitize_key( wp_unslash( $_POST['period'] ) ) : '',
+			'sort'    => isset( $_POST['sort'] ) ? sanitize_key( wp_unslash( $_POST['sort'] ) ) : 'unread',
+		);
+
+		// Validate every choice against the offered options, so a hand-edited
+		// request can't reach for anything the filter bar doesn't offer.
+		if ( '' !== $filters['stage'] && ! array_key_exists( $filters['stage'], FF_Post_Types::note_stages() ) ) {
+			$filters['stage'] = '';
+		}
+		foreach ( array( 'status', 'period', 'sort' ) as $key ) {
+			if ( ! array_key_exists( $filters[ $key ], $options[ $key ] ) ) {
+				$filters[ $key ] = ( 'sort' === $key ) ? 'unread' : '';
+			}
+		}
+
+		$entries = self::note_entries( get_current_user_id(), $filters );
+		$total   = count( $entries );
+
+		// per_page 0 means "no paging": return the whole filtered list.
+		$slice = ( $per_page > 0 )
+			? array_slice( $entries, $offset, min( 100, $per_page ) )
+			: $entries;
+
+		$rows = self::note_rows( $slice, $link );
+		$next = ( $per_page > 0 ) ? $offset + count( $slice ) : $total;
 
 		wp_send_json_success( array(
-			'html'    => self::note_rows( $slice, $link ),
-			'offset'  => $offset + count( $slice ),
-			'hasMore' => ( $offset + count( $slice ) ) < count( $entries ),
+			'html'    => $rows,
+			'empty'   => ( 0 === $total ) ? esc_html__( 'No notes match these filters.', 'founding-faces' ) : '',
+			'offset'  => $next,
+			'hasMore' => ( $per_page > 0 ) && ( $next < $total ),
 		) );
 	}
 
