@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.45
+ * Version:           1.0.46
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.45' );
+define( 'FF_VERSION', '1.0.46' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -80,6 +80,10 @@ require_once FF_PATH . 'includes/class-ff-preview.php';
 
 // Per-item visibility for WordPress nav menus, by member group.
 require_once FF_PATH . 'includes/class-ff-menu-visibility.php';
+
+// Dynamic menu items: the login/logout swap and the unread count bubble,
+// plus the login form component and its Elementor widget.
+require_once FF_PATH . 'includes/class-ff-menu-items.php';
 
 // The frontend display layer: the note template, renderer and components.
 require_once FF_PATH . 'includes/class-ff-display.php';
@@ -170,6 +174,7 @@ function ff_init() {
 	FF_Noindex::register();
 	FF_Preview::register();
 	FF_Menu_Visibility::register();
+	FF_Menu_Items::register();
 	FF_Display::register();
 	FF_JetEngine::register();
 	FF_Dynamic_Tags::register();

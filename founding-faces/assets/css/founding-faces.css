@@ -1017,3 +1017,49 @@
 .ff-account .ff-danger:hover {
 	background: var(--ff-error);
 }
+
+/* ==========================================================================
+ * Menu extras: the unread count bubble and the login form.
+ * ========================================================================== */
+
+/* The mini-cart style count bubble on a nav menu item. Inherits the link's
+ * colour by default so it sits inside any theme's menu without configuration;
+ * override --ff-badge-bg / --ff-badge-ink to brand it. */
+.ff-menu-badge {
+	--ff-badge-bg: var(--ff-accent, #3a3d44);
+	--ff-badge-ink: #ffffff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-width: 1.35em;
+	height: 1.35em;
+	padding: 0 0.4em;
+	margin-left: 0.45em;
+	border-radius: 999px;
+	background: var(--ff-badge-bg);
+	color: var(--ff-badge-ink);
+	font-size: 0.7em;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	vertical-align: middle;
+}
+
+/* Login form ---------------------------------------------------------------- */
+.ff-login-lost,
+.ff-login-actions {
+	margin: 0.9rem 0 0;
+}
+
+.ff-login-lost a,
+.ff-login-logout {
+	color: var(--ff-accent);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.ff-login-status {
+	margin: 0;
+	color: var(--ff-ink);
+}

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.45
+Stable tag: 1.0.46
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,26 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.46 =
+* New: a dynamic Log in / Log out menu item. Set it per item in Appearance →
+  Menus: it shows "Log in" (linking to your login page) when logged out and
+  "Log out" when logged in, swapping automatically. "Log in only" and "Log out
+  only" modes hide the item when it doesn't apply.
+* New: an unread count bubble on any menu item — mini-cart style. Choose the
+  source per item: unread private messages, new notes since the member's last
+  visit, open polls they haven't voted in, or everything combined. The bubble is
+  hidden entirely at zero and for logged-out visitors, and only ever counts the
+  viewer's own messages and content their group may see.
+* New: a Founding Faces Login widget (and [ff_login] shortcode) — a skin over
+  WordPress's own login handler, with the shared form Style tab plus link and
+  signed-in-panel controls. A member who is already signed in sees a short
+  message and a log-out link instead of the form.
+* New: Settings → login page URL, after-login and after-logout destinations, and
+  the two menu labels. Leaving the after-login field empty uses the members hub
+  page, which follows the site between staging and live.
+* Fix: a failed login from a custom login page returns to that page with a clear
+  message, rather than dumping the member on wp-login.php.
 
 = 1.0.45 =
 * Change: decorative underlines removed from the built-in design (the accent rule
