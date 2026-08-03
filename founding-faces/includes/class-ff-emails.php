@@ -42,6 +42,12 @@ class FF_Emails {
 	const OPT_RECEIVED_SUBJECT = 'ff_email_received_subject';
 	const OPT_RECEIVED_BODY    = 'ff_email_received_body';
 
+	// The email sent when an application is declined, so a decision is never
+	// silence — and so the status lookup's "check your inbox" is true for
+	// everyone, not just the members who were approved.
+	const OPT_DECLINE_SUBJECT = 'ff_email_decline_subject';
+	const OPT_DECLINE_BODY    = 'ff_email_decline_body';
+
 	// User meta holding the hashed set-password token and its expiry.
 	const META_TOKEN_HASH = 'ff_setpw_hash';
 	const META_TOKEN_EXP  = 'ff_setpw_expires';
@@ -153,6 +159,74 @@ class FF_Emails {
 			"Hi {name},\n\nThank you for applying to join Founding Faces. Your application has been received and is now being reviewed.\n\nWe'll be in touch by email as soon as there's news.\n\nWith thanks,\n{site_name}",
 			'founding-faces'
 		);
+	}
+
+	/**
+	 * The default subject for the decline email.
+	 *
+	 * @return string
+	 */
+	public static function default_decline_subject() {
+		return __( 'About your Founding Faces application', 'founding-faces' );
+	}
+
+	/**
+	 * The default body for the decline email.
+	 *
+	 * Warm and final, with no reason given and no invitation to appeal — the
+	 * programme is a small, chosen group, and a kind close is better than an
+	 * unanswered silence.
+	 *
+	 * @return string
+	 */
+	public static function default_decline_body() {
+		return __(
+			"Hi {name},\n\nThank you for applying to Founding Faces, and for the time you took over it.\n\nWe had far more applications than places, and on this occasion we haven't been able to offer you one. That isn't a reflection on you — the group is deliberately small, and the choices were genuinely hard.\n\nWe'd love to stay in touch, and you're very welcome to apply again if we open more places.\n\nWith thanks and warm wishes,\n{site_name}",
+			'founding-faces'
+		);
+	}
+
+	/**
+	 * Send the decline email to an applicant.
+	 *
+	 * Sent to the address on the application, so no account is needed — a
+	 * declined applicant never has a WordPress user. Silent by design if the
+	 * template body has been emptied on the Settings page: that is how Nick
+	 * turns decline emails off without code.
+	 *
+	 * @param string $name  The applicant's name.
+	 * @param string $email The applicant's email.
+	 * @return bool
+	 */
+	public static function send_decline( $name, $email ) {
+		if ( ! is_email( $email ) ) {
+			return false;
+		}
+
+		$body_tpl = get_option( self::OPT_DECLINE_BODY, self::default_decline_body() );
+		if ( '' === trim( (string) $body_tpl ) ) {
+			return false; // Deliberately emptied: decline silently.
+		}
+
+		$first_name = trim( (string) $name ) !== '' ? preg_split( '/\s+/', trim( $name ) )[0] : __( 'there', 'founding-faces' );
+
+		$replacements = array(
+			'{name}'      => $first_name,
+			'{site_name}' => get_bloginfo( 'name' ),
+		);
+
+		$subject_tpl = get_option( self::OPT_DECLINE_SUBJECT, self::default_decline_subject() );
+
+		$subject = self::fill( $subject_tpl, $replacements, false );
+		$body    = self::fill( $body_tpl, $replacements, true );
+
+		$html = FF_Email_Template::build( array(
+			'heading'   => __( 'Your application', 'founding-faces' ),
+			'body_html' => $body,
+			'preheader' => __( 'An update on your Founding Faces application.', 'founding-faces' ),
+		) );
+
+		return wp_mail( $email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
 	}
 
 	/*

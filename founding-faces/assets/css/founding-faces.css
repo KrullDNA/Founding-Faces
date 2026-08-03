@@ -1089,3 +1089,60 @@
 	right: -0.9em;
 	margin-left: 0;
 }
+
+/* Status lookup: heading, body copy, and the "send it again" prompt. --------- */
+.ff-status {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+}
+
+.ff-status-heading {
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin: 0 0 0.6rem;
+}
+
+.ff-status-intro {
+	margin: 0 0 1.25rem;
+	line-height: 1.6;
+}
+
+.ff-status-intro p {
+	margin: 0 0 0.8rem;
+}
+
+.ff-status-resend {
+	margin: 0 0 1.25rem;
+}
+
+.ff-status-resend-hint {
+	margin: 0 0 0.5rem;
+	font-size: 0.88rem;
+	color: var(--ff-muted);
+}
+
+.ff-status-resend-button {
+	font-family: inherit;
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: var(--ff-accent);
+	background: transparent;
+	border: 1px solid var(--ff-line);
+	border-radius: var(--ff-radius);
+	padding: 0.5rem 1.1rem;
+	cursor: pointer;
+}
+
+.ff-status-resend-button:hover {
+	border-color: var(--ff-accent);
+}
+
+.ff-status-again {
+	margin: 0.9rem 0 0;
+}
+
+.ff-status-again-link {
+	color: var(--ff-accent);
+	text-decoration: none;
+	font-weight: 600;
+}

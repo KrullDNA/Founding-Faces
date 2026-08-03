@@ -81,6 +81,8 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Emails::OPT_PROMO_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
 		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
 
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
@@ -149,6 +151,8 @@ class FF_Settings {
 		$bpromo  = get_option( FF_Emails::OPT_PROMO_BODY, FF_Emails::default_promo_body() );
 		$srecv   = get_option( FF_Emails::OPT_RECEIVED_SUBJECT, FF_Emails::default_received_subject() );
 		$brecv   = get_option( FF_Emails::OPT_RECEIVED_BODY, FF_Emails::default_received_body() );
+		$sdecl   = get_option( FF_Emails::OPT_DECLINE_SUBJECT, FF_Emails::default_decline_subject() );
+		$bdecl   = get_option( FF_Emails::OPT_DECLINE_BODY, FF_Emails::default_decline_body() );
 		?>
 		<div class="wrap ff-admin">
 			<h1><?php esc_html_e( 'Founding Faces — Settings', 'founding-faces' ); ?></h1>
@@ -252,6 +256,31 @@ class FF_Settings {
 							<textarea name="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_BODY ); ?>"
 								id="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_BODY ); ?>"
 								rows="8" class="large-text code"><?php echo esc_textarea( $brecv ); ?></textarea>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Declined-application email', 'founding-faces' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Sent when you decline an application, so a decision is never silence — and so the "check your inbox" message on the status lookup is true for everyone. Placeholders: {name} {site_name}.', 'founding-faces' ); ?>
+					<br />
+					<strong><?php esc_html_e( 'To decline silently, clear the body field entirely — nothing is then sent.', 'founding-faces' ); ?></strong>
+				</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_DECLINE_SUBJECT ); ?>"><?php esc_html_e( 'Subject', 'founding-faces' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( FF_Emails::OPT_DECLINE_SUBJECT ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_DECLINE_SUBJECT ); ?>"
+								type="text" class="large-text" value="<?php echo esc_attr( $sdecl ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"><?php esc_html_e( 'Body', 'founding-faces' ); ?></label></th>
+						<td>
+							<textarea name="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"
+								rows="10" class="large-text code"><?php echo esc_textarea( $bdecl ); ?></textarea>
 						</td>
 					</tr>
 				</table>
