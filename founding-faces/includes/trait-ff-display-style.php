@@ -293,4 +293,35 @@ trait FF_Display_Style_Controls {
 		return \Elementor\Plugin::$instance->editor->is_edit_mode()
 			|| ( isset( $_REQUEST['action'] ) && 'elementor_ajax' === $_REQUEST['action'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
+
+	/**
+	 * Whether a real render gave us nothing worth designing against.
+	 *
+	 * Deliberately based on the output, not on who is looking. An administrator
+	 * passes the members gate, so "is the viewer a member?" is the wrong
+	 * question in the editor — Nick is always a member and would never see the
+	 * samples. What matters is whether any real content actually came back: an
+	 * empty state, a gate notice or a blank string all mean there is nothing on
+	 * screen to style, so the sample takes over.
+	 *
+	 * @param string $html The real render output.
+	 * @return bool
+	 */
+	protected function ffds_needs_sample( $html ) {
+		$html = (string) $html;
+
+		if ( '' === trim( wp_strip_all_tags( $html ) ) ) {
+			return true;
+		}
+
+		// The empty-state and notice markers: "no notes yet", "members only",
+		// "that note could not be found", and so on.
+		foreach ( array( 'ff-empty-note', 'ff-members-only', 'ff-notice', 'ff-vault' ) as $marker ) {
+			if ( false !== strpos( $html, $marker ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
