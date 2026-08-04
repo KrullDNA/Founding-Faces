@@ -23,9 +23,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Notes and products are written in the admin and read in the members area.
  * Each has a single URL so an Elementor template can style it once, and each is
- * gated server-side before it renders, kept out of search and out of the
- * sitemap. Neither is "public" in the WordPress sense, and neither is exposed
- * over REST — that would be a path straight around the gate.
+ * gated server-side before it renders, kept out of site search, out of the
+ * sitemap and marked noindex. Both are registered "public", which in WordPress
+ * means only that the type has a front end — the protection is the gate, not
+ * the flag. Neither is exposed over REST: that would be a path straight around
+ * the gate.
  */
 class FF_Post_Types {
 
@@ -192,9 +194,18 @@ class FF_Post_Types {
 
 		$args = array(
 			'labels'              => $labels,
-			// Not public: no archive, not in search, nothing listed anywhere.
-			// The single view below is deliberate and gated.
-			'public'              => false,
+			// Public in the one sense WordPress means by it: this type has a
+			// front end. That is now true, and the flag has to say so — the
+			// editor screen reads it directly to decide whether to show the
+			// permalink row, so with it false a product had a working URL that
+			// was nowhere on screen and whose slug could not be edited.
+			//
+			// It does not loosen anything. Every consequence people associate
+			// with "public" is turned off explicitly below or handled
+			// elsewhere: out of site search, no archive, out of the sitemap,
+			// noindex on the page itself, and the gate that redirects anyone
+			// who isn't a member before a single line of it renders.
+			'public'              => true,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
 			'menu_icon'           => 'dashicons-products',
@@ -255,7 +266,11 @@ class FF_Post_Types {
 
 		$args = array(
 			'labels'              => $labels,
-			'public'              => false,
+			// True for the same reason as products above: a note has a front
+			// end, and the editor screen only offers the permalink row and the
+			// slug editor for a type that says so. Search, archives, the
+			// sitemap and the audience gate are all handled explicitly.
+			'public'              => true,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
 			'menu_icon'           => 'dashicons-editor-ul',
