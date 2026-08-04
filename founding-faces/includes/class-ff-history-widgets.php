@@ -572,6 +572,62 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->end_controls_section();
 
+		/* =========================== NOTES LAYOUT ========================== */
+		// Only the list of notes becomes a grid. The heading, the filter bar,
+		// the button and the page numbers are its siblings, so they keep the
+		// full width underneath however many columns the rows are in.
+		$this->start_controls_section( 'ff_ma_grid_style', array(
+			'label'     => __( 'Notes layout', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
+		$this->add_responsive_control( 'notes_columns', array(
+			'label'           => __( 'Columns', 'founding-faces' ),
+			'type'            => \Elementor\Controls_Manager::SELECT,
+			'default'         => '1',
+			'tablet_default'  => '1',
+			'mobile_default'  => '1',
+			'options'         => array(
+				'1' => __( '1 column', 'founding-faces' ),
+				'2' => __( '2 columns', 'founding-faces' ),
+				'3' => __( '3 columns', 'founding-faces' ),
+				'4' => __( '4 columns', 'founding-faces' ),
+			),
+			'selectors'       => array(
+				'{{WRAPPER}} .ff-notes-read-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+			),
+			'description'     => __( 'Set each device separately — the tablet and mobile icons above the control.', 'founding-faces' ),
+		) );
+		$this->add_responsive_control( 'notes_col_gap', array(
+			'label'      => __( 'Column gap', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-notes-read-list' => 'column-gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'notes_row_gap', array(
+			'label'      => __( 'Row gap', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-notes-read-list' => 'row-gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'notes_stack_h', array(
+			'label'       => __( 'Inside each note', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::HEADING,
+			'separator'   => 'before',
+		) );
+		$this->add_responsive_control( 'notes_stack', array(
+			'label'        => __( 'Stack the date under the title', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'description'  => __( 'Title and date share a line by default, which gets tight in narrow columns.', 'founding-faces' ),
+			'selectors'    => array(
+				'{{WRAPPER}} .ff-note-row' => 'flex-direction: column; align-items: flex-start;',
+			),
+		) );
+		$this->end_controls_section();
+
 		/* ========================== PAGE NUMBERS =========================== */
 		$this->start_controls_section( 'ff_ma_pager_style', array(
 			'label'     => __( 'Page numbers', 'founding-faces' ),
