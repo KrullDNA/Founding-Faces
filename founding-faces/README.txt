@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.77
+Stable tag: 1.0.78
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,7 +78,7 @@ Stage 5 — Email connector + Campaign Monitor:
   are created on the list automatically. Uses WordPress's HTTP API, no SDK.
 
 Stage 6 — Products & notes with gating:
-* Notes (ff_note) are structured records: linked product, date, trial number,
+* Notes (ff_note) are structured records: linked product, date, version number,
   development stage (in development / stability testing / passed / failed),
   image gallery and a per-note audience flag (everyone / the-35-only), all
   entered in a clean "Note details" metabox with a media-library gallery
@@ -196,6 +196,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.78 =
+* A note's "Trial number" is now "Version number", everywhere it is written or
+  read: the field on the note editor, the chip on every note card, the Elementor
+  dynamic tag, and the widget's colour control for it.
+* The stored meta key stays ff_note_trial. Renaming it would have detached the
+  number from every note already published, and nothing outside the plugin reads
+  it by name. Nothing needs re-entering.
 
 = 1.0.77 =
 * New widget: Founding Faces Note Gallery. The images already stored against a

@@ -536,7 +536,7 @@ class FF_Display {
 			$meta[] = self::stage_badge( $stage );
 		}
 		if ( '' !== (string) $trial ) {
-			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a trial number. */ esc_html__( 'Trial %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
 		}
 		if ( $date ) {
 			$meta[] = '<span class="ff-note-date">' . esc_html( $date ) . '</span>';
@@ -590,7 +590,7 @@ class FF_Display {
 	 *
 	 * @param string $title The sample title.
 	 * @param string $stage The sample stage key.
-	 * @param string $trial The sample trial number.
+	 * @param string $trial The sample version number.
 	 * @param bool   $vault Whether to show the "The 35 vault" chip.
 	 * @return string
 	 */
@@ -602,7 +602,7 @@ class FF_Display {
 		$out .= '<h3 class="ff-note-title">' . esc_html( $title ) . '</h3>';
 		$out .= '<div class="ff-note-meta">';
 		$out .= self::stage_badge( $stage );
-		$out .= '<span class="ff-note-trial">' . sprintf( /* translators: %s is a trial number. */ esc_html__( 'Trial %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+		$out .= '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
 		$out .= '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>';
 		if ( $vault ) {
 			$out .= '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
@@ -624,7 +624,7 @@ class FF_Display {
 		$samples = array(
 			array( __( 'Sample note — batch reformulation', 'founding-faces' ), 'stability_testing', '4', false ),
 			array( __( 'Sample note — actives at 2%', 'founding-faces' ), 'passed', '3', true ),
-			array( __( 'Sample note — texture trial', 'founding-faces' ), 'in_development', '2', false ),
+			array( __( 'Sample note — texture test', 'founding-faces' ), 'in_development', '2', false ),
 			array( __( 'Sample note — preservative swap', 'founding-faces' ), 'failed', '1', false ),
 		);
 

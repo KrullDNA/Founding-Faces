@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Defines the shape of the members-area content:
  *  - ff_product : one entry per product in development (e.g. The Serum).
- *  - ff_note    : a formulation note, trial result or decision, linked to a
+ *  - ff_note    : a formulation note, test result or decision, linked to a
  *                 product.
  *  - ff_group   : the two membership groups, The 35 and The Circle, applied to
  *                 users rather than posts, driving gating and email segmentation.
@@ -39,6 +39,9 @@ class FF_Post_Types {
 	// Post meta keys for a note's structured fields.
 	const META_NOTE_PRODUCT = 'ff_note_product';
 	const META_NOTE_DATE    = 'ff_note_date';
+	// The version number shown on a note. Named for what the field used to be
+	// called (Trial number, renamed in 1.0.78) because the stored key cannot
+	// change without orphaning the numbers already on published notes.
 	const META_NOTE_TRIAL   = 'ff_note_trial';
 	const META_NOTE_STAGE   = 'ff_note_stage';
 	const META_NOTE_GALLERY = 'ff_note_gallery';
@@ -182,7 +185,7 @@ class FF_Post_Types {
 	 * Register the Notes post type (ff_note).
 	 *
 	 * A note is a single formulation entry linked to a product. Its structured
-	 * fields (trial number, stage, gallery, audience flag) are added in a later
+	 * fields (version number, stage, gallery, audience flag) are added in a later
 	 * stage; here we register the type itself. Like products, it is admin-only
 	 * and surfaced through the plugin's gated frontend components.
 	 */
@@ -284,7 +287,7 @@ class FF_Post_Types {
 	 * -----------------------------------------------------------------------
 	 * Note meta fields.
 	 * A note is a structured record, not just a block of text: it carries the
-	 * product it belongs to, a date, a trial number, a development stage, an
+	 * product it belongs to, a date, a version number, a development stage, an
 	 * image gallery and an audience flag. Registering the meta keeps them typed
 	 * and sanitised; they are intentionally kept out of REST with the CPT.
 	 * -----------------------------------------------------------------------
@@ -438,7 +441,7 @@ class FF_Post_Types {
 		</p>
 		<p>
 			<label for="ff_product_status"><strong><?php esc_html_e( 'Where it\'s up to', 'founding-faces' ); ?></strong></label><br />
-			<input type="text" name="ff_product_status" id="ff_product_status" style="width:100%;" value="<?php echo esc_attr( $status ); ?>" placeholder="<?php esc_attr_e( 'e.g. Third trial in stability testing', 'founding-faces' ); ?>" />
+			<input type="text" name="ff_product_status" id="ff_product_status" style="width:100%;" value="<?php echo esc_attr( $status ); ?>" placeholder="<?php esc_attr_e( 'e.g. Version 3 in stability testing', 'founding-faces' ); ?>" />
 		</p>
 		<?php
 	}
@@ -540,7 +543,7 @@ class FF_Post_Types {
 				<td><input type="date" name="ff_note_date" id="ff_note_date" value="<?php echo esc_attr( $date ); ?>" /></td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="ff_note_trial"><?php esc_html_e( 'Trial number', 'founding-faces' ); ?></label></th>
+				<th scope="row"><label for="ff_note_trial"><?php esc_html_e( 'Version number', 'founding-faces' ); ?></label></th>
 				<td><input type="text" name="ff_note_trial" id="ff_note_trial" value="<?php echo esc_attr( $trial ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
@@ -632,7 +635,9 @@ class FF_Post_Types {
 		}
 		update_post_meta( $post_id, self::META_NOTE_DATE, $date );
 
-		// Trial number (free text so "12a" is allowed).
+		// Version number (free text so "12a" is allowed). The meta key is still
+		// ff_note_trial: the field was called Trial number until 1.0.78, and
+		// renaming the key would have detached every number already written.
 		update_post_meta( $post_id, self::META_NOTE_TRIAL, isset( $_POST['ff_note_trial'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_note_trial'] ) ) : '' );
 
 		// Stage, only if it's one of the known keys.

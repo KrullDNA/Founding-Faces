@@ -38,7 +38,7 @@ class FF_Tag_Note_Stage extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Note — Trial number.
+ * Note — Version number.
  */
 class FF_Tag_Note_Trial extends \Elementor\Core\DynamicTags\Tag {
 
@@ -46,7 +46,7 @@ class FF_Tag_Note_Trial extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-note-trial';
 	}
 	public function get_title() {
-		return __( 'Note — Trial number', 'founding-faces' );
+		return __( 'Note — Version number', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';

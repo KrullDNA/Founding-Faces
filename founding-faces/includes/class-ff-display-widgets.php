@@ -63,7 +63,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Stage badge / trial / date / vault chips.
+	 * Stage badge / version / date / vault chips.
 	 */
 	protected function ffds_badge_section() {
 		$this->start_controls_section( 'ff_badges_sec', array(
@@ -98,7 +98,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'selectors'  => array( '{{WRAPPER}} .ff-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 		$this->add_control( 'trial_color', array(
-			'label'     => __( 'Trial & date colour', 'founding-faces' ),
+			'label'     => __( 'Version & date colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'separator' => 'before',
 			'selectors' => array( '{{WRAPPER}} .ff-note-trial, {{WRAPPER}} .ff-note-date' => 'color: {{VALUE}};' ),

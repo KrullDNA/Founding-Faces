@@ -201,18 +201,18 @@ class FF_History {
 	 */
 	private static function sample_note_pool( $count ) {
 		$titles = array(
-			__( 'Trial 14 — the new emulsifier', 'founding-faces' ),
+			__( 'Version 14 — the new emulsifier', 'founding-faces' ),
 			__( 'Switching to a mild preservative system', 'founding-faces' ),
-			__( 'Trial 12 — stability at 40°C', 'founding-faces' ),
+			__( 'Version 12 — stability at 40°C', 'founding-faces' ),
 			__( 'Why we rejected the first serum base', 'founding-faces' ),
 			__( 'The squalane question, settled', 'founding-faces' ),
 			__( 'Batch 09 — pH drift over six weeks', 'founding-faces' ),
 			__( 'What the panel said about the texture', 'founding-faces' ),
 			__( 'Raising the niacinamide to 4%', 'founding-faces' ),
-			__( 'Trial 11 — separation on the third day', 'founding-faces' ),
+			__( 'Version 11 — separation on the third day', 'founding-faces' ),
 			__( 'Sourcing: a second supplier for the butter', 'founding-faces' ),
 			__( 'Fragrance-free, and why it stays that way', 'founding-faces' ),
-			__( 'Cold-process trial — the results', 'founding-faces' ),
+			__( 'Cold-process test — the results', 'founding-faces' ),
 		);
 		$products = array(
 			__( 'The Barrier Cream', 'founding-faces' ),
