@@ -164,7 +164,7 @@ class FF_JetEngine {
 	 * @return string
 	 */
 	public static function stage_label( $value ) {
-		$stages = FF_Post_Types::note_stages();
+		$stages = FF_Post_Types::all_stages();
 		return isset( $stages[ $value ] ) ? $stages[ $value ] : (string) $value;
 	}
 
@@ -181,6 +181,8 @@ class FF_JetEngine {
 			'stability_testing' => array( '#fff3d6', '#8a6d1f' ),
 			'passed'            => array( '#e6f4ea', '#1e5631' ),
 			'failed'            => array( '#fbeaea', '#8a1f1f' ),
+			'formula_finalised' => array( '#e7f0f7', '#1f4f74' ),
+			'complete'          => array( '#1e5631', '#ffffff' ),
 		);
 		$pair = isset( $colors[ $value ] ) ? $colors[ $value ] : array( '#eceef0', '#3a3d44' );
 

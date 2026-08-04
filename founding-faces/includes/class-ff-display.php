@@ -42,6 +42,12 @@ class FF_Display {
 		add_shortcode( 'ff_home', array( __CLASS__, 'sc_home' ) );
 		add_shortcode( 'ff_note_gallery', array( __CLASS__, 'sc_note_gallery' ) );
 
+		// A note is read when its own page is opened, whatever drew that page:
+		// the Single Note widget, an Elementor template of dynamic tags, or a
+		// theme template. Priority 20 so the gate (priority 10) has already had
+		// its say — a viewer who is redirected away never counts as having read.
+		add_action( 'template_redirect', array( __CLASS__, 'record_single_note_view' ), 20 );
+
 		// The slider script, registered on both the front end and inside the
 		// Elementor editor (which loads its scripts through its own hook).
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_slider_assets' ) );
@@ -67,6 +73,41 @@ class FF_Display {
 
 		require_once FF_PATH . 'includes/class-ff-note-gallery-widget.php';
 		$widgets_manager->register( new FF_Note_Gallery_Widget() );
+	}
+
+	/**
+	 * Record that this member has read the note whose page they are on.
+	 *
+	 * Kept out of the renderers deliberately. sc_note() used to be the only
+	 * place a view was recorded, which was right when the only way to read a
+	 * note was through that shortcode — but a note has had its own URL since
+	 * 1.0.9, and a Single Note template built from dynamic tags never calls it.
+	 * The request itself is the honest signal, so that is what is listened to.
+	 *
+	 * @return void
+	 */
+	public static function record_single_note_view() {
+		if ( is_admin() || ! is_singular( FF_Post_Types::NOTE_CPT ) ) {
+			return;
+		}
+
+		$member_id = get_current_user_id();
+		if ( ! $member_id ) {
+			return;
+		}
+
+		// Designing the template is not reading the note, so the Elementor
+		// preview iframe doesn't mark Nick's own record.
+		if ( FF_History::is_editor() ) {
+			return;
+		}
+
+		$note_id = get_queried_object_id();
+		if ( ! $note_id || ! FF_Gating::can_view_note( $note_id ) ) {
+			return;
+		}
+
+		FF_Interactions::log_once( $member_id, 'note_viewed', $note_id );
 	}
 
 	/**
@@ -213,7 +254,13 @@ class FF_Display {
 			return self::members_only_notice();
 		}
 
-		$product_id = absint( $atts['product'] );
+		$product_id = self::product_context_id( $atts['product'] );
+
+		// Asked to follow the page's product and there isn't one: show the empty
+		// state rather than quietly listing every note there is.
+		if ( 'auto' === $atts['product'] && ! $product_id ) {
+			return '<div class="ff-notes-list"><p class="ff-empty-note">' . esc_html__( 'No notes to show here yet.', 'founding-faces' ) . '</p></div>';
+		}
 
 		// A stage filter can come from the shortcode or from the URL chip click.
 		$stage = sanitize_key( $atts['stage'] );
@@ -400,7 +447,8 @@ class FF_Display {
 			return self::members_only_notice();
 		}
 
-		$product = absint( $atts['product'] ) ? get_post( absint( $atts['product'] ) ) : null;
+		$product_id = self::product_context_id( $atts['product'] );
+		$product    = $product_id ? get_post( $product_id ) : null;
 		if ( ! $product || FF_Post_Types::PRODUCT_CPT !== $product->post_type ) {
 			return '<div class="ff-notice">' . esc_html__( 'That product could not be found.', 'founding-faces' ) . '</div>';
 		}
@@ -788,7 +836,9 @@ class FF_Display {
 	 * @return string
 	 */
 	private static function stage_badge( $stage ) {
-		$stages = FF_Post_Types::note_stages();
+		// The full list: this renders a product's stage as well as a note's,
+		// and a product has two stages a note never has.
+		$stages = FF_Post_Types::all_stages();
 		$label  = isset( $stages[ $stage ] ) ? $stages[ $stage ] : $stage;
 		return '<span class="ff-badge ff-stage ff-stage--' . esc_attr( $stage ) . '">' . esc_html( $label ) . '</span>';
 	}
@@ -872,6 +922,38 @@ class FF_Display {
 
 		$current = get_the_ID();
 		if ( $current && FF_Post_Types::NOTE_CPT === get_post_type( $current ) ) {
+			return (int) $current;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Which product a component on this page is about.
+	 *
+	 * The counterpart of note_context_id(): an explicit id wins, then the
+	 * product being viewed, then the product the current loop is on. This is
+	 * what lets one Single Product template serve every product.
+	 *
+	 * @param int|string $explicit A product id, or 'auto'/0 for automatic.
+	 * @return int The product id, or 0.
+	 */
+	public static function product_context_id( $explicit = 0 ) {
+		if ( 'auto' !== $explicit ) {
+			$explicit = absint( $explicit );
+			if ( $explicit ) {
+				return $explicit;
+			}
+			return 0;
+		}
+
+		$queried = get_queried_object_id();
+		if ( $queried && FF_Post_Types::PRODUCT_CPT === get_post_type( $queried ) ) {
+			return (int) $queried;
+		}
+
+		$current = get_the_ID();
+		if ( $current && FF_Post_Types::PRODUCT_CPT === get_post_type( $current ) ) {
 			return (int) $current;
 		}
 

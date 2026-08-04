@@ -21,9 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  *  - ff_group   : the two membership groups, The 35 and The Circle, applied to
  *                 users rather than posts, driving gating and email segmentation.
  *
- * These content types are admin-facing only. The members area renders them
- * through the plugin's own gated components, not through public single-post
- * templates, so they are registered as non-public to stay lean and safe.
+ * Notes and products are written in the admin and read in the members area.
+ * Each has a single URL so an Elementor template can style it once, and each is
+ * gated server-side before it renders, kept out of search and out of the
+ * sitemap. Neither is "public" in the WordPress sense, and neither is exposed
+ * over REST — that would be a path straight around the gate.
  */
 class FF_Post_Types {
 
@@ -78,9 +80,9 @@ class FF_Post_Types {
 	 * already present is left alone.
 	 *
 	 * Only types WordPress considers viewable are offered: a type with no front
-	 * end has no single view for a template to preview or target. Products are
-	 * put forward and declined on that test today — they are rendered through
-	 * widgets, not visited — and would be included the moment that changed.
+	 * end has no single view for a template to preview or target. Notes and
+	 * products both pass that test now, and both carry the flag, so this is
+	 * belt and braces for either.
 	 *
 	 * @param array $post_types Slug => label, as Elementor built it.
 	 * @return array
@@ -122,6 +124,36 @@ class FF_Post_Types {
 	}
 
 	/**
+	 * The stages a product can be in.
+	 *
+	 * A superset of the note stages: a product carries the same four while it is
+	 * being worked on, and then two a note never has — the formula is settled,
+	 * and the whole thing is finished. Kept as its own list so those two don't
+	 * appear on the note editor or as filter chips on a notes page, where there
+	 * is nothing for them to describe.
+	 *
+	 * @return array
+	 */
+	public static function product_stages() {
+		return self::note_stages() + array(
+			'formula_finalised' => __( 'Formula finalised', 'founding-faces' ),
+			'complete'          => __( 'Complete', 'founding-faces' ),
+		);
+	}
+
+	/**
+	 * Every stage key there is, for turning a stored key into a label.
+	 *
+	 * The badge renderer doesn't know or care whether it was handed a note's
+	 * stage or a product's, so it looks the label up here.
+	 *
+	 * @return array
+	 */
+	public static function all_stages() {
+		return self::product_stages();
+	}
+
+	/**
 	 * The audiences a note can be shown to.
 	 *
 	 * @return array
@@ -137,9 +169,10 @@ class FF_Post_Types {
 	 * Register the Products post type (ff_product).
 	 *
 	 * Each product is a container for its own set of formulation notes. It has
-	 * a title and an editor for a short description, and a featured image. It is
-	 * admin-only: not publicly queryable and with no public single view, because
-	 * products are surfaced through the plugin's gated frontend components.
+	 * a title and an editor for a short description, and a featured image. Since
+	 * 1.0.79 it also has a single URL, so a product page can be built once as an
+	 * Elementor template rather than by hand for each product — gated, kept out
+	 * of search and out of the sitemap, exactly as a note is.
 	 */
 	public static function register_product_cpt() {
 		$labels = array(
@@ -159,17 +192,32 @@ class FF_Post_Types {
 
 		$args = array(
 			'labels'              => $labels,
-			// Admin-only: the members area renders products through gated
-			// components, so there is no public-facing single-post view.
+			// Not public: no archive, not in search, nothing listed anywhere.
+			// The single view below is deliberate and gated.
 			'public'              => false,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
 			'menu_icon'           => 'dashicons-products',
 			'menu_position'       => 26,
-			'publicly_queryable'  => false,
+			// Publicly queryable for the same reason notes are: it gives a
+			// product a single URL, which is the only thing Elementor Theme
+			// Builder can hang a Single template and its display conditions on.
+			// The view is gated server-side (FF_Gating::gate_single_product), so
+			// a logged-out visitor is sent to log in and a non-member away.
+			'publicly_queryable'  => true,
 			'exclude_from_search' => true,
 			'has_archive'         => false,
-			'rewrite'             => false,
+			// Deliberately not "product": WooCommerce owns that slug, and these
+			// are formulations in development, not things anyone can buy.
+			'rewrite'             => array(
+				'slug'       => 'formulation',
+				'with_front' => false,
+			),
+			// The flag Elementor reads directly to decide what its Theme Builder
+			// may preview and target. Same trade as notes: a product becomes an
+			// addable item in Appearance -> Menus, where every item still
+			// carries a Founding Faces visibility rule.
+			'show_in_nav_menus'   => true,
 			'hierarchical'        => false,
 			'supports'            => array( 'title', 'editor', 'thumbnail' ),
 			// Deliberately kept out of the REST API: these are members-only
@@ -434,7 +482,7 @@ class FF_Post_Types {
 			<label for="ff_product_stage"><strong><?php esc_html_e( 'Current stage', 'founding-faces' ); ?></strong></label><br />
 			<select name="ff_product_stage" id="ff_product_stage" style="width:100%;">
 				<option value=""><?php esc_html_e( '— None —', 'founding-faces' ); ?></option>
-				<?php foreach ( self::note_stages() as $key => $label ) : ?>
+				<?php foreach ( self::product_stages() as $key => $label ) : ?>
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $stage, $key ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
 			</select>
@@ -464,7 +512,7 @@ class FF_Post_Types {
 		}
 
 		$stage = isset( $_POST['ff_product_stage'] ) ? sanitize_key( wp_unslash( $_POST['ff_product_stage'] ) ) : '';
-		if ( '' !== $stage && ! array_key_exists( $stage, self::note_stages() ) ) {
+		if ( '' !== $stage && ! array_key_exists( $stage, self::product_stages() ) ) {
 			$stage = '';
 		}
 		update_post_meta( $post_id, self::META_PRODUCT_STAGE, $stage );

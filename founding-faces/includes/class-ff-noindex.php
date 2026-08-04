@@ -5,7 +5,8 @@
  * Gated content is already protected server-side (notes and access-restricted
  * pages redirect anyone who isn't allowed, and Googlebot always crawls
  * logged-out, so it hits the redirect). This adds the explicit, belt-and-braces
- * layer on top: every note and every access-restricted page is marked
+ * layer on top: every note, every product and every access-restricted page is
+ * marked
  * "noindex, nofollow" — as both a <meta> robots tag and an X-Robots-Tag HTTP
  * header — and restricted pages are dropped from the sitemap. So member-only
  * URLs are never listed by Google, even if one is discovered.
@@ -33,8 +34,9 @@ class FF_Noindex {
 		// The X-Robots-Tag HTTP header, as a second, independent signal.
 		add_action( 'template_redirect', array( __CLASS__, 'send_header' ), 0 );
 
-		// Drop access-restricted pages/posts from the core sitemap. (Notes are
-		// already removed wholesale by FF_Gating::exclude_notes_from_sitemap.)
+		// Drop access-restricted pages/posts from the core sitemap. (Notes and
+		// products are already removed wholesale by
+		// FF_Gating::exclude_private_from_sitemap.)
 		add_filter( 'wp_sitemaps_posts_query_args', array( __CLASS__, 'exclude_restricted_from_sitemap' ), 10, 2 );
 	}
 
@@ -55,8 +57,8 @@ class FF_Noindex {
 			return false;
 		}
 
-		// Notes are always members-only.
-		if ( class_exists( 'FF_Post_Types' ) && FF_Post_Types::NOTE_CPT === get_post_type( $post_id ) ) {
+		// Notes and products are always members-only.
+		if ( class_exists( 'FF_Post_Types' ) && in_array( get_post_type( $post_id ), array( FF_Post_Types::NOTE_CPT, FF_Post_Types::PRODUCT_CPT ), true ) ) {
 			return true;
 		}
 
