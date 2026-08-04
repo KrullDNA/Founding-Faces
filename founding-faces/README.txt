@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.64
+Stable tag: 1.0.65
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.65 =
+* New "Notes layout" style section: the notes list can run in up to four
+  columns, set separately for desktop, tablet and mobile, with its own column
+  gap and row gap on each device.
+* Only the list becomes a grid. The section heading, the filter bar, the "Load
+  more" button and the page numbers are its siblings, so they keep the full
+  width underneath however many columns the notes are in.
+* New switch to stack each note's date under its title, for when the columns
+  are too narrow to share a line.
 
 = 1.0.64 =
 * New: numbered pages on the member's notes list, as an alternative to the
