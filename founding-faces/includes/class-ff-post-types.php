@@ -69,13 +69,10 @@ class FF_Post_Types {
 	 *
 	 * Elementor builds that list from post types flagged show_in_nav_menus, and
 	 * it drives the Theme Builder preview picker and the display conditions.
-	 * Notes are not flagged that way on purpose — they are not pages anyone
-	 * links to from a menu, and putting them in the menu editor would invite
-	 * exactly that. But they DO have single URLs, and they are the whole reason
-	 * a Single template exists here, so Elementor needs to know about them.
-	 *
-	 * Filtering Elementor's own list says that to Elementor and to nothing else,
-	 * rather than changing how WordPress treats the post type everywhere.
+	 * Notes now carry that flag, so they arrive on their own — this is the belt
+	 * to that braces, and it covers any Elementor list built through this
+	 * filter rather than from the flag. Nothing is added twice: an entry
+	 * already present is left alone.
 	 *
 	 * Only types WordPress considers viewable are offered: a type with no front
 	 * end has no single view for a template to preview or target. Products are
@@ -219,6 +216,18 @@ class FF_Post_Types {
 			'publicly_queryable'  => true,
 			'exclude_from_search' => true,
 			'has_archive'         => false,
+			// Elementor decides which post types its Theme Builder can preview
+			// and target by reading this flag directly, not through any list a
+			// plugin can filter. Notes need a Single template, so it has to be
+			// true — this is what makes them appear in both the preview picker
+			// and the "Where do you want to display your Template?" conditions.
+			//
+			// Its own meaning — "may be added to a nav menu" — is the cost: a
+			// note now appears as an addable item in Appearance -> Menus. That
+			// is a link nobody should add, but adding one is a deliberate act,
+			// and every menu item carries a Founding Faces visibility rule, so
+			// a note linked by mistake is still gated for the wrong viewer.
+			'show_in_nav_menus'   => true,
 			'rewrite'             => array(
 				'slug'       => 'note',
 				'with_front' => false,

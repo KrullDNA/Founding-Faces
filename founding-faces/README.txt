@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.75
+Stable tag: 1.0.76
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.76 =
+* Notes are now flagged show_in_nav_menus, which is the flag Elementor reads
+  directly to decide what its Theme Builder can preview and target. 1.0.75
+  filtered Elementor's list, which was not enough — the conditions dialog reads
+  the flag itself. Notes now appear both in Preview Settings and in "Where do
+  you want to display your Template?" under Singular.
+* The cost of that flag is its own meaning: a note is now an addable item in
+  Appearance -> Menus. Linking one is a deliberate act, and menu items carry a
+  Founding Faces visibility rule, so a note linked by mistake is still gated.
 
 = 1.0.75 =
 * Notes now appear in Elementor's Theme Builder preview picker and display
