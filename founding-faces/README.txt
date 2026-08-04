@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.76
+Stable tag: 1.0.77
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,7 +96,8 @@ Stage 7 — Frontend display:
   is just filling in fields — it appears already styled and on-brand.
 * Components as shortcodes (Elementor-compatible): [ff_note], [ff_notes]
   (newest first, filterable by stage with filter chips), [ff_product_header],
-  and [ff_home] (a hybrid home: latest-notes feed above a products list).
+  [ff_home] (a hybrid home: latest-notes feed above a products list), and
+  [ff_note_gallery] (the note's images as a slider).
 * Product metabox adds a current stage and a "where it's up to" line.
 * Apotheca brand tokens baked into the components; the note markup is
   filterable (ff_render_note) so Elementor Pro Theme Builder can override it.
@@ -195,6 +196,30 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.77 =
+* New widget: Founding Faces Note Gallery. The images already stored against a
+  note, shown as a slider. Left on automatic it follows whichever note is being
+  read, so it can go straight into a Single Note template once.
+* One image is not a slider: no arrows, no dots, nothing to interact with. From
+  two upwards it loops in both directions and never dead-ends, and the arrows
+  take themselves away again on any screen where every image already fits.
+* Full control of the arrows: any icon from the library (or the plain chevron),
+  icon size, button size, padding, colour, background, border, corner radius and
+  shadow, each with a hover state, plus how far in or out from the edge they sit
+  and how far down. Nothing about how they look is decided by the plugin.
+* Images on show and the gap between them are per device, so three across on
+  desktop can be one on a phone. Also: image size, height and how it fills that
+  height, corner radius, border, shadow, captions from the media library, dots,
+  autoplay with a pause on hover, and slide speed.
+* Clicking an image can open Elementor's lightbox, open the full file in a new
+  tab, or do nothing.
+* Autoplay never runs for a member whose device asks for reduced motion, and
+  the slide transition is dropped for them too.
+* The gallery obeys the 35-only gate wherever it is placed, not just on the
+  note's own page.
+* "Which note is this page about?" is now answered in one place, shared by the
+  gallery and the feedback form.
 
 = 1.0.76 =
 * Notes are now flagged show_in_nav_menus, which is the flag Elementor reads

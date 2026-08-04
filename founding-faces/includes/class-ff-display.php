@@ -40,6 +40,12 @@ class FF_Display {
 		add_shortcode( 'ff_notes_archive', array( __CLASS__, 'sc_notes_archive' ) );
 		add_shortcode( 'ff_product_header', array( __CLASS__, 'sc_product_header' ) );
 		add_shortcode( 'ff_home', array( __CLASS__, 'sc_home' ) );
+		add_shortcode( 'ff_note_gallery', array( __CLASS__, 'sc_note_gallery' ) );
+
+		// The slider script, registered on both the front end and inside the
+		// Elementor editor (which loads its scripts through its own hook).
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_slider_assets' ) );
+		add_action( 'elementor/frontend/after_register_scripts', array( __CLASS__, 'register_slider_assets' ) );
 
 		// Native Elementor widgets that wrap the same components (harmless if
 		// Elementor isn't installed).
@@ -58,6 +64,9 @@ class FF_Display {
 		$widgets_manager->register( new FF_Note_Widget() );
 		$widgets_manager->register( new FF_Product_Header_Widget() );
 		$widgets_manager->register( new FF_Home_Widget() );
+
+		require_once FF_PATH . 'includes/class-ff-note-gallery-widget.php';
+		$widgets_manager->register( new FF_Note_Gallery_Widget() );
 	}
 
 	/**
@@ -828,6 +837,300 @@ class FF_Display {
 		}
 		$out .= '</div>';
 		return $out;
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * The note image slider.
+	 * The gallery already stored against a note, shown one (or a few) images at
+	 * a time with arrows. Separate from the grid inside the note card, because
+	 * on a single-note template the images are usually wanted somewhere the
+	 * card is not.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * Which note a component on this page is about.
+	 *
+	 * An explicit id always wins. Otherwise the note being viewed, and failing
+	 * that the note the current loop is on — a Theme Builder template renders
+	 * per note, where the queried object is the archive rather than the row.
+	 *
+	 * @param int $explicit A note id chosen in the widget, or 0 for automatic.
+	 * @return int The note id, or 0 if this page isn't about a note.
+	 */
+	public static function note_context_id( $explicit = 0 ) {
+		$explicit = absint( $explicit );
+		if ( $explicit ) {
+			return $explicit;
+		}
+
+		$queried = get_queried_object_id();
+		if ( $queried && FF_Post_Types::NOTE_CPT === get_post_type( $queried ) ) {
+			return (int) $queried;
+		}
+
+		$current = get_the_ID();
+		if ( $current && FF_Post_Types::NOTE_CPT === get_post_type( $current ) ) {
+			return (int) $current;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Register the slider script.
+	 *
+	 * Kept separate from enqueueing so it exists by the time a widget renders,
+	 * in the editor as well as on the front end.
+	 */
+	public static function register_slider_assets() {
+		if ( ! wp_script_is( 'ff-note-slider', 'registered' ) ) {
+			wp_register_script( 'ff-note-slider', FF_URL . 'assets/js/note-slider.js', array(), FF_VERSION, true );
+		}
+	}
+
+	/**
+	 * The note gallery slider: [ff_note_gallery].
+	 *
+	 * With no id it uses the note the page is about, so the shortcode can sit
+	 * in a single-note template and follow whichever note is being read.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function sc_note_gallery( $atts ) {
+		$a = shortcode_atts( array(
+			'id'       => 0,
+			'size'     => 'large',
+			'link'     => 'none',
+			'caption'  => '0',
+			'dots'     => '0',
+			'autoplay' => 0,
+		), $atts, 'ff_note_gallery' );
+
+		return self::note_gallery_html( self::note_context_id( $a['id'] ), array(
+			'size'     => sanitize_key( $a['size'] ),
+			'link'     => sanitize_key( $a['link'] ),
+			'caption'  => in_array( strtolower( (string) $a['caption'] ), array( '1', 'yes', 'true' ), true ),
+			'dots'     => in_array( strtolower( (string) $a['dots'] ), array( '1', 'yes', 'true' ), true ),
+			'autoplay' => absint( $a['autoplay'] ),
+		) );
+	}
+
+	/**
+	 * The slider for one note's gallery.
+	 *
+	 * Returns an empty string — not a message — when there is nothing to show
+	 * or the viewer isn't allowed the note. A gallery with no images should
+	 * leave no trace on the page.
+	 *
+	 * @param int   $note_id The note.
+	 * @param array $args    Slider options.
+	 * @return string
+	 */
+	public static function note_gallery_html( $note_id, $args = array() ) {
+		$note_id = absint( $note_id );
+		if ( ! $note_id ) {
+			return '';
+		}
+
+		// The single-note page is gated already, but a gallery widget can be
+		// pointed at any note from any page, so the gate is checked here too.
+		if ( ! FF_Gating::can_view_note( $note_id ) ) {
+			return '';
+		}
+
+		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $note_id, FF_Post_Types::META_NOTE_GALLERY, true ) ) ) );
+		if ( empty( $ids ) ) {
+			return '';
+		}
+
+		$args   = self::slider_args( $args );
+		$slides = array();
+
+		foreach ( $ids as $id ) {
+			$img = wp_get_attachment_image( $id, $args['size'], false, array(
+				'class'   => 'ff-slide-img',
+				'loading' => 'lazy',
+			) );
+			if ( ! $img ) {
+				continue;
+			}
+
+			$caption = $args['caption'] ? FF_Text::inline( wp_get_attachment_caption( $id ) ) : '';
+			$slides[] = self::slide_html( $img, wp_get_attachment_image_url( $id, 'full' ), $caption, $args );
+		}
+
+		if ( empty( $slides ) ) {
+			return '';
+		}
+
+		return self::slider_html( $slides, $args );
+	}
+
+	/**
+	 * A slider of placeholder images, for designing against in the editor.
+	 *
+	 * Five of them, so the arrows, the dots and the movement are all there to
+	 * style before a note has any images on it.
+	 *
+	 * @param array $args Slider options.
+	 * @return string
+	 */
+	public static function sample_gallery_html( $args = array() ) {
+		$args   = self::slider_args( $args );
+		$slides = array();
+
+		for ( $i = 1; $i <= 5; $i++ ) {
+			$src = self::placeholder_image_src( $i );
+			$img = '<img class="ff-slide-img" src="' . esc_url( $src ) . '" alt="" width="800" height="600" />';
+			/* translators: %d is the position of a sample image in the slider. */
+			$caption  = $args['caption'] ? sprintf( __( 'Sample caption %d — the image caption from the media library shows here.', 'founding-faces' ), $i ) : '';
+			$slides[] = self::slide_html( $img, $src, esc_html( $caption ), $args );
+		}
+
+		return self::slider_html( $slides, $args );
+	}
+
+	/**
+	 * Fill in the slider options that weren't given.
+	 *
+	 * @param array $args Partial options.
+	 * @return array
+	 */
+	private static function slider_args( $args ) {
+		return wp_parse_args( $args, array(
+			// Which registered image size to render.
+			'size'     => 'large',
+			// none | file | lightbox.
+			'link'     => 'none',
+			'caption'  => false,
+			'dots'     => false,
+			// Milliseconds between slides; 0 is off.
+			'autoplay' => 0,
+			// The arrow markup, so the widget can hand over a chosen icon.
+			'prev'     => '',
+			'next'     => '',
+			'prev_label' => __( 'Previous image', 'founding-faces' ),
+			'next_label' => __( 'Next image', 'founding-faces' ),
+		) );
+	}
+
+	/**
+	 * One slide: the image, optionally linked, optionally captioned.
+	 *
+	 * @param string $img     The <img> markup.
+	 * @param string $full    URL of the full-size file.
+	 * @param string $caption Caption HTML, already filtered.
+	 * @param array  $args    Slider options.
+	 * @return string
+	 */
+	private static function slide_html( $img, $full, $caption, $args ) {
+		$inner = $img;
+
+		if ( 'lightbox' === $args['link'] && $full ) {
+			// Elementor's own lightbox, opened by its data attributes, so the
+			// images share one gallery and the site keeps a single lightbox.
+			$inner = '<a class="ff-slide-link" href="' . esc_url( $full ) . '" data-elementor-open-lightbox="yes" data-elementor-lightbox-slideshow="ff-note-gallery">' . $img . '</a>';
+		} elseif ( 'file' === $args['link'] && $full ) {
+			$inner = '<a class="ff-slide-link" href="' . esc_url( $full ) . '" target="_blank" rel="noopener">' . $img . '</a>';
+		}
+
+		$out = '<div class="ff-slide"><figure class="ff-slide-figure">' . $inner;
+		if ( '' !== $caption ) {
+			$out .= '<figcaption class="ff-slide-caption">' . $caption . '</figcaption>';
+		}
+		$out .= '</figure></div>';
+
+		return $out;
+	}
+
+	/**
+	 * Wrap prepared slides in the slider, with arrows and dots if they earn it.
+	 *
+	 * One image gets no arrows and no dots at all — there is nowhere to go, so
+	 * nothing is drawn. From two upwards the controls appear and the slider
+	 * loops, and the script hides them again at any screen width where every
+	 * image is already on show.
+	 *
+	 * @param array $slides Slide markup.
+	 * @param array $args   Slider options.
+	 * @return string
+	 */
+	private static function slider_html( $slides, $args ) {
+		self::enqueue();
+		self::register_slider_assets();
+		wp_enqueue_script( 'ff-note-slider' );
+
+		$count = count( $slides );
+		$many  = $count > 1;
+
+		$out  = '<div class="ff-note-slider' . ( $many ? '' : ' ff-note-slider--single' ) . '"';
+		$out .= ' data-ff-slider="1"';
+		if ( $many && $args['autoplay'] > 0 ) {
+			$out .= ' data-autoplay="' . esc_attr( (int) $args['autoplay'] ) . '"';
+		}
+		$out .= '>';
+
+		$out .= '<div class="ff-slider-viewport"><div class="ff-slider-track">' . implode( '', $slides ) . '</div></div>';
+
+		if ( $many ) {
+			$prev = '' !== $args['prev'] ? $args['prev'] : self::arrow_svg( 'prev' );
+			$next = '' !== $args['next'] ? $args['next'] : self::arrow_svg( 'next' );
+
+			$out .= '<button type="button" class="ff-slider-arrow ff-slider-prev" aria-label="' . esc_attr( $args['prev_label'] ) . '">' . $prev . '</button>';
+			$out .= '<button type="button" class="ff-slider-arrow ff-slider-next" aria-label="' . esc_attr( $args['next_label'] ) . '">' . $next . '</button>';
+
+			if ( $args['dots'] ) {
+				$out .= '<div class="ff-slider-dots">';
+				for ( $i = 0; $i < $count; $i++ ) {
+					/* translators: %d is a slide number. */
+					$label = sprintf( __( 'Go to image %d', 'founding-faces' ), $i + 1 );
+					$out  .= '<button type="button" class="ff-slider-dot' . ( 0 === $i ? ' is-current' : '' ) . '" aria-label="' . esc_attr( $label ) . '"></button>';
+				}
+				$out .= '</div>';
+			}
+		}
+
+		$out .= '</div>';
+
+		return $out;
+	}
+
+	/**
+	 * The default arrow: a plain chevron in the current text colour.
+	 *
+	 * Deliberately unstyled — no background, no border, no size of its own —
+	 * so everything about how it looks comes from the widget's controls. The
+	 * widget can replace it with any icon from the library.
+	 *
+	 * @param string $dir 'prev' or 'next'.
+	 * @return string
+	 */
+	private static function arrow_svg( $dir ) {
+		$d = ( 'prev' === $dir ) ? 'M15 4 7 12l8 8' : 'M9 4l8 8-8 8';
+
+		return '<svg class="ff-slider-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="' . $d . '"/></svg>';
+	}
+
+	/**
+	 * A neutral placeholder image for the editor samples.
+	 *
+	 * Drawn here as an SVG data URI rather than loaded from anywhere: it costs
+	 * no request, and numbering each one makes the slider's movement obvious
+	 * while the design is being made.
+	 *
+	 * @param int $n The slide number.
+	 * @return string A data URI.
+	 */
+	private static function placeholder_image_src( $n ) {
+		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">'
+			. '<rect width="800" height="600" fill="#eceae6"/>'
+			. '<text x="400" y="345" font-family="Helvetica,Arial,sans-serif" font-size="140" fill="#b6afa5" text-anchor="middle">' . (int) $n . '</text>'
+			. '</svg>';
+
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 	}
 
 	/**
