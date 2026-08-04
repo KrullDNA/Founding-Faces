@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.80
+Stable tag: 1.0.81
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.81 =
+* Fixed: the Edit Product and Edit Note screens showed no permalink row, so the
+  URL was invisible and the slug could not be edited. The editor screen reads
+  the post type's "public" flag directly to decide whether to offer it, and both
+  types were registered non-public. Both now say what has been true since
+  1.0.79: they have a front end.
+* Nothing is loosened by that. Both are still excluded from site search, have no
+  archive, are removed from the sitemap, are marked noindex, are kept out of the
+  REST API, and redirect anyone who isn't a member before rendering.
 
 = 1.0.80 =
 * "The product on this page (automatic)" now resolves on a note's page too, to
