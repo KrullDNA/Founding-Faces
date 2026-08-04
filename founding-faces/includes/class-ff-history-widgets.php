@@ -93,14 +93,25 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'description'  => __( 'Notes with no product attached simply skip the line.', 'founding-faces' ),
 		) );
 
-		$this->add_control( 'notes_per_page', array(
+		$this->add_responsive_control( 'notes_per_page', array(
 			'label'       => __( 'Notes per page', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::NUMBER,
 			'default'     => 10,
 			'min'         => 0,
 			'max'         => 100,
 			'condition'   => array( 'section' => array( 'all', 'notes' ) ),
-			'description' => __( 'A "Load more" button fetches the next batch of this size without reloading the page. Set 0 to show every note at once.', 'founding-faces' ),
+			'description' => __( 'Set each device separately with the icons above. A "Load more" button fetches the next batch of this size without reloading the page. Set 0 to show every note at once.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'notes_new_tab', array(
+			'label'        => __( 'Open notes in a new tab', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'condition'    => array(
+				'section'    => array( 'all', 'notes' ),
+				'link_notes' => 'yes',
+			),
 		) );
 
 		$this->add_control( 'notes_paging', array(
@@ -1047,7 +1058,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		}
 		if ( 'all' === $section || 'notes' === $section ) {
 			$h    = ( 'notes' === $section ) ? $heading : '';
-			$per   = isset( $s['notes_per_page'] ) ? absint( $s['notes_per_page'] ) : 10;
+			$per   = $this->notes_page_sizes( $s );
 			$show  = array(
 				'product' => ( isset( $s['filter_product'] ) && 'yes' === $s['filter_product'] ),
 				'stage'   => ( isset( $s['filter_stage'] ) && 'yes' === $s['filter_stage'] ),
@@ -1058,9 +1069,10 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			$show  = array_filter( $show );
 			$prod  = ! isset( $s['show_note_product'] ) || 'yes' === $s['show_note_product'];
 			$pag   = isset( $s['notes_paging'] ) ? $s['notes_paging'] : 'more';
+			$tab   = isset( $s['notes_new_tab'] ) && 'yes' === $s['notes_new_tab'];
 			$out  .= $sample
-				? FF_History::sample_notes( $h, $link, $per, $show, $prod, $pag )
-				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod, $pag );
+				? FF_History::sample_notes( $h, $link, $per, $show, $prod, $pag, $tab )
+				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod, $pag, $tab );
 		}
 		if ( 'all' === $section || 'feedback' === $section ) {
 			$h    = ( 'feedback' === $section ) ? $heading : '';
@@ -1074,6 +1086,39 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		$out .= '</div>';
 		return $out;
+	}
+
+	/**
+	 * The page size for each device, with Elementor's own breakpoints.
+	 *
+	 * A responsive control stores the tablet and mobile values under suffixed
+	 * keys, and leaves them empty when they have not been set — an empty one
+	 * inherits the desktop size, which is what Elementor means by it.
+	 *
+	 * @param array $s The widget settings.
+	 * @return array
+	 */
+	private function notes_page_sizes( $s ) {
+		$sizes = array(
+			'desktop'   => isset( $s['notes_per_page'] ) ? absint( $s['notes_per_page'] ) : 10,
+			'tablet'    => ( isset( $s['notes_per_page_tablet'] ) && '' !== $s['notes_per_page_tablet'] ) ? absint( $s['notes_per_page_tablet'] ) : 0,
+			'mobile'    => ( isset( $s['notes_per_page_mobile'] ) && '' !== $s['notes_per_page_mobile'] ) ? absint( $s['notes_per_page_mobile'] ) : 0,
+			'tablet_bp' => 1024,
+			'mobile_bp' => 767,
+		);
+
+		// Ask Elementor where its breakpoints actually are, in case they have
+		// been moved in the site's settings.
+		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->breakpoints ) ) {
+			$config = \Elementor\Plugin::$instance->breakpoints->get_breakpoints_config();
+			foreach ( array( 'tablet' => 'tablet_bp', 'mobile' => 'mobile_bp' ) as $key => $target ) {
+				if ( ! empty( $config[ $key ]['value'] ) ) {
+					$sizes[ $target ] = absint( $config[ $key ]['value'] );
+				}
+			}
+		}
+
+		return $sizes;
 	}
 
 	/**

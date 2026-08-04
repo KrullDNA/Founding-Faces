@@ -248,9 +248,11 @@ class FF_History {
 	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more' ) {
-		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
-		$paging  = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
+	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more', $new_tab = false ) {
+		$heading  = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
+		$paging   = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
+		$per_page = self::page_sizes( $per_page )['desktop'];
+		$tab_attr = $new_tab ? ' target="_blank" rel="noopener"' : '';
 
 		// A full page, so the batch size can be judged on the canvas. Capped so
 		// that setting the page size to 100 doesn't bury the editor in samples.
@@ -263,7 +265,7 @@ class FF_History {
 		$out .= '<div class="ff-notes-results">';
 		$out .= '<ul class="ff-history-list ff-notes-read-list">';
 		foreach ( $rows as $i => $row ) {
-			$main = $link ? '<a href="#">' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
+			$main = $link ? '<a href="#"' . $tab_attr . '>' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
 			$out .= '<li class="ff-history-item ff-note-row' . ( $row[1] ? ' is-unread' : '' ) . '">';
 			$out .= '<div class="ff-history-item-body">';
 			if ( $show_product ) {
@@ -468,9 +470,10 @@ class FF_History {
 	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more' ) {
+	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more', $new_tab = false ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 		$paging  = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
+		$sizes   = self::page_sizes( $per_page );
 
 		$out  = '<section class="ff-history-section ff-notes-section" data-paging="' . esc_attr( $paging ) . '">';
 		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
@@ -478,7 +481,11 @@ class FF_History {
 
 		$entries = self::note_entries( $member_id );
 
-		$per_page = absint( $per_page );
+		// The page is built at the desktop size; the script trims it to the
+		// device's own size before anything is painted. HTML is one document
+		// served to every screen — and behind a page cache, the same document
+		// served to every visitor — so the size can't be decided here.
+		$per_page = $sizes['desktop'];
 		$total    = count( $entries );
 		$slice    = ( $per_page > 0 ) ? array_slice( $entries, 0, $per_page ) : $entries;
 
@@ -489,7 +496,7 @@ class FF_History {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
 		} else {
 			$out .= '<ul class="ff-history-list ff-notes-read-list">';
-			$out .= self::note_rows( $slice, $link, $show_product );
+			$out .= self::note_rows( $slice, $link, $show_product, $new_tab );
 			$out .= '</ul>';
 		}
 		$out .= '</div>';
@@ -508,7 +515,12 @@ class FF_History {
 			$out   .= '<button type="button" class="ff-notes-more-button"'
 				. ' data-offset="' . esc_attr( $offset ) . '"'
 				. ' data-per-page="' . esc_attr( $per_page ) . '"'
+				. ' data-pp-tablet="' . esc_attr( $sizes['tablet'] ) . '"'
+				. ' data-pp-mobile="' . esc_attr( $sizes['mobile'] ) . '"'
+				. ' data-bp-tablet="' . esc_attr( $sizes['tablet_bp'] ) . '"'
+				. ' data-bp-mobile="' . esc_attr( $sizes['mobile_bp'] ) . '"'
 				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
+				. ' data-new-tab="' . ( $new_tab ? '1' : '0' ) . '"'
 				. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
 				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
 				. esc_html__( 'Load more', 'founding-faces' )
@@ -523,6 +535,39 @@ class FF_History {
 		}
 
 		return $out . '</section>';
+	}
+
+	/**
+	 * Normalise a page size into one value per device, plus the breakpoints.
+	 *
+	 * Accepts a plain number — every device the same, which is what the
+	 * shortcode and any older caller pass — or an array carrying a value per
+	 * device. A device with nothing set inherits the desktop size.
+	 *
+	 * @param int|array $per_page A number, or per-device values.
+	 * @return array
+	 */
+	public static function page_sizes( $per_page ) {
+		if ( ! is_array( $per_page ) ) {
+			$size = absint( $per_page );
+			return array(
+				'desktop'   => $size,
+				'tablet'    => $size,
+				'mobile'    => $size,
+				'tablet_bp' => 1024,
+				'mobile_bp' => 767,
+			);
+		}
+
+		$desktop = isset( $per_page['desktop'] ) ? absint( $per_page['desktop'] ) : 0;
+
+		return array(
+			'desktop'   => $desktop,
+			'tablet'    => empty( $per_page['tablet'] ) ? $desktop : absint( $per_page['tablet'] ),
+			'mobile'    => empty( $per_page['mobile'] ) ? $desktop : absint( $per_page['mobile'] ),
+			'tablet_bp' => empty( $per_page['tablet_bp'] ) ? 1024 : absint( $per_page['tablet_bp'] ),
+			'mobile_bp' => empty( $per_page['mobile_bp'] ) ? 767 : absint( $per_page['mobile_bp'] ),
+		);
 	}
 
 	/**
@@ -809,9 +854,10 @@ class FF_History {
 	 * @param array[] $entries      Entries from note_entries().
 	 * @param bool    $link         Whether to link each note to its own page.
 	 * @param bool    $show_product Whether to name the product above the title.
+	 * @param bool    $new_tab      Whether each link opens in a new tab.
 	 * @return string
 	 */
-	public static function note_rows( $entries, $link = true, $show_product = true ) {
+	public static function note_rows( $entries, $link = true, $show_product = true, $new_tab = false ) {
 		$out      = '';
 		$products = array();
 
@@ -839,7 +885,10 @@ class FF_History {
 			if ( $link ) {
 				$url = get_permalink( $note_id );
 				if ( $url ) {
-					$main = '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a>';
+					// rel="noopener" with target: without it the opened page can
+					// reach back through window.opener.
+					$attr = $new_tab ? ' target="_blank" rel="noopener"' : '';
+					$main = '<a href="' . esc_url( $url ) . '"' . $attr . '>' . esc_html( $title ) . '</a>';
 				}
 			}
 
@@ -906,6 +955,7 @@ class FF_History {
 		$per_page = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 10;
 		$link     = ! empty( $_POST['link'] );
 		$product  = ! empty( $_POST['show_product'] );
+		$new_tab  = ! empty( $_POST['new_tab'] );
 
 		$options = self::note_filter_options();
 		$filters = array(
@@ -935,7 +985,7 @@ class FF_History {
 			? array_slice( $entries, $offset, min( 100, $per_page ) )
 			: $entries;
 
-		$rows = self::note_rows( $slice, $link, $product );
+		$rows = self::note_rows( $slice, $link, $product, $new_tab );
 		$next = ( $per_page > 0 ) ? $offset + count( $slice ) : $total;
 
 		// Which page this batch is, so the numbers can mark it as current. The
