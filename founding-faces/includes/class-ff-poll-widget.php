@@ -557,13 +557,15 @@ trait FF_Poll_Style_Controls {
 			'type'        => \Elementor\Controls_Manager::TEXT,
 			'default'     => __( 'Nothing to decide right now', 'founding-faces' ),
 			'label_block' => true,
+			'description' => __( 'Inline HTML is allowed — bold, italics, a link, a line break.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'empty_text', array(
-			'label'   => __( 'Message', 'founding-faces' ),
-			'type'    => \Elementor\Controls_Manager::TEXTAREA,
-			'rows'    => 3,
-			'default' => __( 'There is no poll open at the moment. When there is a decision to make, it will appear here first.', 'founding-faces' ),
+			'label'       => __( 'Message', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXTAREA,
+			'rows'        => 4,
+			'default'     => __( 'There is no poll open at the moment. When there is a decision to make, it will appear here first.', 'founding-faces' ),
+			'description' => __( 'HTML is allowed here — links, bold, italics, lists. A blank line starts a new paragraph.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'empty_note', array(
@@ -680,23 +682,45 @@ trait FF_Poll_Style_Controls {
 	/**
 	 * The "no poll right now" markup, or nothing if both fields were cleared.
 	 *
+	 * Both fields take HTML. The message allows what a post allows — links,
+	 * emphasis, lists — while the heading is held to inline tags, because a
+	 * paragraph or a list inside a heading is not markup anyone meant to write.
+	 * Neither allows scripts or styles: this is copy, not a place to run code.
+	 *
 	 * @param array $settings The widget settings.
 	 * @return string
 	 */
 	protected function ffp_empty_html( $settings ) {
-		$heading = isset( $settings['empty_heading'] ) ? trim( wp_strip_all_tags( $settings['empty_heading'] ) ) : '';
-		$text    = isset( $settings['empty_text'] ) ? trim( wp_strip_all_tags( $settings['empty_text'] ) ) : '';
+		$inline = array(
+			'strong' => array(),
+			'b'      => array(),
+			'em'     => array(),
+			'i'      => array(),
+			'br'     => array(),
+			'span'   => array( 'class' => array() ),
+			'a'      => array( 'href' => array(), 'title' => array(), 'target' => array(), 'rel' => array() ),
+		);
 
-		if ( '' === $heading && '' === $text ) {
+		$heading = isset( $settings['empty_heading'] ) ? trim( wp_kses( $settings['empty_heading'], $inline ) ) : '';
+		$text    = isset( $settings['empty_text'] ) ? trim( wp_kses_post( $settings['empty_text'] ) ) : '';
+
+		// Judged on the words, not the markup, so a stray empty tag left behind
+		// while editing doesn't count as content.
+		$has_heading = '' !== trim( wp_strip_all_tags( $heading ) );
+		$has_text    = '' !== trim( wp_strip_all_tags( $text ) );
+
+		if ( ! $has_heading && ! $has_text ) {
 			return '';
 		}
 
 		$out = '<div class="ff-poll-empty">';
-		if ( '' !== $heading ) {
-			$out .= '<h3 class="ff-poll-empty-heading">' . esc_html( $heading ) . '</h3>';
+		if ( $has_heading ) {
+			$out .= '<h3 class="ff-poll-empty-heading">' . $heading . '</h3>';
 		}
-		if ( '' !== $text ) {
-			$out .= wpautop( '<span class="ff-poll-empty-text">' . esc_html( $text ) . '</span>' );
+		if ( $has_text ) {
+			// A div, not a span: wpautop produces paragraphs, and paragraphs
+			// inside a span is markup no browser agrees on.
+			$out .= '<div class="ff-poll-empty-text">' . wpautop( $text ) . '</div>';
 		}
 
 		return $out . '</div>';

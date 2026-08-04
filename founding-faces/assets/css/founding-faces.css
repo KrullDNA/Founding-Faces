@@ -399,7 +399,19 @@
 }
 
 .ff-poll-empty p {
-	margin: 0;
+	margin: 0 0 0.9rem;
+	line-height: 1.6;
+}
+
+/* No trailing gap under the last paragraph — the block's own padding owns it. */
+.ff-poll-empty p:last-child {
+	margin-bottom: 0;
+}
+
+.ff-poll-empty ul,
+.ff-poll-empty ol {
+	margin: 0 0 0.9rem;
+	padding-left: 1.2rem;
 	line-height: 1.6;
 }
 

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.70
+Stable tag: 1.0.71
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.71 =
+* The no-poll message now accepts HTML — links, bold, italics, lists — and a
+  blank line starts a new paragraph. It was being escaped, so tags showed as
+  text on the page.
+* The heading accepts inline HTML (bold, italics, a link, a line break) but not
+  block tags, since a paragraph or a list inside a heading is not markup anyone
+  means to write.
+* Neither field accepts scripts or styles: this is copy, not a place to run
+  code.
 
 = 1.0.70 =
 * New: a "When there is no poll" section on both poll widgets — a heading and a
