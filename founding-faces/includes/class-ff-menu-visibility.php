@@ -92,16 +92,24 @@ class FF_Menu_Visibility {
 	/**
 	 * Remove menu items the current viewer isn't allowed to see.
 	 *
-	 * A hidden item takes its descendants with it. Administrators see the full
-	 * menu (they can always see everything); everyone else is filtered by their
-	 * group.
+	 * A hidden item takes its descendants with it.
 	 *
-	 * @param array $items The menu item objects.
+	 * The rules apply to everyone on the front end, administrators included.
+	 * Exempting them looked harmless — an administrator can reach everything
+	 * anyway — but it made the rules invisible to the one person setting them:
+	 * a "Logged-out visitors only" item sat in Nick's own header while he was
+	 * logged in, looking broken. An administrator who wants the unfiltered menu
+	 * has the admin area, where it is never filtered.
+	 *
+	 * The Elementor editor is left alone too, so a header can be designed with
+	 * every item on the canvas rather than only the ones today's viewer passes.
+	 *
+	 * @param array  $items The menu item objects.
 	 * @param object $args  The menu args (unused).
 	 * @return array
 	 */
 	public static function filter_items( $items, $args ) {
-		if ( is_admin() || current_user_can( 'manage_options' ) ) {
+		if ( is_admin() || FF_History::is_editor() ) {
 			return $items;
 		}
 
