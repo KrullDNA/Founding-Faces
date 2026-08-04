@@ -691,23 +691,11 @@ trait FF_Poll_Style_Controls {
 	 * @return string
 	 */
 	protected function ffp_empty_html( $settings ) {
-		$inline = array(
-			'strong' => array(),
-			'b'      => array(),
-			'em'     => array(),
-			'i'      => array(),
-			'br'     => array(),
-			'span'   => array( 'class' => array() ),
-			'a'      => array( 'href' => array(), 'title' => array(), 'target' => array(), 'rel' => array() ),
-		);
+		$heading = isset( $settings['empty_heading'] ) ? FF_Text::inline( $settings['empty_heading'] ) : '';
+		$text    = isset( $settings['empty_text'] ) ? FF_Text::rich( $settings['empty_text'] ) : '';
 
-		$heading = isset( $settings['empty_heading'] ) ? trim( wp_kses( $settings['empty_heading'], $inline ) ) : '';
-		$text    = isset( $settings['empty_text'] ) ? trim( wp_kses_post( $settings['empty_text'] ) ) : '';
-
-		// Judged on the words, not the markup, so a stray empty tag left behind
-		// while editing doesn't count as content.
-		$has_heading = '' !== trim( wp_strip_all_tags( $heading ) );
-		$has_text    = '' !== trim( wp_strip_all_tags( $text ) );
+		$has_heading = FF_Text::filled( $heading );
+		$has_text    = FF_Text::filled( $text );
 
 		if ( ! $has_heading && ! $has_text ) {
 			return '';

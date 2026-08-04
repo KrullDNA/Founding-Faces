@@ -152,6 +152,20 @@ class FF_Admin_Messages {
 		if ( $member ) {
 			echo ' · <a href="mailto:' . esc_attr( $member->user_email ) . '">' . esc_html( $member->user_email ) . '</a>';
 		}
+
+		// The note this feedback is about, linked, so reading a thread never
+		// means guessing which note the member meant.
+		if ( ! empty( $root->reference_id ) ) {
+			$ref_id    = (int) $root->reference_id;
+			$ref_title = get_the_title( $ref_id );
+			$ref_edit  = get_edit_post_link( $ref_id );
+			if ( $ref_title ) {
+				echo ' · ' . esc_html__( 'About:', 'founding-faces' ) . ' ';
+				echo $ref_edit // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					? '<a href="' . esc_url( $ref_edit ) . '">' . esc_html( $ref_title ) . '</a>'
+					: esc_html( $ref_title );
+			}
+		}
 		echo '</p>';
 
 		echo '<div class="ff-admin-thread">';

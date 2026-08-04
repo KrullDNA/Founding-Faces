@@ -357,8 +357,10 @@ class FF_Map {
 			'legend'      => array(
 				'on'          => (bool) $args['legend']['on'],
 				'position'    => $args['legend']['position'],
-				'label35'     => $args['legend']['label_35'],
-				'labelCircle' => $args['legend']['label_circle'],
+				// Filtered here rather than escaped in the browser, so a legend
+				// label can carry a bold word like every other field can.
+				'label35'     => FF_Text::inline( $args['legend']['label_35'] ),
+				'labelCircle' => FF_Text::inline( $args['legend']['label_circle'] ),
 			),
 		);
 

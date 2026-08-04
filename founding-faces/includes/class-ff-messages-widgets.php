@@ -66,8 +66,13 @@ class FF_Feedback_Widget extends FF_Message_Widget_Base {
 	}
 
 	protected function render() {
-		$s   = $this->get_settings_for_display();
-		$ref = ! empty( $s['note_id'] ) ? absint( $s['note_id'] ) : 0;
+		$s = $this->get_settings_for_display();
+
+		// With the field blank, take the note the form is sitting on. The
+		// widget used to send 0 here while the shortcode looked it up, so the
+		// same form attached the note in one place and not the other.
+		$ref = FF_Messages::feedback_reference( isset( $s['note_id'] ) ? $s['note_id'] : 0 );
+
 		echo FF_Messages::render_compose_form( 'feedback', $ref ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

@@ -223,10 +223,27 @@ class FF_Application {
 			}
 		}
 
+		// Labels, hints and the button take inline markup; the thank-you notice
+		// is a message, so it takes what a post takes. The consent line is the
+		// reason this matters most — it usually needs to link a privacy policy.
+		//
+		// Placeholders are the exception: they end up inside an attribute, where
+		// a tag can only ever arrive as visible angle brackets, so they are held
+		// to plain text rather than promising markup that cannot work.
+		$rich = array( 'success' );
 		$text = self::text_defaults();
+
 		foreach ( $text as $key => $default ) {
-			if ( isset( $overrides[ $key ] ) ) {
+			if ( ! isset( $overrides[ $key ] ) ) {
+				continue;
+			}
+
+			if ( '_placeholder' === substr( $key, -12 ) ) {
 				$text[ $key ] = trim( wp_strip_all_tags( (string) $overrides[ $key ] ) );
+			} elseif ( in_array( $key, $rich, true ) ) {
+				$text[ $key ] = FF_Text::rich( $overrides[ $key ] );
+			} else {
+				$text[ $key ] = FF_Text::inline( $overrides[ $key ] );
 			}
 		}
 
@@ -244,17 +261,16 @@ class FF_Application {
 	 */
 	private static function label( $for, $label, $mark = '', $key = '' ) {
 		$defaults = self::text_defaults();
-		$class    = ( '' === $label ) ? ' class="ff-sr-only"' : '';
-		$text     = $label;
+		$blank    = ! FF_Text::filled( $label );
+		$class    = $blank ? ' class="ff-sr-only"' : '';
+		$text     = $blank
+			? ( isset( $defaults[ $key ] ) ? $defaults[ $key ] : $for )
+			: $label;
 
-		if ( '' === $text ) {
-			$text = isset( $defaults[ $key ] ) ? $defaults[ $key ] : $for;
-		}
+		$out = '<label for="' . esc_attr( $for ) . '"' . $class . '>' . FF_Text::inline( $text );
 
-		$out = '<label for="' . esc_attr( $for ) . '"' . $class . '>' . esc_html( $text );
-
-		if ( '' !== $mark ) {
-			$out .= ' <span class="ff-required">' . esc_html( $mark ) . '</span>';
+		if ( FF_Text::filled( $mark ) ) {
+			$out .= ' <span class="ff-required">' . FF_Text::inline( $mark ) . '</span>';
 		}
 
 		return $out . '</label>';
@@ -267,7 +283,7 @@ class FF_Application {
 	 * @return string
 	 */
 	private static function hint( $hint ) {
-		return ( '' === $hint ) ? '' : '<span class="ff-hint">' . esc_html( $hint ) . '</span>';
+		return FF_Text::filled( $hint ) ? '<span class="ff-hint">' . FF_Text::inline( $hint ) . '</span>' : '';
 	}
 
 	/**
@@ -309,7 +325,7 @@ class FF_Application {
 		// A good submission: thank the applicant and stop, no form shown.
 		if ( 'success' === $state ) {
 			return '<div class="ff-notice ff-notice--success">'
-				. esc_html( $t['success'] )
+				. wpautop( $t['success'] )
 				. '</div>';
 		}
 
@@ -340,7 +356,7 @@ class FF_Application {
 		// exists after a real submission, and it replaces the form), so show it
 		// as a sample above the form — both are then styleable at once.
 		if ( '' === $state && FF_History::is_editor() ) {
-			$output .= '<div class="ff-notice ff-notice--success">' . esc_html( $t['success'] ) . '</div>';
+			$output .= '<div class="ff-notice ff-notice--success">' . wpautop( $t['success'] ) . '</div>';
 		}
 
 		// A small helper to safely echo a previously entered value back in.
@@ -415,16 +431,16 @@ class FF_Application {
 			<p class="ff-field ff-field--checkbox">
 				<label>
 					<input type="checkbox" name="ff_consent" value="1" required />
-					<?php echo esc_html( $t['consent_label'] ); ?>
-					<?php if ( '' !== $mark ) : ?>
-						<span class="ff-required"><?php echo esc_html( $mark ); ?></span>
+					<?php echo FF_Text::inline( $t['consent_label'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php if ( FF_Text::filled( $mark ) ) : ?>
+						<span class="ff-required"><?php echo FF_Text::inline( $mark ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 					<?php endif; ?>
 				</label>
 				<?php echo self::hint( $t['consent_hint'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</p>
 
 			<p class="ff-submit">
-				<button type="submit"><?php echo esc_html( $button_label ); ?></button>
+				<button type="submit"><?php echo FF_Text::inline( $button_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 			</p>
 		</form>
 		<?php
@@ -685,10 +701,10 @@ class FF_Application {
 
 		$out = '<div class="ff-status">';
 
-		if ( '' !== trim( $heading ) ) {
-			$out .= '<h3 class="ff-status-heading">' . esc_html( $heading ) . '</h3>';
+		if ( FF_Text::filled( $heading ) ) {
+			$out .= '<h3 class="ff-status-heading">' . FF_Text::inline( $heading ) . '</h3>';
 		}
-		if ( '' !== trim( $intro ) ) {
+		if ( FF_Text::filled( $intro ) ) {
 			$out .= '<div class="ff-status-intro">' . wp_kses_post( wpautop( $intro ) ) . '</div>';
 		}
 
@@ -698,7 +714,7 @@ class FF_Application {
 		// link back — so the result stands alone, but is never a dead end.
 		if ( $hide_on_found && $found ) {
 			$out .= '<p class="ff-status-again"><a class="ff-status-again-link" href="'
-				. esc_url( self::current_url() ) . '">' . esc_html( $again_label ) . '</a></p>';
+				. esc_url( self::current_url() ) . '">' . FF_Text::inline( $again_label ) . '</a></p>';
 			$out .= '</div>';
 			return $out;
 		}
@@ -708,12 +724,12 @@ class FF_Application {
 		<form class="<?php echo esc_attr( $form_class ); ?>" method="post" action="<?php echo esc_url( self::current_url() ); ?>" novalidate>
 			<?php wp_nonce_field( 'ff_status_lookup', 'ff_status_nonce' ); ?>
 			<p class="ff-field">
-				<label for="ff-status-email"><?php echo esc_html( $label ); ?></label>
+				<label for="ff-status-email"><?php echo FF_Text::inline( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 				<input type="email" id="ff-status-email" name="ff_status_email" value="<?php echo esc_attr( $email ); ?>"
 					placeholder="<?php esc_attr_e( 'The email you applied with', 'founding-faces' ); ?>" required />
 			</p>
 			<p class="ff-submit">
-				<button type="submit"><?php echo esc_html( $button_label ); ?></button>
+				<button type="submit"><?php echo FF_Text::inline( $button_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 			</p>
 		</form>
 		<?php

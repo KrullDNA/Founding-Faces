@@ -236,15 +236,17 @@ class FF_Welcome_Widget extends \Elementor\Widget_Base {
 		$show_name   = ! isset( $s['show_name'] ) || 'yes' === $s['show_name'];
 		$show_number = ( ! isset( $s['show_number'] ) || 'yes' === $s['show_number'] ) && '' !== $ident['number'];
 
-		$html  = esc_html( isset( $s['before_text'] ) ? $s['before_text'] : '' );
+		// The member's own name and number stay escaped — that is their data,
+		// not copy. The words around them are Nick's, so they carry markup.
+		$html  = FF_Text::inline( isset( $s['before_text'] ) ? $s['before_text'] : '' );
 		if ( $show_name && '' !== $ident['first'] ) {
 			$html .= '<span class="ff-welcome-name">' . esc_html( $ident['first'] ) . '</span>';
 		}
 		if ( $show_number ) {
-			$html .= esc_html( isset( $s['mid_text'] ) ? $s['mid_text'] : '' );
+			$html .= FF_Text::inline( isset( $s['mid_text'] ) ? $s['mid_text'] : '' );
 			$html .= '<span class="ff-welcome-number">' . esc_html( $ident['number'] ) . '</span>';
 		}
-		$html .= esc_html( isset( $s['after_text'] ) ? $s['after_text'] : '' );
+		$html .= FF_Text::inline( isset( $s['after_text'] ) ? $s['after_text'] : '' );
 
 		printf( '<%1$s class="ff-welcome">%2$s</%1$s>', esc_attr( $tag ), $html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- parts escaped above.
 	}

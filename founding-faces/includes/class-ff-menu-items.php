@@ -599,7 +599,7 @@ class FF_Menu_Items {
 				: __( "You're signed in.", 'founding-faces' );
 
 			$signed_in  = '<div class="' . esc_attr( $classes ) . ' ff-login--in">';
-			$signed_in .= '<p class="ff-login-status">' . esc_html( $text ) . '</p>';
+			$signed_in .= '<p class="ff-login-status">' . FF_Text::inline( $text ) . '</p>';
 			$signed_in .= '<p class="ff-login-actions"><a class="ff-login-logout" href="#">'
 				. esc_html( self::logout_label() ) . '</a></p>';
 			$signed_in .= '</div>';
@@ -613,7 +613,7 @@ class FF_Menu_Items {
 				: __( "You're signed in.", 'founding-faces' );
 
 			$out  = '<div class="' . esc_attr( $classes ) . ' ff-login--in">';
-			$out .= '<p class="ff-login-status">' . esc_html( $text ) . '</p>';
+			$out .= '<p class="ff-login-status">' . FF_Text::inline( $text ) . '</p>';
 			$out .= '<p class="ff-login-actions"><a class="ff-login-logout" href="' . esc_url( self::logout_url() ) . '">'
 				. esc_html( self::logout_label() ) . '</a></p>';
 			$out .= '</div>';
@@ -649,9 +649,9 @@ class FF_Menu_Items {
 		}
 
 		$out .= '<form class="ff-login-form" method="post" action="' . esc_url( wp_login_url() ) . '">';
-		$out .= '<div class="ff-field"><label for="ff-login-user">' . esc_html( $atts['label_user'] ) . '</label>';
+		$out .= '<div class="ff-field"><label for="ff-login-user">' . FF_Text::inline( $atts['label_user'] ) . '</label>';
 		$out .= '<input type="text" name="log" id="ff-login-user" autocomplete="username" required /></div>';
-		$out .= '<div class="ff-field"><label for="ff-login-pass">' . esc_html( $atts['label_pass'] ) . '</label>';
+		$out .= '<div class="ff-field"><label for="ff-login-pass">' . FF_Text::inline( $atts['label_pass'] ) . '</label>';
 		$out .= '<input type="password" name="pwd" id="ff-login-pass" autocomplete="current-password" required /></div>';
 
 		if ( 'no' !== $atts['show_remember'] ) {
@@ -661,12 +661,12 @@ class FF_Menu_Items {
 		}
 
 		$out .= '<input type="hidden" name="redirect_to" value="' . esc_url( $redirect ) . '" />';
-		$out .= '<div class="ff-submit"><button type="submit">' . esc_html( $atts['button'] ) . '</button></div>';
+		$out .= '<div class="ff-submit"><button type="submit">' . FF_Text::inline( $atts['button'] ) . '</button></div>';
 		$out .= '</form>';
 
 		if ( 'no' !== $atts['show_lost'] ) {
 			$out .= '<p class="ff-login-lost"><a href="' . esc_url( wp_lostpassword_url( $redirect ) ) . '">'
-				. esc_html( $atts['lost_text'] ) . '</a></p>';
+				. FF_Text::inline( $atts['lost_text'] ) . '</a></p>';
 		}
 
 		$out .= '</div>';

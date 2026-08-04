@@ -346,7 +346,7 @@ class FF_Member_Bar_Widget extends \Elementor\Widget_Base {
 				$url   = ! empty( $s[ 'url_' . $key ]['url'] ) ? $s[ 'url_' . $key ]['url'] : FF_Messages::portal_url();
 
 				$out .= '<a class="ff-member-bar-item ff-member-bar-item--' . esc_attr( $key ) . '" href="' . esc_url( $url ? $url : home_url( '/' ) ) . '">';
-				$out .= '<span class="ff-member-bar-label">' . esc_html( $label ) . '</span>';
+				$out .= '<span class="ff-member-bar-label">' . FF_Text::inline( $label ) . '</span>';
 				$out .= $this->badge_html( $count );
 				$out .= '</a>';
 			}

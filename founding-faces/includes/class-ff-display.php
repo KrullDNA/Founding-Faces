@@ -235,7 +235,7 @@ class FF_Display {
 			// Optional "view all" link, e.g. on a hub page's latest-notes block.
 			if ( '' !== trim( (string) $atts['view_all_url'] ) ) {
 				$label = '' !== trim( (string) $atts['view_all_text'] ) ? $atts['view_all_text'] : __( 'View all notes', 'founding-faces' );
-				$out  .= '<p class="ff-notes-viewall"><a class="ff-notes-viewall-link" href="' . esc_url( $atts['view_all_url'] ) . '">' . esc_html( $label ) . '</a></p>';
+				$out  .= '<p class="ff-notes-viewall"><a class="ff-notes-viewall-link" href="' . esc_url( $atts['view_all_url'] ) . '">' . FF_Text::inline( $label ) . '</a></p>';
 			}
 		}
 
@@ -459,7 +459,7 @@ class FF_Display {
 		if ( 'no' !== $atts['show_latest'] ) {
 			$heading = '' !== trim( (string) $atts['latest_heading'] ) ? $atts['latest_heading'] : __( 'Latest notes', 'founding-faces' );
 			$out    .= '<section class="ff-home-latest">';
-			$out    .= '<h2 class="ff-home-heading ff-home-heading--latest">' . esc_html( $heading ) . '</h2>';
+			$out    .= '<h2 class="ff-home-heading ff-home-heading--latest">' . FF_Text::inline( $heading ) . '</h2>';
 
 			$jet = FF_JetEngine::render_grid( $atts['latest_listing'], absint( $atts['latest'] ), $atts['latest_columns'] );
 			if ( '' !== trim( $jet ) ) {
@@ -483,7 +483,7 @@ class FF_Display {
 		if ( 'no' !== $atts['show_products'] ) {
 			$heading = '' !== trim( (string) $atts['products_heading'] ) ? $atts['products_heading'] : __( 'Products', 'founding-faces' );
 			$out    .= '<section class="ff-home-products">';
-			$out    .= '<h2 class="ff-home-heading ff-home-heading--products">' . esc_html( $heading ) . '</h2>';
+			$out    .= '<h2 class="ff-home-heading ff-home-heading--products">' . FF_Text::inline( $heading ) . '</h2>';
 
 			$jet = FF_JetEngine::render_grid( $atts['products_listing'], 50, $atts['products_columns'] );
 			$out .= ( '' !== trim( $jet ) ) ? $jet : self::products_list_html();

@@ -122,18 +122,14 @@
 		control.onAdd = function () {
 			var div = L.DomUtil.create( 'div', 'ff-map-legend' );
 			div.innerHTML =
-				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers[ '35' ].color + '"></i>' + escapeHtml( cfg.legend.label35 ) + '</span>' +
-				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers.circle.color + '"></i>' + escapeHtml( cfg.legend.labelCircle ) + '</span>';
+				// The labels arrive already filtered by the server (wp_kses with
+				// an inline allowlist), so they carry the markup they were
+				// written with and nothing else.
+				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers[ '35' ].color + '"></i>' + cfg.legend.label35 + '</span>' +
+				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers.circle.color + '"></i>' + cfg.legend.labelCircle + '</span>';
 			return div;
 		};
 		control.addTo( map );
-	}
-
-	// Escape any text before putting it into the legend.
-	function escapeHtml( s ) {
-		return String( s == null ? '' : s ).replace( /[&<>"']/g, function ( c ) {
-			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ c ];
-		} );
 	}
 
 	// Init every map currently in the DOM (used for the shortcode / plain load).
