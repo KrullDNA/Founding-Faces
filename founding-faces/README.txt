@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.66
+Stable tag: 1.0.67
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.67 =
+* Fixed: per-item menu visibility was skipped entirely for administrators, so
+  an item set to "Logged-out visitors only" still showed in the header of a
+  logged-in administrator. The rules now apply to everyone on the front end,
+  which is the only way the person setting them can see them working.
+* The admin area still shows the unfiltered menu, and so does the Elementor
+  editor, so a header can be designed with every item on the canvas.
+* This matches the Elementor "Show to" control, which never had the exemption.
 
 = 1.0.66 =
 * "Notes per page" is now a responsive control: a different page size for
