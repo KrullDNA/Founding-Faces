@@ -919,9 +919,19 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 				'4' => __( '4 columns', 'founding-faces' ),
 			),
 			'selectors'      => array(
-				'{{WRAPPER}} .ff-polls-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+				'{{WRAPPER}} .ff-polls-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
 			'description'    => __( 'Set each device separately with the icons above.', 'founding-faces' ),
+		) );
+		$this->add_responsive_control( 'poll_equal_height', array(
+			'label'     => __( 'Poll heights', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'stretch',
+			'options'   => array(
+				'stretch' => __( 'Equal across the row', 'founding-faces' ),
+				'start'   => __( 'As tall as their content', 'founding-faces' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-polls-list' => 'align-items: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'poll_col_gap', array(
 			'label'      => __( 'Column gap', 'founding-faces' ),
@@ -1072,8 +1082,18 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 			'mobile_default' => '1',
 			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
 			'selectors'      => array(
-				'{{WRAPPER}} .ff-polls-archive-grid' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+				'{{WRAPPER}} .ff-polls-archive-grid' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
+		) );
+		$this->add_responsive_control( 'equal_height', array(
+			'label'     => __( 'Poll heights', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'stretch',
+			'options'   => array(
+				'stretch' => __( 'Equal across the row', 'founding-faces' ),
+				'start'   => __( 'As tall as their content', 'founding-faces' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-polls-archive-grid' => 'align-items: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'col_gap', array(
 			'label'     => __( 'Gap between polls', 'founding-faces' ),

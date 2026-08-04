@@ -366,7 +366,9 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 1.25rem;
-	align-items: start;
+	/* Grid's own default: every card in a row is as tall as the tallest one.
+	 * The widget's "Card heights" control switches it back per device. */
+	align-items: stretch;
 }
 
 .ff-notes-cards .ff-note {
@@ -386,7 +388,7 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 2rem;
-	align-items: start;
+	align-items: stretch;
 }
 
 .ff-polls-list .ff-poll {
