@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.69
+Stable tag: 1.0.70
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,19 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.70 =
+* New: a "When there is no poll" section on both poll widgets — a heading and a
+  message shown between polls, where the widget used to render nothing at all.
+  Both fields are pre-filled and both can be cleared to go back to showing
+  nothing.
+* New "No-poll message" style section: alignment, background, border, corner
+  radius, shadow, padding and margin for the block, plus colour, typography and
+  margin for the heading and the message separately.
+* The editor preview can be switched between the poll and this message, so the
+  copy can be styled without waiting for every poll to close.
+* The polls archive widget uses the same copy in place of its built-in "No open
+  poll right now" line.
 
 = 1.0.69 =
 * The winning-bar colour now takes priority when the member voted for the

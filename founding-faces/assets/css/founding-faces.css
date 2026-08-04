@@ -383,6 +383,26 @@
 	margin: 0;
 }
 
+/*
+ * The copy shown between polls. Plain type and nothing else: it is a block to
+ * be styled in the widget, not a notice with a look of its own.
+ */
+.ff-poll-empty {
+	font-family: var(--ff-font);
+	color: var(--ff-ink);
+}
+
+.ff-poll-empty-heading {
+	margin: 0 0 0.5rem;
+	font-size: 1.2rem;
+	font-weight: 700;
+}
+
+.ff-poll-empty p {
+	margin: 0;
+	line-height: 1.6;
+}
+
 .ff-polls-archive-heading {
 	font-family: var(--ff-font);
 	font-size: 1.15rem;

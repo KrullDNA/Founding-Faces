@@ -523,7 +523,7 @@ class FF_Polls {
 	 * @param array $atts Shortcode attributes.
 	 * @return string
 	 */
-	public static function archive_shortcode( $atts, $text = array() ) {
+	public static function archive_shortcode( $atts, $text = array(), $empty = null ) {
 		$atts = shortcode_atts(
 			array(
 				'headings' => 'yes',
@@ -564,6 +564,12 @@ class FF_Polls {
 		$out      = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . '">';
 
 		if ( empty( $open ) && empty( $closed ) ) {
+			// A caller that supplied its own empty-state copy owns this moment
+			// entirely, including choosing to say nothing.
+			if ( null !== $empty ) {
+				return ( '' === $empty ) ? '' : $out . $empty . '</div>';
+			}
+
 			$out .= '<p class="ff-empty-note">' . esc_html(
 				'open' === $show
 					? __( 'No open poll right now.', 'founding-faces' )
