@@ -801,7 +801,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		/* ========================== UNREAD BADGE =========================== */
 		$this->start_controls_section( 'ff_ma_unread_style', array(
-			'label'     => __( '"Unread" badge', 'founding-faces' ),
+			'label'     => __( 'Unread notes (badge & row)', 'founding-faces' ),
 			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
 			'condition' => array( 'section' => array( 'all', 'notes' ) ),
 		) );
@@ -838,15 +838,54 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
 			'selectors' => array( '{{WRAPPER}} .ff-unread-badge' => 'margin-left: {{SIZE}}{{UNIT}};' ),
 		) );
+		// The row itself, not just its badge. Everything here is scoped to
+		// .is-unread, so a read row keeps whatever the "Item box" section gave
+		// it — set one of these and the two states diverge, set none and they
+		// look identical.
 		$this->add_control( 'unread_row_h', array(
-			'label'     => __( 'Unread row', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::HEADING,
-			'separator' => 'before',
+			'label'       => __( 'Unread rows', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::HEADING,
+			'separator'   => 'before',
+			'description' => __( 'Read rows use the "Item box" section. These override it for unread ones only.', 'founding-faces' ),
 		) );
 		$this->add_control( 'unread_row_bg', array(
 			'label'     => __( 'Row background', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-note-row.is-unread' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'unread_row_border',
+			'selector' => '{{WRAPPER}} .ff-note-row.is-unread',
+		) );
+		$this->add_responsive_control( 'unread_row_radius', array(
+			'label'      => __( 'Row corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-row.is-unread' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'unread_row_padding', array(
+			'label'      => __( 'Row padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-row.is-unread' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'unread_row_color', array(
+			'label'     => __( 'Title colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array(
+				'{{WRAPPER}} .ff-note-row.is-unread .ff-history-item-main'   => 'color: {{VALUE}};',
+				'{{WRAPPER}} .ff-note-row.is-unread .ff-history-item-main a' => 'color: {{VALUE}};',
+			),
+		) );
+		$this->add_control( 'unread_row_product_color', array(
+			'label'     => __( 'Product label colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-row.is-unread .ff-note-product' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'unread_row_date_color', array(
+			'label'     => __( 'Date colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-row.is-unread .ff-history-item-date' => 'color: {{VALUE}};' ),
 		) );
 		$this->add_control( 'unread_row_weight', array(
 			'label'     => __( 'Bold the unread titles', 'founding-faces' ),

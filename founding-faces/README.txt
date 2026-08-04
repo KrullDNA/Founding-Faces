@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.72
+Stable tag: 1.0.73
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.73 =
+* Unread notes can now differ from read ones by more than a background: border,
+  corner radius, padding, title colour, product-label colour and date colour,
+  alongside the row background and bold title that were already there.
+* The section is renamed "Unread notes (badge & row)" — the row controls were
+  sitting inside a section called '"Unread" badge', which is not where anyone
+  would look for them.
+* Read rows keep whatever the "Item box" section gives them; every control here
+  applies to unread rows only, so setting none leaves the two identical.
 
 = 1.0.72 =
 * Fixed: the map's zoom buttons, legend and attribution painted over a sticky
