@@ -367,6 +367,22 @@
 	margin: 0;
 }
 
+/*
+ * A widget showing several polls at once. One column and a plain gap until the
+ * widget's own Columns controls say otherwise.
+ */
+.ff-polls-list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 2rem;
+	align-items: start;
+}
+
+.ff-polls-list .ff-poll {
+	max-width: none;
+	margin: 0;
+}
+
 .ff-polls-archive-heading {
 	font-family: var(--ff-font);
 	font-size: 1.15rem;
@@ -637,13 +653,12 @@
 }
 
 /*
- * The member's own bar is distinguished by its colour control alone. It used
- * to carry a white inner ring, which sat on top of whatever colour was chosen
- * in the editor and could not be turned off.
+ * No rule for the member's own bar here. It carried the same accent the base
+ * fill already paints, so it changed nothing visually — but its specificity
+ * outranked the widget's winning-bar colour, which meant a member who voted
+ * for the winner never saw the winning colour at all. Both states are the
+ * widget's to colour; the stylesheet stays out of it.
  */
-.ff-poll-result.is-mine .ff-poll-bar-fill {
-	background: var(--ff-poll-accent);
-}
 
 .ff-poll-total {
 	margin-top: 0.6rem;

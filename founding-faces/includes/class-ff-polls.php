@@ -454,6 +454,66 @@ class FF_Polls {
 	}
 
 	/**
+	 * Every poll this viewer may see, open ones first, newest first within each.
+	 *
+	 * Open polls lead because they are the ones that still want something from
+	 * a member. Closed polls follow while they are still inside their hide
+	 * window — a decision is worth reading after the voting has finished, but
+	 * only for as long as Nick said it should be on the site.
+	 *
+	 * @return int[] Poll ids in display order.
+	 */
+	public static function ordered_poll_ids() {
+		$open   = array();
+		$closed = array();
+
+		// viewable_poll_ids() is already newest-first and already excludes
+		// hidden polls and any the viewer isn't in the audience for.
+		foreach ( self::viewable_poll_ids() as $id ) {
+			if ( 'closed' === self::poll_state( $id ) ) {
+				$closed[] = $id;
+			} else {
+				$open[] = $id;
+			}
+		}
+
+		return array_merge( $open, $closed );
+	}
+
+	/**
+	 * The single poll to show for the "latest" source.
+	 *
+	 * The first of the same ordering, so "latest" means the newest poll still
+	 * taking votes, and falls back to the most recent decision when none is.
+	 *
+	 * @return int A poll id, or 0.
+	 */
+	public static function latest_poll_id() {
+		$ids = self::ordered_poll_ids();
+		return empty( $ids ) ? 0 : (int) $ids[0];
+	}
+
+	/**
+	 * Render a set of polls as one list.
+	 *
+	 * @param int[] $ids   Poll ids, already ordered and gated.
+	 * @param array $style Style args passed to each poll.
+	 * @param array $text  Wording overrides passed to each poll.
+	 * @return string
+	 */
+	public static function render_poll_list( $ids, $style = array(), $text = array() ) {
+		$out = '';
+		foreach ( $ids as $id ) {
+			$html = self::render_poll( (int) $id, $style, $text );
+			if ( '' !== $html ) {
+				$out .= '<div class="ff-polls-list-item">' . $html . '</div>';
+			}
+		}
+
+		return ( '' === $out ) ? '' : '<div class="ff-polls-list">' . $out . '</div>';
+	}
+
+	/**
 	 * The [ff_polls_archive] shortcode: open poll(s) then past polls with results.
 	 *
 	 * For a dedicated polls page: any open poll shows first (votable, or results

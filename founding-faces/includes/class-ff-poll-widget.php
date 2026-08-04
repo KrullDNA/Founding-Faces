@@ -80,9 +80,15 @@ trait FF_Poll_Style_Controls {
 		) );
 		$this->add_control( 'bar_leading_color', array(
 			'label'       => __( 'Winning bar colour', 'founding-faces' ),
-			'description' => __( 'The option with the most votes.', 'founding-faces' ),
+			'description' => __( 'The option with the most votes. When the member voted for the winner, this is the colour that shows — the "Your choice" label still marks it as theirs.', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::COLOR,
-			'selectors'   => array( '{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
+			'selectors'   => array(
+				'{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};',
+				// A row that is both winning and the member's own: named with an
+				// extra ancestor so it outranks the your-choice rule below,
+				// whichever order Elementor prints them in.
+				'{{WRAPPER}} .ff-poll .ff-poll-result--leading.is-mine .ff-poll-bar-fill' => 'background-color: {{VALUE}};',
+			),
 		) );
 		$this->add_control( 'bar_track_color', array(
 			'label'     => __( 'Track (empty) colour', 'founding-faces' ),
@@ -95,7 +101,7 @@ trait FF_Poll_Style_Controls {
 			'label'       => __( 'Your choice', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::HEADING,
 			'separator'   => 'before',
-			'description' => __( 'When an option is both winning and the member\'s choice, this bar colour takes priority.', 'founding-faces' ),
+			'description' => __( 'Shown on the option the member voted for. If that option is also winning, the winning colour above takes priority.', 'founding-faces' ),
 		) );
 		$this->add_control( 'bar_mine_color', array(
 			'label'     => __( 'Your-choice bar colour', 'founding-faces' ),
@@ -632,12 +638,28 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
+			'source',
+			array(
+				'label'       => __( 'Show', 'founding-faces' ),
+				'type'        => \Elementor\Controls_Manager::SELECT,
+				'default'     => 'latest',
+				'options'     => array(
+					'latest'   => __( 'The latest poll', 'founding-faces' ),
+					'all'      => __( 'All current polls', 'founding-faces' ),
+					'specific' => __( 'One specific poll', 'founding-faces' ),
+				),
+				'description' => __( 'Open polls come first, newest first; closed ones follow while they are still inside their hide time.', 'founding-faces' ),
+			)
+		);
+
+		$this->add_control(
 			'poll_id',
 			array(
-				'label'   => __( 'Which poll', 'founding-faces' ),
-				'type'    => \Elementor\Controls_Manager::SELECT,
-				'default' => 0,
-				'options' => FF_Polls::poll_choices(),
+				'label'     => __( 'Which poll', 'founding-faces' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 0,
+				'options'   => FF_Polls::poll_choices(),
+				'condition' => array( 'source' => 'specific' ),
 			)
 		);
 
@@ -700,6 +722,45 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 
 		$this->end_controls_section();
 
+		/* ============================== COLUMNS ============================= */
+		$this->start_controls_section( 'ff_poll_cols', array(
+			'label'     => __( 'Columns', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'source' => 'all' ),
+		) );
+		$this->add_responsive_control( 'poll_columns', array(
+			'label'          => __( 'Columns', 'founding-faces' ),
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '1',
+			'tablet_default' => '1',
+			'mobile_default' => '1',
+			'options'        => array(
+				'1' => __( '1 column', 'founding-faces' ),
+				'2' => __( '2 columns', 'founding-faces' ),
+				'3' => __( '3 columns', 'founding-faces' ),
+				'4' => __( '4 columns', 'founding-faces' ),
+			),
+			'selectors'      => array(
+				'{{WRAPPER}} .ff-polls-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+			),
+			'description'    => __( 'Set each device separately with the icons above.', 'founding-faces' ),
+		) );
+		$this->add_responsive_control( 'poll_col_gap', array(
+			'label'      => __( 'Column gap', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-polls-list' => 'column-gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'poll_row_gap', array(
+			'label'      => __( 'Row gap', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-polls-list' => 'row-gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		// The shared bar / text / capsule Style sections.
 		$this->register_poll_style_controls();
 	}
@@ -713,36 +774,48 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 
-		$poll_id = isset( $settings['poll_id'] ) ? absint( $settings['poll_id'] ) : 0;
 		$spacing = isset( $settings['spacing']['size'] ) ? absint( $settings['spacing']['size'] ) : 16;
 		$text    = $this->ffp_text( $settings );
+		$source  = isset( $settings['source'] ) ? $settings['source'] : 'latest';
+		$style   = array(
+			'accent'  => isset( $settings['accent'] ) ? $settings['accent'] : '#3a3d44',
+			'align'   => isset( $settings['align'] ) ? $settings['align'] : 'left',
+			'spacing' => $spacing,
+		);
+
+		// A widget saved before the source control existed has no 'source' at
+		// all. Its poll id already means what it meant then — a chosen poll, or
+		// 0 for whichever poll is flagged active — so leave it to render_poll.
+		if ( ! isset( $settings['source'] ) ) {
+			$source = 'specific';
+		}
+
+		if ( 'all' === $source ) {
+			$html = FF_Polls::render_poll_list( FF_Polls::ordered_poll_ids(), $style, $text );
+		} else {
+			$poll_id = ( 'specific' === $source && isset( $settings['poll_id'] ) )
+				? absint( $settings['poll_id'] )
+				: FF_Polls::latest_poll_id();
+			$html    = FF_Polls::render_poll( $poll_id, $style, $text );
+		}
 
 		// In the editor, show a sample poll when there's no real one to render,
 		// so every part (bars, labels, capsule, outcome) can be styled up front.
-		if ( $this->ffp_is_editor() ) {
-			$preview = FF_Polls::render_poll( $poll_id, array(
-				'accent'  => isset( $settings['accent'] ) ? $settings['accent'] : '#3a3d44',
-				'align'   => isset( $settings['align'] ) ? $settings['align'] : 'left',
-				'spacing' => $spacing,
-			), $text );
-			if ( '' === trim( (string) $preview ) ) {
-				echo FF_Polls::sample_poll( 'results', $text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		// "All" gets three, so the columns have something to lay out.
+		if ( $this->ffp_is_editor() && '' === trim( (string) $html ) ) {
+			if ( 'all' === $source ) {
+				echo '<div class="ff-polls-list">';
+				foreach ( array( 'voting', 'results', 'results' ) as $state ) {
+					echo '<div class="ff-polls-list-item">' . FF_Polls::sample_poll( $state, $text ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+				echo '</div>';
 				return;
 			}
-			echo $preview; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo FF_Polls::sample_poll( 'results', $text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
-		// FF_Polls::render_poll outputs the single wrapper and its inner state.
-		echo FF_Polls::render_poll( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			$poll_id,
-			array(
-				'accent'  => isset( $settings['accent'] ) ? $settings['accent'] : '#3a3d44',
-				'align'   => isset( $settings['align'] ) ? $settings['align'] : 'left',
-				'spacing' => $spacing,
-			),
-			$text
-		);
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
