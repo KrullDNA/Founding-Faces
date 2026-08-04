@@ -540,6 +540,169 @@ trait FF_Poll_Style_Controls {
 	}
 
 	/**
+	 * Register the "no poll right now" message and its preview switch.
+	 *
+	 * A page with a poll widget on it is a page a member visits between polls
+	 * as well as during one. Rendering nothing leaves a hole where the poll
+	 * was; this is the copy that stands in its place.
+	 */
+	protected function register_poll_empty_controls() {
+		$this->start_controls_section( 'ff_poll_empty', array(
+			'label' => __( 'When there is no poll', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+		) );
+
+		$this->add_control( 'empty_heading', array(
+			'label'       => __( 'Heading', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => __( 'Nothing to decide right now', 'founding-faces' ),
+			'label_block' => true,
+		) );
+
+		$this->add_control( 'empty_text', array(
+			'label'   => __( 'Message', 'founding-faces' ),
+			'type'    => \Elementor\Controls_Manager::TEXTAREA,
+			'rows'    => 3,
+			'default' => __( 'There is no poll open at the moment. When there is a decision to make, it will appear here first.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'empty_note', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'Clear both fields to show nothing at all when there is no poll.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
+		$this->add_control( 'preview_state', array(
+			'label'       => __( 'Editor preview', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'poll',
+			'separator'   => 'before',
+			'options'     => array(
+				'poll'  => __( 'The poll', 'founding-faces' ),
+				'empty' => __( 'This message', 'founding-faces' ),
+			),
+			'description' => __( 'Editor only — switch to the message to style it without waiting for every poll to close.', 'founding-faces' ),
+		) );
+
+		$this->end_controls_section();
+
+		/* ========================= NO-POLL MESSAGE ========================= */
+		$this->start_controls_section( 'ff_poll_empty_style', array(
+			'label' => __( 'No-poll message', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+		$this->add_responsive_control( 'empty_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-poll-empty' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_control( 'empty_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-empty' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'empty_border',
+			'selector' => '{{WRAPPER}} .ff-poll-empty',
+		) );
+		$this->add_responsive_control( 'empty_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-empty' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'empty_shadow',
+			'selector' => '{{WRAPPER}} .ff-poll-empty',
+		) );
+		$this->add_responsive_control( 'empty_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-empty' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'empty_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-empty' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'empty_h_head', array(
+			'label'     => __( 'Heading', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'empty_h_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-empty-heading' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'empty_h_typo',
+			'selector' => '{{WRAPPER}} .ff-poll-empty-heading',
+		) );
+		$this->add_responsive_control( 'empty_h_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-empty-heading' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'empty_t_head', array(
+			'label'     => __( 'Message text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'empty_t_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-poll-empty-text' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'empty_t_typo',
+			'selector' => '{{WRAPPER}} .ff-poll-empty-text',
+		) );
+		$this->add_responsive_control( 'empty_t_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-poll-empty-text' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+	}
+
+	/**
+	 * The "no poll right now" markup, or nothing if both fields were cleared.
+	 *
+	 * @param array $settings The widget settings.
+	 * @return string
+	 */
+	protected function ffp_empty_html( $settings ) {
+		$heading = isset( $settings['empty_heading'] ) ? trim( wp_strip_all_tags( $settings['empty_heading'] ) ) : '';
+		$text    = isset( $settings['empty_text'] ) ? trim( wp_strip_all_tags( $settings['empty_text'] ) ) : '';
+
+		if ( '' === $heading && '' === $text ) {
+			return '';
+		}
+
+		$out = '<div class="ff-poll-empty">';
+		if ( '' !== $heading ) {
+			$out .= '<h3 class="ff-poll-empty-heading">' . esc_html( $heading ) . '</h3>';
+		}
+		if ( '' !== $text ) {
+			$out .= wpautop( '<span class="ff-poll-empty-text">' . esc_html( $text ) . '</span>' );
+		}
+
+		return $out . '</div>';
+	}
+
+	/**
 	 * Pull the wording settings out of a widget's saved settings.
 	 *
 	 * @param array $settings The widget settings.
@@ -667,6 +830,9 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 
 		// Every fixed phrase the poll says, as editable fields.
 		$this->register_poll_text_controls();
+
+		// The copy shown when there is no poll to show.
+		$this->register_poll_empty_controls();
 
 		// --- Style controls (Apotheca tokens as defaults) ---
 		$this->start_controls_section(
@@ -799,6 +965,13 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 			$html    = FF_Polls::render_poll( $poll_id, $style, $text );
 		}
 
+		// The editor can be pointed at the no-poll message instead, so it can be
+		// styled without waiting for every poll to close.
+		if ( $this->ffp_is_editor() && isset( $settings['preview_state'] ) && 'empty' === $settings['preview_state'] ) {
+			echo $this->ffp_empty_html( $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return;
+		}
+
 		// In the editor, show a sample poll when there's no real one to render,
 		// so every part (bars, labels, capsule, outcome) can be styled up front.
 		// "All" gets three, so the columns have something to lay out.
@@ -812,6 +985,13 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 				return;
 			}
 			echo FF_Polls::sample_poll( 'results', $text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return;
+		}
+
+		// Nothing to show: the copy written for exactly this moment, or nothing
+		// at all if both fields were cleared.
+		if ( '' === trim( (string) $html ) ) {
+			echo $this->ffp_empty_html( $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
@@ -952,6 +1132,9 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->end_controls_section();
 
+		// The copy shown when there is no poll to show.
+		$this->register_poll_empty_controls();
+
 		// The shared bar / text / capsule Style sections.
 		$this->register_poll_style_controls();
 	}
@@ -966,7 +1149,13 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 		$html = FF_Polls::archive_shortcode( array(
 			'headings' => $headings,
 			'show'     => $show,
-		), $text );
+		), $text, $this->ffp_empty_html( $s ) );
+
+		// The editor can be pointed at the no-poll message instead of the polls.
+		if ( $this->ffp_is_editor() && isset( $s['preview_state'] ) && 'empty' === $s['preview_state'] ) {
+			echo '<div class="ff-polls-archive">' . $this->ffp_empty_html( $s ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return;
+		}
 
 		// Editor: fall back to a sample archive so the layout can be styled even
 		// before any polls exist (or when the designer isn't a member).
