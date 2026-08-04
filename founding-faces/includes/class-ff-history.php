@@ -147,8 +147,8 @@ class FF_History {
 		$out  = '<header class="ff-history-header">';
 		$out .= '<div class="ff-history-number">' . sprintf( esc_html__( 'Founding Face %d', 'founding-faces' ), 7 ) . '</div>';
 		$out .= '<div class="ff-history-group">' . esc_html__( 'The 35', 'founding-faces' ) . '</div>';
-		if ( '' !== trim( (string) $sub ) ) {
-			$out .= '<p class="ff-history-intro">' . esc_html( $sub ) . '</p>';
+		if ( FF_Text::filled( $sub ) ) {
+			$out .= '<p class="ff-history-intro">' . FF_Text::rich( $sub ) . '</p>';
 		}
 		$out .= '</header>';
 		return $out;
@@ -171,7 +171,7 @@ class FF_History {
 		);
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $rows as $i => $row ) {
 			$out .= '<li class="ff-history-item ff-history-item--vote">';
@@ -260,7 +260,7 @@ class FF_History {
 		$rows     = self::sample_note_pool( $per_page > 0 ? min( $per_page, self::SAMPLE_NOTE_LIMIT ) : 8 );
 
 		$out  = '<section class="ff-history-section ff-notes-section" data-paging="' . esc_attr( $paging ) . '">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 		$out .= self::note_filter_bar( $show );
 		$out .= '<div class="ff-notes-results">';
 		$out .= '<ul class="ff-history-list ff-notes-read-list">';
@@ -320,7 +320,7 @@ class FF_History {
 		);
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 		$out .= '<ul class="ff-history-list">';
 		foreach ( $items as $item ) {
 			$out .= '<li class="ff-history-item ff-history-item--feedback">';
@@ -394,8 +394,8 @@ class FF_History {
 			$out .= '<div class="ff-history-number">' . esc_html( FF_Members::portal_display_name( $member_id ) ) . '</div>';
 		}
 		$out .= '<div class="ff-history-group">' . esc_html( $group ) . '</div>';
-		if ( '' !== trim( (string) $sub ) ) {
-			$out .= '<p class="ff-history-intro">' . esc_html( $sub ) . '</p>';
+		if ( FF_Text::filled( $sub ) ) {
+			$out .= '<p class="ff-history-intro">' . FF_Text::rich( $sub ) . '</p>';
 		}
 		$out .= '</header>';
 
@@ -423,7 +423,7 @@ class FF_History {
 		$heading = '' !== $heading ? $heading : __( 'Your votes', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 
 		if ( empty( $votes ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t voted in a poll yet.', 'founding-faces' ) . '</p>';
@@ -476,7 +476,7 @@ class FF_History {
 		$sizes   = self::page_sizes( $per_page );
 
 		$out  = '<section class="ff-history-section ff-notes-section" data-paging="' . esc_attr( $paging ) . '">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 		$out .= self::note_filter_bar( $show );
 
 		$entries = self::note_entries( $member_id );
@@ -841,7 +841,7 @@ class FF_History {
 
 		$out = '<div class="ff-note-filters">';
 		foreach ( $fields as $field ) {
-			$out .= '<label class="ff-filter"><span>' . esc_html( $field[0] ) . '</span>' . $field[1] . '</label>';
+			$out .= '<label class="ff-filter"><span>' . FF_Text::inline( $field[0] ) . '</span>' . $field[1] . '</label>';
 		}
 		$out .= '</div>';
 
@@ -1021,7 +1021,7 @@ class FF_History {
 		$heading = '' !== $heading ? $heading : __( 'Feedback you\'ve shared', 'founding-faces' );
 
 		$out  = '<section class="ff-history-section">';
-		$out .= '<h3 class="ff-history-heading">' . esc_html( $heading ) . '</h3>';
+		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 
 		if ( empty( $rows ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'You haven\'t shared any feedback yet.', 'founding-faces' ) . '</p>';

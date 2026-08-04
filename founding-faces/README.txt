@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.73
+Stable tag: 1.0.74
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,29 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.74 =
+* Every text field an administrator writes into now accepts HTML, decided in
+  one place (class-ff-text.php) instead of field by field. Headings, labels,
+  hints, buttons, badges and the map legend take inline markup — bold, italics,
+  a link, a line break. Messages and intros take what a post takes.
+* Covered: the member archive headings and header subheading, the note filter
+  labels, every poll phrase (closed capsule, hint, "Your choice", "Where we
+  landed", the vote count), every application-form label, hint, consent line
+  and button, the status-lookup heading, intro, label, button and "send it
+  again" link, the home widget headings, the "view all notes" link, the login
+  form's labels, button and links, the member bar labels, the welcome widget's
+  three phrases, and the map legend labels.
+* Placeholders stay plain text: they live inside an HTML attribute, where a tag
+  can only ever arrive as visible angle brackets.
+* No field accepts scripts, styles or iframes. Text a MEMBER writes — feedback,
+  messages, their own name — is untouched by this and stays escaped.
+* Fixed: the Feedback widget did not attach the note it was placed on unless a
+  note ID was typed in by hand, while the [ff_feedback] shortcode did. Both now
+  resolve the note the same way, so a feedback form in a Single Note template
+  tags every submission with its own note.
+* The admin thread view now names and links the note a piece of feedback is
+  about.
 
 = 1.0.73 =
 * Unread notes can now differ from read ones by more than a background: border,

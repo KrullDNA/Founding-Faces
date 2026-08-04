@@ -735,7 +735,9 @@ class FF_Polls {
 
 		foreach ( $text as $key => $default ) {
 			if ( isset( $overrides[ $key ] ) ) {
-				$text[ $key ] = trim( wp_strip_all_tags( (string) $overrides[ $key ] ) );
+				// Every one of these lands in a heading, a capsule or a label,
+				// so inline markup only — bold a word, link a word, no more.
+				$text[ $key ] = FF_Text::inline( $overrides[ $key ] );
 			}
 		}
 
@@ -842,16 +844,16 @@ class FF_Polls {
 				$out .= '<button type="button" class="ff-poll-option"><span class="ff-poll-option-label">' . esc_html( $label ) . '</span></button>';
 			}
 			$out .= '</div>';
-			if ( '' !== $text['hint'] ) {
-				$out .= '<p class="ff-poll-hint">' . esc_html( $text['hint'] ) . '</p>';
+			if ( FF_Text::filled( $text['hint'] ) ) {
+				$out .= '<p class="ff-poll-hint">' . FF_Text::inline( $text['hint'] ) . '</p>';
 			}
 			$out .= '</div></div>';
 			return $out;
 		}
 
 		$out .= '<div class="ff-poll-inner">';
-		if ( '' !== $text['closed'] ) {
-			$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">' . esc_html( $text['closed'] ) . '</span></div>';
+		if ( FF_Text::filled( $text['closed'] ) ) {
+			$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">' . FF_Text::inline( $text['closed'] ) . '</span></div>';
 		}
 		$out .= '<h3 class="ff-poll-question">' . esc_html__( 'Which shade should we take into the well-aging product?', 'founding-faces' ) . '</h3>';
 
@@ -872,8 +874,8 @@ class FF_Polls {
 			$out .= '<div class="' . esc_attr( $classes ) . '">';
 			$out .= '<div class="ff-poll-result-head">';
 			$out .= '<span class="ff-poll-result-label">' . esc_html( $row[0] );
-			if ( $row[3] && '' !== $text['yours'] ) {
-				$out .= '<span class="ff-poll-yours">' . esc_html( $text['yours'] ) . '</span>';
+			if ( $row[3] && FF_Text::filled( $text['yours'] ) ) {
+				$out .= '<span class="ff-poll-yours">' . FF_Text::inline( $text['yours'] ) . '</span>';
 			}
 			$out .= '</span>';
 			$out .= '<span class="ff-poll-result-percent">' . esc_html( $row[1] ) . '%</span>';
@@ -882,12 +884,12 @@ class FF_Polls {
 			$out .= '</div>';
 		}
 
-		if ( '' !== $text['total_many'] ) {
-			$out .= '<p class="ff-poll-total">' . str_replace( '%s', esc_html( number_format_i18n( 100 ) ), esc_html( $text['total_many'] ) ) . '</p>';
+		if ( FF_Text::filled( $text['total_many'] ) ) {
+			$out .= '<p class="ff-poll-total">' . str_replace( '%s', esc_html( number_format_i18n( 100 ) ), FF_Text::inline( $text['total_many'] ) ) . '</p>';
 		}
 		$out .= '<div class="ff-poll-outcome">';
-		if ( '' !== $text['outcome'] ) {
-			$out .= '<span class="ff-poll-outcome-label">' . esc_html( $text['outcome'] ) . '</span>';
+		if ( FF_Text::filled( $text['outcome'] ) ) {
+			$out .= '<span class="ff-poll-outcome-label">' . FF_Text::inline( $text['outcome'] ) . '</span>';
 		}
 		$out .= '<p>' . esc_html__( 'Sample outcome text, so the reasoning block can be styled too.', 'founding-faces' ) . '</p>';
 		$out .= '</div>';
@@ -924,8 +926,8 @@ class FF_Polls {
 		}
 
 		$out .= '</div>';
-		if ( '' !== $text['hint'] ) {
-			$out .= '<p class="ff-poll-hint">' . esc_html( $text['hint'] ) . '</p>';
+		if ( FF_Text::filled( $text['hint'] ) ) {
+			$out .= '<p class="ff-poll-hint">' . FF_Text::inline( $text['hint'] ) . '</p>';
 		}
 		$out .= '</div>';
 		return $out;
@@ -953,9 +955,9 @@ class FF_Polls {
 
 		// Closed capsule, above the question. Its wording and styling both come
 		// from the widget; cleared wording means no capsule at all.
-		if ( $closed && '' !== $text['closed'] ) {
+		if ( $closed && FF_Text::filled( $text['closed'] ) ) {
 			$out .= '<div class="ff-poll-status"><span class="ff-poll-status-badge">'
-				. esc_html( $text['closed'] ) . '</span></div>';
+				. FF_Text::inline( $text['closed'] ) . '</span></div>';
 		}
 
 		$out .= '<h3 class="ff-poll-question">' . esc_html( get_the_title( $poll_id ) ) . '</h3>';
@@ -976,8 +978,8 @@ class FF_Polls {
 			$out .= '<div class="' . esc_attr( $classes ) . '">';
 			$out .= '<div class="ff-poll-result-head">';
 			$out .= '<span class="ff-poll-result-label">' . esc_html( $opt['label'] );
-			if ( $mine && '' !== $text['yours'] ) {
-				$out .= '<span class="ff-poll-yours">' . esc_html( $text['yours'] ) . '</span>';
+			if ( $mine && FF_Text::filled( $text['yours'] ) ) {
+				$out .= '<span class="ff-poll-yours">' . FF_Text::inline( $text['yours'] ) . '</span>';
 			}
 			$out .= '</span>';
 			$out .= '<span class="ff-poll-result-percent">' . esc_html( $percent ) . '%</span>';
@@ -989,11 +991,11 @@ class FF_Polls {
 		// str_replace, not sprintf: the wording is Nick's to write, and a stray
 		// per-cent sign in it should read as a per-cent sign, not crash a format.
 		$count_text = ( 1 === $total ) ? $text['total_one'] : $text['total_many'];
-		if ( '' !== $count_text ) {
+		if ( FF_Text::filled( $count_text ) ) {
 			$out .= '<p class="ff-poll-total">' . str_replace(
 				'%s',
 				esc_html( number_format_i18n( $total ) ),
-				esc_html( $count_text )
+				FF_Text::inline( $count_text )
 			) . '</p>';
 		}
 
@@ -1003,8 +1005,8 @@ class FF_Polls {
 			$outcome = get_post_meta( $poll_id, self::META_OUTCOME, true );
 			if ( trim( (string) $outcome ) !== '' ) {
 				$out .= '<div class="ff-poll-outcome">';
-				if ( '' !== $text['outcome'] ) {
-					$out .= '<span class="ff-poll-outcome-label">' . esc_html( $text['outcome'] ) . '</span>';
+				if ( FF_Text::filled( $text['outcome'] ) ) {
+					$out .= '<span class="ff-poll-outcome-label">' . FF_Text::inline( $text['outcome'] ) . '</span>';
 				}
 				$out .= wpautop( wp_kses_post( $outcome ) );
 				$out .= '</div>';

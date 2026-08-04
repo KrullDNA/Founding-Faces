@@ -777,14 +777,42 @@ class FF_Messages {
 	 */
 	public static function sc_feedback( $atts = array() ) {
 		$atts = shortcode_atts( array( 'reference' => 0 ), $atts );
-		$ref  = absint( $atts['reference'] );
-		if ( ! $ref ) {
-			$qid = get_queried_object_id();
-			if ( $qid && 'ff_note' === get_post_type( $qid ) ) {
-				$ref = $qid;
-			}
+		return self::render_compose_form( 'feedback', self::feedback_reference( $atts['reference'] ) );
+	}
+
+	/**
+	 * Which note a piece of feedback is about.
+	 *
+	 * An explicit id wins; otherwise the note the form is being shown on. That
+	 * fallback is the whole point of dropping the form into a Single Note
+	 * template — every note gets a form, and each one knows its own note
+	 * without anybody typing an id.
+	 *
+	 * In a theme-builder template Elementor previews a real note, so the
+	 * queried object is the right thing to ask on the canvas too.
+	 *
+	 * @param int $explicit An id set by hand, or 0.
+	 * @return int A note id, or 0 for feedback with no note attached.
+	 */
+	public static function feedback_reference( $explicit = 0 ) {
+		$explicit = absint( $explicit );
+		if ( $explicit ) {
+			return $explicit;
 		}
-		return self::render_compose_form( 'feedback', $ref );
+
+		$queried = get_queried_object_id();
+		if ( $queried && FF_Post_Types::NOTE_CPT === get_post_type( $queried ) ) {
+			return (int) $queried;
+		}
+
+		// Inside a loop (a listing, a template being rendered per note) the
+		// queried object is the archive, not the row — so ask the loop too.
+		$current = get_the_ID();
+		if ( $current && FF_Post_Types::NOTE_CPT === get_post_type( $current ) ) {
+			return (int) $current;
+		}
+
+		return 0;
 	}
 
 	/**
