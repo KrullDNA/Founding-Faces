@@ -58,8 +58,121 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 		$this->ffds_text_section( 'nmeta', '.ff-note-meta', __( 'Note meta row', 'founding-faces' ) );
 		$this->ffds_badge_section();
 		$this->ffds_text_section( 'nbody', '.ff-note-body', __( 'Note body', 'founding-faces' ), true );
+		$this->ffds_link_section( 'nmore', '.ff-note-more-link', __( '"Read the full note" link', 'founding-faces' ) );
 		$this->ffds_gallery_section();
 		$this->ffds_text_section( 'empty', '.ff-empty-note', __( 'Empty message', 'founding-faces' ) );
+	}
+
+	/**
+	 * The parts of a note card, and how much of the body to show.
+	 *
+	 * Every part is on by default: a card asked for with no opinion is the whole
+	 * card. Turning one off leaves nothing behind — no empty header holding
+	 * space where a title used to be.
+	 */
+	protected function ffds_card_content_controls() {
+		$this->add_control( 'parts_heading', array(
+			'label'     => __( 'Show on each note', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		foreach ( self::ffds_card_parts() as $key => $label ) {
+			$this->add_control( 'card_' . $key, array(
+				'label'        => $label,
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+			) );
+		}
+
+		$this->add_control( 'body_unit', array(
+			'label'     => __( 'Body length', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => '',
+			'separator' => 'before',
+			'options'   => array(
+				''           => __( 'The whole note', 'founding-faces' ),
+				'words'      => __( 'Shorten to a number of words', 'founding-faces' ),
+				'characters' => __( 'Shorten to a number of characters', 'founding-faces' ),
+			),
+			'condition' => array( 'card_body' => 'yes' ),
+		) );
+		$this->add_control( 'body_trim', array(
+			'label'       => __( 'How many', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'default'     => 40,
+			'min'         => 1,
+			'max'         => 2000,
+			'condition'   => array( 'card_body' => 'yes', 'body_unit!' => '' ),
+			'description' => __( 'A shortened body is plain text — formatting is dropped rather than cut in half.', 'founding-faces' ),
+		) );
+		$this->add_control( 'body_more', array(
+			'label'        => __( 'Add a link to the full note', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+			'condition'    => array( 'card_body' => 'yes', 'body_unit!' => '' ),
+		) );
+		$this->add_control( 'body_more_text', array(
+			'label'       => __( 'Link wording', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '',
+			'placeholder' => __( 'Read the full note', 'founding-faces' ),
+			'condition'   => array( 'card_body' => 'yes', 'body_unit!' => '', 'body_more' => 'yes' ),
+		) );
+	}
+
+	/**
+	 * The parts of a note card that can be turned off, and their labels.
+	 *
+	 * @return array
+	 */
+	protected static function ffds_card_parts() {
+		return array(
+			'title'   => __( 'Title', 'founding-faces' ),
+			'stage'   => __( 'Stage badge', 'founding-faces' ),
+			'version' => __( 'Version number', 'founding-faces' ),
+			'date'    => __( 'Date', 'founding-faces' ),
+			'vault'   => __( 'The 35 vault chip', 'founding-faces' ),
+			'body'    => __( 'Body copy', 'founding-faces' ),
+			'gallery' => __( 'Images', 'founding-faces' ),
+		);
+	}
+
+	/**
+	 * Turn those controls into the attributes the shortcodes take.
+	 *
+	 * @param array $s The widget settings.
+	 * @return array
+	 */
+	protected function ffds_card_atts( $s ) {
+		$hidden = array();
+		foreach ( array_keys( self::ffds_card_parts() ) as $key ) {
+			if ( isset( $s[ 'card_' . $key ] ) && 'yes' !== $s[ 'card_' . $key ] ) {
+				$hidden[] = $key;
+			}
+		}
+
+		$unit = isset( $s['body_unit'] ) ? $s['body_unit'] : '';
+
+		return array(
+			'hide'           => implode( ',', $hidden ),
+			'body_trim'      => ( '' !== $unit && isset( $s['body_trim'] ) ) ? absint( $s['body_trim'] ) : 0,
+			'body_unit'      => ( 'characters' === $unit ) ? 'characters' : 'words',
+			'body_more'      => ( isset( $s['body_more'] ) && 'yes' === $s['body_more'] ) ? 'yes' : 'no',
+			'body_more_text' => isset( $s['body_more_text'] ) ? $s['body_more_text'] : '',
+		);
+	}
+
+	/**
+	 * The card options in the shape sample_note_card() takes.
+	 *
+	 * @param array $s The widget settings.
+	 * @return array
+	 */
+	protected function ffds_card_sample_args( $s ) {
+		return FF_Display::card_args_from_atts( $this->ffds_card_atts( $s ) );
 	}
 
 	/**
@@ -374,6 +487,8 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'condition'     => array( 'show_view_all' => 'yes' ),
 		) );
 
+		$this->ffds_card_content_controls();
+
 		$this->add_responsive_control( 'columns', array(
 			'label'          => __( 'Columns', 'founding-faces' ),
 			'type'           => \Elementor\Controls_Manager::SELECT,
@@ -419,7 +534,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'limit'         => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,
 			'view_all_text' => isset( $s['view_all_text'] ) ? $s['view_all_text'] : '',
 			'view_all_url'  => $view_all_url,
-		) );
+		) + $this->ffds_card_atts( $s ) );
 
 		// In the editor, stand in sample cards when the real render had nothing
 		// to show, so every element can be styled up front.
@@ -428,7 +543,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			if ( ! isset( $s['filters'] ) || 'yes' === $s['filters'] ) {
 				echo FF_Display::sample_filter_chips(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
-			echo FF_Display::sample_note_cards( min( 3, max( 1, absint( $s['limit'] ) ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo FF_Display::sample_note_cards( min( 3, max( 1, absint( $s['limit'] ) ) ), $this->ffds_card_sample_args( $s ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			if ( isset( $s['show_view_all'] ) && 'yes' === $s['show_view_all'] ) {
 				echo '<p class="ff-notes-viewall"><a class="ff-notes-viewall-link" href="#">' . esc_html( isset( $s['view_all_text'] ) && '' !== $s['view_all_text'] ? $s['view_all_text'] : __( 'View all notes', 'founding-faces' ) ) . '</a></p>';
 			}
@@ -496,6 +611,8 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'min'     => 1,
 			'max'     => 200,
 		) );
+		$this->ffds_card_content_controls();
+
 		$this->add_responsive_control( 'columns', array(
 			'label'          => __( 'Columns', 'founding-faces' ),
 			'type'           => \Elementor\Controls_Manager::SELECT,
@@ -615,14 +732,14 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'show_sort'    => ( ! isset( $s['show_sort'] ) || 'yes' === $s['show_sort'] ) ? 'yes' : 'no',
 		);
 
-		$html = FF_Display::sc_notes_archive( array_merge( $flags, array(
+		$html = FF_Display::sc_notes_archive( array_merge( $flags, $this->ffds_card_atts( $s ), array(
 			'limit' => isset( $s['limit'] ) ? absint( $s['limit'] ) : 30,
 		) ) );
 
 		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo '<div class="ff-notes-archive ff-notes-list">';
 			echo FF_Display::sample_filter_bar( $flags ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo FF_Display::sample_note_cards( 3 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo FF_Display::sample_note_cards( 3, $this->ffds_card_sample_args( $s ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</div>';
 			return;
 		}
@@ -664,6 +781,7 @@ class FF_Note_Widget extends FF_Display_Widget_Base {
 			'options' => FF_Display::note_choices(),
 		) );
 		$this->ffds_layout_controls( 'listing', __( 'Layout', 'founding-faces' ) );
+		$this->ffds_card_content_controls();
 		$this->ffds_preview_control();
 
 		$this->end_controls_section();
@@ -678,10 +796,10 @@ class FF_Note_Widget extends FF_Display_Widget_Base {
 		$html = FF_Display::sc_note( array(
 			'id'      => isset( $s['note_id'] ) ? absint( $s['note_id'] ) : 0,
 			'listing' => $this->ffds_listing_id( $s, 'listing' ),
-		) );
+		) + $this->ffds_card_atts( $s ) );
 
 		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
-			echo '<div class="ff-notes-single">' . FF_Display::sample_note_card() . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<div class="ff-notes-single">' . FF_Display::sample_note_card( '', 'stability_testing', '4', false, $this->ffds_card_sample_args( $s ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
@@ -798,6 +916,7 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 			'max'       => 50,
 			'condition' => array( 'show_latest' => 'yes' ),
 		) );
+		$this->ffds_card_content_controls();
 		$this->ffds_layout_controls( 'latest_listing', __( 'Layout', 'founding-faces' ), 'latest_columns' );
 		$this->add_responsive_control( 'latest_grid', array(
 			'label'     => __( 'Columns (default layout)', 'founding-faces' ),
@@ -931,7 +1050,7 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 			'products_listing' => $this->ffds_listing_id( $s, 'products_listing' ),
 			'latest_columns'   => isset( $s['latest_columns'] ) ? absint( $s['latest_columns'] ) : 1,
 			'products_columns' => isset( $s['products_columns'] ) ? absint( $s['products_columns'] ) : 1,
-		) );
+		) + $this->ffds_card_atts( $s ) );
 
 		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {
 			echo '<div class="ff-home">';
@@ -939,7 +1058,7 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 				echo '<section class="ff-home-latest"><h2 class="ff-home-heading ff-home-heading--latest">'
 					. esc_html( isset( $s['latest_heading'] ) && '' !== $s['latest_heading'] ? $s['latest_heading'] : __( 'Latest notes', 'founding-faces' ) )
 					. '</h2>';
-				echo FF_Display::sample_note_cards( 2 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo FF_Display::sample_note_cards( 2, $this->ffds_card_sample_args( $s ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo '</section>';
 			}
 			if ( 'yes' === $show_products ) {

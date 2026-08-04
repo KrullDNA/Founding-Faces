@@ -188,7 +188,15 @@ class FF_Display {
 	public static function sc_note( $atts ) {
 		self::enqueue();
 
-		$atts = shortcode_atts( array( 'id' => 0, 'listing' => 0 ), $atts, 'ff_note' );
+		$atts = shortcode_atts( array(
+			'id'             => 0,
+			'listing'        => 0,
+			'body_trim'      => 0,
+			'body_unit'      => 'words',
+			'body_more'      => 'no',
+			'body_more_text' => '',
+			'hide'           => '',
+		), $atts, 'ff_note' );
 		$id   = absint( $atts['id'] );
 
 		// Everything here is members-only.
@@ -220,7 +228,7 @@ class FF_Display {
 			}
 		}
 
-		return '<div class="ff-notes-single">' . self::render_note_card( $note ) . '</div>';
+		return '<div class="ff-notes-single">' . self::render_note_card( $note, self::card_args_from_atts( $atts ) ) . '</div>';
 	}
 
 	/**
@@ -239,12 +247,17 @@ class FF_Display {
 
 		$atts = shortcode_atts(
 			array(
-				'product'       => 0,
-				'stage'         => '',
-				'limit'         => 50,
-				'filters'       => 'yes',
-				'view_all_text' => '',
-				'view_all_url'  => '',
+				'product'        => 0,
+				'stage'          => '',
+				'limit'          => 50,
+				'filters'        => 'yes',
+				'view_all_text'  => '',
+				'view_all_url'   => '',
+				'body_trim'      => 0,
+				'body_unit'      => 'words',
+				'body_more'      => 'no',
+				'body_more_text' => '',
+				'hide'           => '',
 			),
 			$atts,
 			'ff_notes'
@@ -272,6 +285,7 @@ class FF_Display {
 		}
 
 		$notes = self::get_viewable_notes( $product_id, $stage, absint( $atts['limit'] ) );
+		$card  = self::card_args_from_atts( $atts );
 
 		$out = '<div class="ff-notes-list">';
 
@@ -285,7 +299,7 @@ class FF_Display {
 		} else {
 			$out .= '<div class="ff-notes-cards">';
 			foreach ( $notes as $note ) {
-				$out .= self::render_note_card( $note );
+				$out .= self::render_note_card( $note, $card );
 			}
 			$out .= '</div>';
 			// Optional "view all" link, e.g. on a hub page's latest-notes block.
@@ -318,6 +332,11 @@ class FF_Display {
 				'show_product'   => 'yes',
 				'show_stage'     => 'yes',
 				'show_sort'      => 'yes',
+				'body_trim'      => 0,
+				'body_unit'      => 'words',
+				'body_more'      => 'no',
+				'body_more_text' => '',
+				'hide'           => '',
 			),
 			$atts,
 			'ff_notes_archive'
@@ -339,6 +358,7 @@ class FF_Display {
 		$order = ( isset( $_GET['ff_order'] ) && 'oldest' === sanitize_key( wp_unslash( $_GET['ff_order'] ) ) ) ? 'ASC' : 'DESC';
 
 		$notes = self::get_viewable_notes( $product, $stage, absint( $atts['limit'] ), $order );
+		$card  = self::card_args_from_atts( $atts );
 
 		$out  = '<div class="ff-notes-archive ff-notes-list">';
 		$out .= self::archive_filter_bar( $atts, $product, $stage, $order );
@@ -348,7 +368,7 @@ class FF_Display {
 		} else {
 			$out .= '<div class="ff-notes-cards">';
 			foreach ( $notes as $note ) {
-				$out .= self::render_note_card( $note );
+				$out .= self::render_note_card( $note, $card );
 			}
 			$out .= '</div>';
 		}
@@ -501,6 +521,11 @@ class FF_Display {
 				'products_listing' => 0,
 				'latest_columns'   => 1,
 				'products_columns' => 1,
+				'body_trim'        => 0,
+				'body_unit'        => 'words',
+				'body_more'        => 'no',
+				'body_more_text'   => '',
+				'hide'             => '',
 			),
 			$atts,
 			'ff_home'
@@ -523,12 +548,13 @@ class FF_Display {
 				$out .= $jet;
 			} else {
 				$latest = self::get_viewable_notes( 0, '', absint( $atts['latest'] ) );
+				$card   = self::card_args_from_atts( $atts );
 				if ( empty( $latest ) ) {
 					$out .= '<p class="ff-empty-note">' . esc_html__( 'Nothing new just yet — check back soon.', 'founding-faces' ) . '</p>';
 				} else {
 					$out .= '<div class="ff-notes-cards">';
 					foreach ( $latest as $note ) {
-						$out .= self::render_note_card( $note );
+						$out .= self::render_note_card( $note, $card );
 					}
 					$out .= '</div>';
 				}
@@ -566,40 +592,53 @@ class FF_Display {
 	 * Builder template can substitute its own markup if desired.
 	 *
 	 * @param WP_Post $note The note.
+	 * @param array   $args Body options: trim, trim_unit, more, more_text.
 	 * @return string
 	 */
-	public static function render_note_card( $note ) {
+	public static function render_note_card( $note, $args = array() ) {
+		$a = self::card_args( $args );
+
 		$stage    = get_post_meta( $note->ID, FF_Post_Types::META_NOTE_STAGE, true );
 		$trial    = get_post_meta( $note->ID, FF_Post_Types::META_NOTE_TRIAL, true );
 		$gallery  = get_post_meta( $note->ID, FF_Post_Types::META_NOTE_GALLERY, true );
 		$audience = get_post_meta( $note->ID, FF_Post_Types::META_NOTE_AUDIENCE, true );
 		$date     = self::note_date( $note );
 
-		$out  = '<article class="ff-note">';
-		$out .= '<header class="ff-note-head">';
-		$out .= '<h3 class="ff-note-title">' . esc_html( get_the_title( $note ) ) . '</h3>';
+		$out = '<article class="ff-note">';
+
+		$title = self::shows( $a, 'title' ) ? '<h3 class="ff-note-title">' . esc_html( get_the_title( $note ) ) . '</h3>' : '';
 
 		$meta = array();
-		if ( $stage ) {
+		if ( $stage && self::shows( $a, 'stage' ) ) {
 			$meta[] = self::stage_badge( $stage );
 		}
-		if ( '' !== (string) $trial ) {
+		if ( '' !== (string) $trial && self::shows( $a, 'version' ) ) {
 			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
 		}
-		if ( $date ) {
+		if ( $date && self::shows( $a, 'date' ) ) {
 			$meta[] = '<span class="ff-note-date">' . esc_html( $date ) . '</span>';
 		}
-		if ( 'the-35-only' === $audience ) {
+		if ( 'the-35-only' === $audience && self::shows( $a, 'vault' ) ) {
 			$meta[] = '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
 		}
-		if ( $meta ) {
-			$out .= '<div class="ff-note-meta">' . implode( '', $meta ) . '</div>';
+
+		// No header at all when everything that would go in it is turned off,
+		// rather than an empty element left behind to space things out.
+		if ( '' !== $title || $meta ) {
+			$out .= '<header class="ff-note-head">' . $title;
+			if ( $meta ) {
+				$out .= '<div class="ff-note-meta">' . implode( '', $meta ) . '</div>';
+			}
+			$out .= '</header>';
 		}
-		$out .= '</header>';
 
-		$out .= '<div class="ff-note-body">' . wpautop( wp_kses_post( $note->post_content ) ) . '</div>';
+		if ( self::shows( $a, 'body' ) ) {
+			$out .= '<div class="ff-note-body">' . self::note_body_html( $note, $a ) . '</div>';
+		}
 
-		$out .= self::gallery_html( $gallery );
+		if ( self::shows( $a, 'gallery' ) ) {
+			$out .= self::gallery_html( $gallery );
+		}
 
 		$out .= '</article>';
 
@@ -642,21 +681,53 @@ class FF_Display {
 	 * @param bool   $vault Whether to show the "The 35 vault" chip.
 	 * @return string
 	 */
-	public static function sample_note_card( $title = '', $stage = 'stability_testing', $trial = '4', $vault = false ) {
+	public static function sample_note_card( $title = '', $stage = 'stability_testing', $trial = '4', $vault = false, $args = array() ) {
+		$a     = self::card_args( $args );
 		$title = '' !== $title ? $title : __( 'Sample note — batch reformulation', 'founding-faces' );
 
-		$out  = '<article class="ff-note">';
-		$out .= '<header class="ff-note-head">';
-		$out .= '<h3 class="ff-note-title">' . esc_html( $title ) . '</h3>';
-		$out .= '<div class="ff-note-meta">';
-		$out .= self::stage_badge( $stage );
-		$out .= '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
-		$out .= '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>';
-		if ( $vault ) {
-			$out .= '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+		$out = '<article class="ff-note">';
+
+		$head = self::shows( $a, 'title' ) ? '<h3 class="ff-note-title">' . esc_html( $title ) . '</h3>' : '';
+
+		$meta = array();
+		if ( self::shows( $a, 'stage' ) ) {
+			$meta[] = self::stage_badge( $stage );
 		}
-		$out .= '</div></header>';
-		$out .= '<div class="ff-note-body"><p>' . esc_html__( 'This is sample text so you can style the note body before a real note is chosen. It uses exactly the same markup as a published note, so what you design here is what members will see.', 'founding-faces' ) . '</p></div>';
+		if ( self::shows( $a, 'version' ) ) {
+			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+		}
+		if ( self::shows( $a, 'date' ) ) {
+			$meta[] = '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>';
+		}
+		if ( $vault && self::shows( $a, 'vault' ) ) {
+			$meta[] = '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+		}
+
+		if ( '' !== $head || $meta ) {
+			$out .= '<header class="ff-note-head">' . $head;
+			if ( $meta ) {
+				$out .= '<div class="ff-note-meta">' . implode( '', $meta ) . '</div>';
+			}
+			$out .= '</header>';
+		}
+
+		if ( self::shows( $a, 'body' ) ) {
+			$sample = __( 'This is sample text so you can style the note body before a real note is chosen. It uses exactly the same markup as a published note, so what you design here is what members will see. It runs on a little longer than that, so a word or character limit set above has something to bite on and the shortened length can be judged here rather than guessed at.', 'founding-faces' );
+
+			$length = absint( $a['trim'] );
+			if ( $length ) {
+				$sample = ( 'characters' === $a['trim_unit'] )
+					? wp_html_excerpt( $sample, $length, '…' )
+					: wp_trim_words( $sample, $length, '…' );
+			}
+
+			$out .= '<div class="ff-note-body"><p>' . esc_html( $sample ) . '</p>';
+			if ( $length && ! empty( $a['more'] ) ) {
+				$out .= '<p class="ff-note-more"><a class="ff-note-more-link" href="#">' . self::more_label( $a['more_text'] ) . '</a></p>';
+			}
+			$out .= '</div>';
+		}
+
 		$out .= '</article>';
 
 		return $out;
@@ -668,7 +739,7 @@ class FF_Display {
 	 * @param int $count How many cards.
 	 * @return string
 	 */
-	public static function sample_note_cards( $count = 3 ) {
+	public static function sample_note_cards( $count = 3, $args = array() ) {
 		$samples = array(
 			array( __( 'Sample note — batch reformulation', 'founding-faces' ), 'stability_testing', '4', false ),
 			array( __( 'Sample note — actives at 2%', 'founding-faces' ), 'passed', '3', true ),
@@ -679,7 +750,7 @@ class FF_Display {
 		$out = '<div class="ff-notes-cards">';
 		for ( $i = 0; $i < max( 1, (int) $count ); $i++ ) {
 			$s    = $samples[ $i % count( $samples ) ];
-			$out .= self::sample_note_card( $s[0], $s[1], $s[2], $s[3] );
+			$out .= self::sample_note_card( $s[0], $s[1], $s[2], $s[3], $args );
 		}
 		$out .= '</div>';
 		return $out;
@@ -863,6 +934,111 @@ class FF_Display {
 		}
 		$chips .= '</div>';
 		return $chips;
+	}
+
+	/**
+	 * Fill in the card's body options that weren't given.
+	 *
+	 * @param array $args Partial options.
+	 * @return array
+	 */
+	public static function card_args( $args ) {
+		$args = wp_parse_args( (array) $args, array(
+			// How much of the body to show. 0 is all of it.
+			'trim'      => 0,
+			// 'words' or 'characters'.
+			'trim_unit' => 'words',
+			// Whether a trimmed card offers a way through to the whole note.
+			'more'      => false,
+			'more_text' => '',
+			// Which parts of the card to leave out: any of title, stage,
+			// version, date, vault, body, gallery. Everything shows by default,
+			// so a caller that says nothing gets the whole card.
+			'hide'      => array(),
+		) );
+
+		if ( ! is_array( $args['hide'] ) ) {
+			$args['hide'] = explode( ',', (string) $args['hide'] );
+		}
+		$args['hide'] = array_filter( array_map( 'sanitize_key', array_map( 'trim', $args['hide'] ) ) );
+
+		return $args;
+	}
+
+	/**
+	 * Whether one part of the card is being shown.
+	 *
+	 * @param array  $args The filled-in card options.
+	 * @param string $part The part's key.
+	 * @return bool
+	 */
+	private static function shows( $args, $part ) {
+		return ! in_array( $part, $args['hide'], true );
+	}
+
+	/**
+	 * A note's body, whole or shortened.
+	 *
+	 * Shortening strips the formatting rather than trying to cut HTML in half:
+	 * a truncated tag is a broken page, and an extract of a paragraph does not
+	 * need the paragraph's markup. The whole body keeps everything it was
+	 * written with.
+	 *
+	 * @param WP_Post $note The note.
+	 * @param array   $args Body options, already filled in by card_args().
+	 * @return string
+	 */
+	private static function note_body_html( $note, $args ) {
+		$content = (string) $note->post_content;
+		$length  = absint( $args['trim'] );
+
+		if ( ! $length ) {
+			return wpautop( wp_kses_post( $content ) );
+		}
+
+		$plain = wp_strip_all_tags( strip_shortcodes( $content ) );
+		$text  = ( 'characters' === $args['trim_unit'] )
+			? wp_html_excerpt( $plain, $length, '…' )
+			: wp_trim_words( $plain, $length, '…' );
+
+		$html = '<p>' . esc_html( $text ) . '</p>';
+
+		if ( ! empty( $args['more'] ) ) {
+			$url = get_permalink( $note );
+			if ( $url ) {
+				$html .= '<p class="ff-note-more"><a class="ff-note-more-link" href="' . esc_url( $url ) . '">' . self::more_label( $args['more_text'] ) . '</a></p>';
+			}
+		}
+
+		return $html;
+	}
+
+	/**
+	 * The wording on the "read the whole note" link.
+	 *
+	 * @param string $text The author's wording, or ''.
+	 * @return string
+	 */
+	private static function more_label( $text ) {
+		return FF_Text::filled( $text )
+			? FF_Text::inline( $text )
+			: esc_html__( 'Read the full note', 'founding-faces' );
+	}
+
+	/**
+	 * Read the card's body options out of a shortcode's attributes.
+	 *
+	 * @param array $atts The shortcode attributes.
+	 * @return array
+	 */
+	public static function card_args_from_atts( $atts ) {
+		return self::card_args( array(
+			'trim'      => isset( $atts['body_trim'] ) ? absint( $atts['body_trim'] ) : 0,
+			'trim_unit' => ( isset( $atts['body_unit'] ) && 'characters' === $atts['body_unit'] ) ? 'characters' : 'words',
+			'more'      => isset( $atts['body_more'] ) && in_array( strtolower( (string) $atts['body_more'] ), array( '1', 'yes', 'true' ), true ),
+			'more_text' => isset( $atts['body_more_text'] ) ? $atts['body_more_text'] : '',
+			'hide'      => isset( $atts['hide'] ) ? $atts['hide'] : array(),
+		) );
 	}
 
 	/**
