@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.68
+Stable tag: 1.0.69
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.69 =
+* The winning-bar colour now takes priority when the member voted for the
+  winning option, instead of the your-choice colour. The "Your choice" label
+  still marks the row as theirs, so nothing is lost by it.
+* Fixed: the stylesheet carried a rule for the member's own bar that painted
+  the same colour the base fill already paints — visually nothing, but its
+  specificity outranked the widget's winning-bar colour, so a member who voted
+  for the winner never saw that colour whatever it was set to. Both states are
+  now the widget's to colour.
 
 = 1.0.68 =
 * New "Show" control on the poll widget: the latest poll, all current polls, or

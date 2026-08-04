@@ -80,9 +80,15 @@ trait FF_Poll_Style_Controls {
 		) );
 		$this->add_control( 'bar_leading_color', array(
 			'label'       => __( 'Winning bar colour', 'founding-faces' ),
-			'description' => __( 'The option with the most votes.', 'founding-faces' ),
+			'description' => __( 'The option with the most votes. When the member voted for the winner, this is the colour that shows — the "Your choice" label still marks it as theirs.', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::COLOR,
-			'selectors'   => array( '{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};' ),
+			'selectors'   => array(
+				'{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};',
+				// A row that is both winning and the member's own: named with an
+				// extra ancestor so it outranks the your-choice rule below,
+				// whichever order Elementor prints them in.
+				'{{WRAPPER}} .ff-poll .ff-poll-result--leading.is-mine .ff-poll-bar-fill' => 'background-color: {{VALUE}};',
+			),
 		) );
 		$this->add_control( 'bar_track_color', array(
 			'label'     => __( 'Track (empty) colour', 'founding-faces' ),
@@ -95,7 +101,7 @@ trait FF_Poll_Style_Controls {
 			'label'       => __( 'Your choice', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::HEADING,
 			'separator'   => 'before',
-			'description' => __( 'When an option is both winning and the member\'s choice, this bar colour takes priority.', 'founding-faces' ),
+			'description' => __( 'Shown on the option the member voted for. If that option is also winning, the winning colour above takes priority.', 'founding-faces' ),
 		) );
 		$this->add_control( 'bar_mine_color', array(
 			'label'     => __( 'Your-choice bar colour', 'founding-faces' ),
