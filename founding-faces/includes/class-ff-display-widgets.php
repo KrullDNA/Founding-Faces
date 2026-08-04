@@ -330,7 +330,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'type'        => \Elementor\Controls_Manager::SELECT,
 			'default'     => 0,
 			'options'     => array( 'auto' => __( 'The product on this page (automatic)', 'founding-faces' ) ) + FF_Display::product_choices(),
-			'description' => __( 'Automatic follows whichever product is being viewed, so one Single Product template serves them all.', 'founding-faces' ),
+			'description' => __( 'Automatic follows whichever product is being viewed, so one Single Product template serves them all. On a note\'s page it means that note\'s product.', 'founding-faces' ),
 		) );
 		$this->add_control( 'stage', array(
 			'label'   => __( 'Only show stage', 'founding-faces' ),

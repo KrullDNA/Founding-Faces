@@ -935,6 +935,11 @@ class FF_Display {
 	 * product being viewed, then the product the current loop is on. This is
 	 * what lets one Single Product template serve every product.
 	 *
+	 * A note answers the question too, through the product it belongs to. On a
+	 * Single Note template "the product on this page" is unambiguous — it is the
+	 * one that note is about — and that is what makes a "more from this
+	 * formulation" block possible without naming a product anywhere.
+	 *
 	 * @param int|string $explicit A product id, or 'auto'/0 for automatic.
 	 * @return int The product id, or 0.
 	 */
@@ -947,14 +952,21 @@ class FF_Display {
 			return 0;
 		}
 
-		$queried = get_queried_object_id();
-		if ( $queried && FF_Post_Types::PRODUCT_CPT === get_post_type( $queried ) ) {
-			return (int) $queried;
-		}
+		foreach ( array( get_queried_object_id(), get_the_ID() ) as $post_id ) {
+			if ( ! $post_id ) {
+				continue;
+			}
 
-		$current = get_the_ID();
-		if ( $current && FF_Post_Types::PRODUCT_CPT === get_post_type( $current ) ) {
-			return (int) $current;
+			$type = get_post_type( $post_id );
+			if ( FF_Post_Types::PRODUCT_CPT === $type ) {
+				return (int) $post_id;
+			}
+			if ( FF_Post_Types::NOTE_CPT === $type ) {
+				$product = (int) get_post_meta( $post_id, FF_Post_Types::META_NOTE_PRODUCT, true );
+				if ( $product ) {
+					return $product;
+				}
+			}
 		}
 
 		return 0;
