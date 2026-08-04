@@ -59,6 +59,49 @@ class FF_Post_Types {
 		self::register_note_cpt();
 		self::register_group_taxonomy();
 		self::register_note_meta();
+
+		// Let Elementor list the plugin's content types in Theme Builder.
+		add_filter( 'elementor/utils/get_public_post_types', array( __CLASS__, 'elementor_post_types' ) );
+	}
+
+	/**
+	 * Add this plugin's content types to Elementor's list of public post types.
+	 *
+	 * Elementor builds that list from post types flagged show_in_nav_menus, and
+	 * it drives the Theme Builder preview picker and the display conditions.
+	 * Notes are not flagged that way on purpose — they are not pages anyone
+	 * links to from a menu, and putting them in the menu editor would invite
+	 * exactly that. But they DO have single URLs, and they are the whole reason
+	 * a Single template exists here, so Elementor needs to know about them.
+	 *
+	 * Filtering Elementor's own list says that to Elementor and to nothing else,
+	 * rather than changing how WordPress treats the post type everywhere.
+	 *
+	 * Only types WordPress considers viewable are offered: a type with no front
+	 * end has no single view for a template to preview or target. Products are
+	 * put forward and declined on that test today — they are rendered through
+	 * widgets, not visited — and would be included the moment that changed.
+	 *
+	 * @param array $post_types Slug => label, as Elementor built it.
+	 * @return array
+	 */
+	public static function elementor_post_types( $post_types ) {
+		if ( ! is_array( $post_types ) ) {
+			return $post_types;
+		}
+
+		foreach ( array( self::NOTE_CPT, self::PRODUCT_CPT ) as $slug ) {
+			if ( isset( $post_types[ $slug ] ) ) {
+				continue;
+			}
+
+			$object = get_post_type_object( $slug );
+			if ( $object && is_post_type_viewable( $object ) ) {
+				$post_types[ $slug ] = $object->label;
+			}
+		}
+
+		return $post_types;
 	}
 
 	/**

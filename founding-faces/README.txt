@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.74
+Stable tag: 1.0.75
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.75 =
+* Notes now appear in Elementor's Theme Builder preview picker and display
+  conditions. Elementor builds that list from post types flagged
+  show_in_nav_menus, and notes are deliberately not flagged that way — they are
+  not pages anyone links to from a menu. The plugin now tells Elementor about
+  them directly instead, which changes nothing about how WordPress treats the
+  post type anywhere else.
+* Set Preview Settings to Single -> Notes and pick a note; the Single template
+  then previews against a real note.
 
 = 1.0.74 =
 * Every text field an administrator writes into now accepts HTML, decided in
