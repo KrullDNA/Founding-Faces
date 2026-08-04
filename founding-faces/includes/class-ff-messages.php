@@ -791,28 +791,14 @@ class FF_Messages {
 	 * In a theme-builder template Elementor previews a real note, so the
 	 * queried object is the right thing to ask on the canvas too.
 	 *
+	 * The question "which note is this page about?" is asked by the gallery
+	 * slider as well, so the answer lives in one place and this defers to it.
+	 *
 	 * @param int $explicit An id set by hand, or 0.
 	 * @return int A note id, or 0 for feedback with no note attached.
 	 */
 	public static function feedback_reference( $explicit = 0 ) {
-		$explicit = absint( $explicit );
-		if ( $explicit ) {
-			return $explicit;
-		}
-
-		$queried = get_queried_object_id();
-		if ( $queried && FF_Post_Types::NOTE_CPT === get_post_type( $queried ) ) {
-			return (int) $queried;
-		}
-
-		// Inside a loop (a listing, a template being rendered per note) the
-		// queried object is the archive, not the row — so ask the loop too.
-		$current = get_the_ID();
-		if ( $current && FF_Post_Types::NOTE_CPT === get_post_type( $current ) ) {
-			return (int) $current;
-		}
-
-		return 0;
+		return FF_Display::note_context_id( $explicit );
 	}
 
 	/**

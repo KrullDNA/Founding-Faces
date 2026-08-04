@@ -1480,3 +1480,107 @@
 	opacity: 0.45;
 	transition: opacity 0.15s ease;
 }
+
+/* Note gallery slider -------------------------------------------------------
+ * Mechanics only. Everything visible — the arrow icons' size and colour, the
+ * dots, the image height, the box around it all — is an Elementor control, so
+ * there is nothing here that draws anything. What is here is what a slider
+ * cannot work without: a clipped viewport, a track that moves, and slides
+ * sized from the two custom properties the widget sets per device.
+ */
+.ff-note-slider {
+	--ff-slides: 1;
+	--ff-gap: 0px;
+	--ff-speed: 400ms;
+	position: relative;
+}
+
+.ff-slider-viewport {
+	overflow: hidden;
+}
+
+.ff-slider-track {
+	display: flex;
+	gap: var(--ff-gap);
+	transition: transform var(--ff-speed) ease;
+	will-change: transform;
+}
+
+.ff-slide {
+	flex: 0 0 calc((100% - (var(--ff-slides) - 1) * var(--ff-gap)) / var(--ff-slides));
+	min-width: 0;
+}
+
+.ff-slide-figure {
+	margin: 0;
+}
+
+.ff-slide-link {
+	display: block;
+	line-height: 0;
+}
+
+.ff-slide-img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+/* The arrows start with no chrome at all: no background, no border, no size
+ * of their own beyond the icon they hold. */
+.ff-slider-arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font-size: 24px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.ff-slider-arrow svg,
+.ff-slider-arrow i {
+	width: 1em;
+	height: 1em;
+	font-size: inherit;
+}
+
+.ff-slider-dots {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 0.75rem;
+}
+
+.ff-slider-dot {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 8px;
+	height: 8px;
+	padding: 0;
+	border: 0;
+	cursor: pointer;
+}
+
+.ff-slider-dot[hidden] {
+	display: none;
+}
+
+/* Every image already fits, so there is nowhere to go. */
+.ff-slider--static .ff-slider-arrow,
+.ff-slider--static .ff-slider-dots {
+	display: none;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.ff-slider-track {
+		transition: none;
+	}
+}
