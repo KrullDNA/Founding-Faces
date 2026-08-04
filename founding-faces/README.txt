@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.67
+Stable tag: 1.0.68
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.68 =
+* New "Show" control on the poll widget: the latest poll, all current polls, or
+  one specific poll.
+* "All current polls" lists open polls first, newest first, then closed polls
+  while they are still inside their hide time — a decision is worth reading
+  after the voting has finished, but only for as long as it was meant to be on
+  the site. "The latest poll" is the first of that same order, so it means the
+  newest poll still taking votes, falling back to the most recent decision.
+* New Columns section for the "all" view: up to four columns set separately for
+  desktop, tablet and mobile, with column and row gaps.
+* The editor shows three sample polls in that view — one open, two closed — so
+  the columns have something to lay out.
+* Poll widgets placed before this update keep rendering exactly the poll they
+  were set to.
 
 = 1.0.67 =
 * Fixed: per-item menu visibility was skipped entirely for administrators, so

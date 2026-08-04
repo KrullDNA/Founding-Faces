@@ -367,6 +367,22 @@
 	margin: 0;
 }
 
+/*
+ * A widget showing several polls at once. One column and a plain gap until the
+ * widget's own Columns controls say otherwise.
+ */
+.ff-polls-list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 2rem;
+	align-items: start;
+}
+
+.ff-polls-list .ff-poll {
+	max-width: none;
+	margin: 0;
+}
+
 .ff-polls-archive-heading {
 	font-family: var(--ff-font);
 	font-size: 1.15rem;
