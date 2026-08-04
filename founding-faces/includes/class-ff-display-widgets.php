@@ -63,7 +63,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Stage badge / trial / date / vault chips.
+	 * Stage badge / version / date / vault chips.
 	 */
 	protected function ffds_badge_section() {
 		$this->start_controls_section( 'ff_badges_sec', array(
@@ -98,7 +98,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'selectors'  => array( '{{WRAPPER}} .ff-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 		$this->add_control( 'trial_color', array(
-			'label'     => __( 'Trial & date colour', 'founding-faces' ),
+			'label'     => __( 'Version & date colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'separator' => 'before',
 			'selectors' => array( '{{WRAPPER}} .ff-note-trial, {{WRAPPER}} .ff-note-date' => 'color: {{VALUE}};' ),
@@ -326,10 +326,11 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 		) );
 
 		$this->add_control( 'product', array(
-			'label'   => __( 'Product', 'founding-faces' ),
-			'type'    => \Elementor\Controls_Manager::SELECT,
-			'default' => 0,
-			'options' => FF_Display::product_choices(),
+			'label'       => __( 'Product', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 0,
+			'options'     => array( 'auto' => __( 'The product on this page (automatic)', 'founding-faces' ) ) + FF_Display::product_choices(),
+			'description' => __( 'Automatic follows whichever product is being viewed, so one Single Product template serves them all.', 'founding-faces' ),
 		) );
 		$this->add_control( 'stage', array(
 			'label'   => __( 'Only show stage', 'founding-faces' ),
@@ -412,7 +413,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 		}
 
 		$html = FF_Display::sc_notes( array(
-			'product'       => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
+			'product'       => isset( $s['product'] ) ? $s['product'] : 0,
 			'stage'         => isset( $s['stage'] ) ? $s['stage'] : '',
 			'filters'       => ( isset( $s['filters'] ) && 'yes' === $s['filters'] ) ? 'yes' : 'no',
 			'limit'         => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,
@@ -715,10 +716,11 @@ class FF_Product_Header_Widget extends FF_Display_Widget_Base {
 			'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
 		) );
 		$this->add_control( 'product', array(
-			'label'   => __( 'Product', 'founding-faces' ),
-			'type'    => \Elementor\Controls_Manager::SELECT,
-			'default' => 0,
-			'options' => FF_Display::product_choices(),
+			'label'       => __( 'Product', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'auto',
+			'options'     => array( 'auto' => __( 'The product on this page (automatic)', 'founding-faces' ) ) + FF_Display::product_choices(),
+			'description' => __( 'Automatic follows whichever product is being viewed — what a Single Product template needs.', 'founding-faces' ),
 		) );
 		$this->ffds_preview_control();
 
@@ -736,7 +738,7 @@ class FF_Product_Header_Widget extends FF_Display_Widget_Base {
 		$s = $this->get_settings_for_display();
 
 		$html = FF_Display::sc_product_header( array(
-			'product' => isset( $s['product'] ) ? absint( $s['product'] ) : 0,
+			'product' => isset( $s['product'] ) ? $s['product'] : 0,
 		) );
 
 		if ( $this->ffds_force_sample( $s ) || ( $this->ffds_is_editor() && $this->ffds_needs_sample( $html ) ) ) {

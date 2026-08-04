@@ -965,8 +965,8 @@ class FF_Messages {
 	 */
 	private static function render_sample_messages() {
 		$rows = array(
-			array( __( 'Feedback: Trial 12 — stability at 40°C', 'founding-faces' ), true, __( 'Renewal Serum', 'founding-faces' ), __( 'Trial 12 — stability at 40°C', 'founding-faces' ) ),
-			array( __( 'Feedback: Texture after 6 weeks', 'founding-faces' ), false, __( 'Barrier Cream', 'founding-faces' ), __( 'Trial 4 — texture', 'founding-faces' ) ),
+			array( __( 'Feedback: Version 12 — stability at 40°C', 'founding-faces' ), true, __( 'Renewal Serum', 'founding-faces' ), __( 'Version 12 — stability at 40°C', 'founding-faces' ) ),
+			array( __( 'Feedback: Texture after 6 weeks', 'founding-faces' ), false, __( 'Barrier Cream', 'founding-faces' ), __( 'Version 4 — texture', 'founding-faces' ) ),
 			array( __( 'Your question', 'founding-faces' ), false, '', '' ),
 		);
 		$out  = '<div class="ff-messages"><h3 class="ff-history-heading">' . esc_html__( 'Your messages', 'founding-faces' ) . '</h3>';

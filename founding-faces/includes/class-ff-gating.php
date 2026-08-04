@@ -73,8 +73,11 @@ class FF_Gating {
 		// can style it), but the wrong viewer is redirected before it renders.
 		add_action( 'template_redirect', array( __CLASS__, 'gate_single_note' ) );
 
-		// Keep notes out of the WordPress sitemap, so single URLs aren't listed.
-		add_filter( 'wp_sitemaps_post_types', array( __CLASS__, 'exclude_notes_from_sitemap' ) );
+		// The same for a product's own page.
+		add_action( 'template_redirect', array( __CLASS__, 'gate_single_product' ) );
+
+		// Keep both out of the WordPress sitemap, so single URLs aren't listed.
+		add_filter( 'wp_sitemaps_post_types', array( __CLASS__, 'exclude_private_from_sitemap' ) );
 
 		// Add the "Show to" control to the Advanced tab of every element.
 		add_action( 'elementor/element/after_section_end', array( __CLASS__, 'add_visibility_control' ), 10, 3 );
@@ -252,13 +255,43 @@ class FF_Gating {
 	}
 
 	/**
-	 * Remove the notes post type from the WordPress sitemap.
+	 * Send anyone who isn't a member away from a product's own page.
+	 *
+	 * A product has no audience flag — there is no vault version of a product —
+	 * so the only question is whether the viewer is in the members area at all.
+	 *
+	 * @return void
+	 */
+	public static function gate_single_product() {
+		if ( is_admin() || ! is_singular( FF_Post_Types::PRODUCT_CPT ) ) {
+			return;
+		}
+		if ( self::can_view_members_area() ) {
+			return;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			wp_safe_redirect( wp_login_url( self::current_url() ) );
+			exit;
+		}
+
+		$redirect_id = (int) get_option( FF_Page_Access::OPT_REDIRECT, 0 );
+		$target      = $redirect_id ? get_permalink( $redirect_id ) : home_url( '/' );
+		if ( ! $target ) {
+			$target = home_url( '/' );
+		}
+		wp_safe_redirect( add_query_arg( 'ff_denied', '1', $target ) );
+		exit;
+	}
+
+	/**
+	 * Remove the members-only post types from the WordPress sitemap.
 	 *
 	 * @param array $post_types The sitemap post types, keyed by name.
 	 * @return array
 	 */
-	public static function exclude_notes_from_sitemap( $post_types ) {
-		unset( $post_types[ FF_Post_Types::NOTE_CPT ] );
+	public static function exclude_private_from_sitemap( $post_types ) {
+		unset( $post_types[ FF_Post_Types::NOTE_CPT ], $post_types[ FF_Post_Types::PRODUCT_CPT ] );
 		return $post_types;
 	}
 

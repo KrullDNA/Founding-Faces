@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.77
+Stable tag: 1.0.79
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,7 +78,7 @@ Stage 5 — Email connector + Campaign Monitor:
   are created on the list automatically. Uses WordPress's HTTP API, no SDK.
 
 Stage 6 — Products & notes with gating:
-* Notes (ff_note) are structured records: linked product, date, trial number,
+* Notes (ff_note) are structured records: linked product, date, version number,
   development stage (in development / stability testing / passed / failed),
   image gallery and a per-note audience flag (everyone / the-35-only), all
   entered in a clean "Note details" metabox with a media-library gallery
@@ -196,6 +196,37 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.79 =
+* Products have two more stages: Formula finalised and Complete. They are on the
+  product only — a note never reaches either, so they don't appear on the note
+  editor or as a filter chip on a notes page.
+* Products now have their own single URL (/formulation/…), so Elementor Theme
+  Builder can preview and target them exactly as it can notes: Products appears
+  in Preview Settings and in "Where do you want to display your Template?".
+  Build the product page once and every product uses it.
+* That page is gated like a note's: a logged-out visitor is sent to log in, a
+  non-member is sent away, and products are marked noindex and kept out of the
+  sitemap. The slug is "formulation", not "product", so nothing collides with
+  WooCommerce.
+* The Notes widget and the Product Header widget can now be set to "The product
+  on this page (automatic)", which is what makes one template serve them all.
+  Asked to follow the page's product where there isn't one, the notes list shows
+  its empty state rather than quietly listing every note there is.
+* Fixed: a note stayed marked unread after being read. The view was only
+  recorded by the Single Note widget, so a Single Note template built from
+  dynamic tags never recorded one. Opening the note's page now marks it read
+  however that page is built. Designing the template in Elementor does not.
+* Permalinks are flushed once on update, so the new product URL works without
+  re-saving them by hand.
+
+= 1.0.78 =
+* A note's "Trial number" is now "Version number", everywhere it is written or
+  read: the field on the note editor, the chip on every note card, the Elementor
+  dynamic tag, and the widget's colour control for it.
+* The stored meta key stays ff_note_trial. Renaming it would have detached the
+  number from every note already published, and nothing outside the plugin reads
+  it by name. Nothing needs re-entering.
 
 = 1.0.77 =
 * New widget: Founding Faces Note Gallery. The images already stored against a
