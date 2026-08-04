@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.65
+Stable tag: 1.0.66
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,20 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.66 =
+* "Notes per page" is now a responsive control: a different page size for
+  desktop, tablet and mobile. The page is built at the desktop size and the
+  script cuts it to the screen's own size before anything is painted, because
+  one document is served to every screen — and behind LiteSpeed's page cache,
+  the same document is served to every visitor, so the size cannot be decided
+  on the server.
+* A smaller screen drops the surplus rows with no extra request. The page
+  numbers, the "Load more" button and its starting point all follow.
+* Elementor's own breakpoints are read from the site's settings, so moving them
+  moves these too.
+* New: "Open notes in a new tab" on the notes list. It applies to rows loaded
+  later as well as the first page, and carries rel="noopener".
 
 = 1.0.65 =
 * New "Notes layout" style section: the notes list can run in up to four

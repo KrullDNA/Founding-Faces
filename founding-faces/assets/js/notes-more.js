@@ -30,6 +30,34 @@
 	}
 
 	/**
+	 * How many rows this screen should hold.
+	 *
+	 * The page arrives built at the desktop size — one document is served to
+	 * every screen, and behind a page cache the same document is served to
+	 * every visitor, so the server cannot decide this. Read at request time
+	 * rather than stored, so a rotated tablet is right without any bookkeeping.
+	 *
+	 * @param {HTMLElement} button The load-more button, which holds the sizes.
+	 * @return {number} Rows per page for this viewport.
+	 */
+	function devicePerPage( button ) {
+		var desktop = parseInt( button.dataset.perPage, 10 ) || 0;
+		var width   = window.innerWidth;
+
+		var mobileBp = parseInt( button.dataset.bpMobile, 10 ) || 767;
+		if ( width <= mobileBp ) {
+			return parseInt( button.dataset.ppMobile, 10 ) || desktop;
+		}
+
+		var tabletBp = parseInt( button.dataset.bpTablet, 10 ) || 1024;
+		if ( width <= tabletBp ) {
+			return parseInt( button.dataset.ppTablet, 10 ) || desktop;
+		}
+
+		return desktop;
+	}
+
+	/**
 	 * Ask the server for a batch of rows.
 	 *
 	 * @param {HTMLElement} section The notes section.
@@ -42,8 +70,9 @@
 		body.append( 'action', 'ff_load_notes' );
 		body.append( 'nonce', button.dataset.nonce );
 		body.append( 'offset', offset );
-		body.append( 'per_page', button.dataset.perPage );
+		body.append( 'per_page', devicePerPage( button ) );
 		body.append( 'link', button.dataset.link );
+		body.append( 'new_tab', button.dataset.newTab );
 		body.append( 'show_product', button.dataset.showProduct );
 
 		var filters = readFilters( section );
@@ -177,6 +206,58 @@
 
 		var label = button.textContent;
 
+		// --- First page: cut it down to this device's size. ---
+		// The rows for a desktop page are already here, so a smaller screen
+		// only has to drop the surplus — no request, no flash of the wrong
+		// length. A larger one does need fetching.
+		( function fitFirstPage() {
+			var rendered = parseInt( button.dataset.perPage, 10 ) || 0;
+			var want     = devicePerPage( button );
+
+			if ( ! rendered || ! want || want === rendered ) {
+				return;
+			}
+
+			var list = results.querySelector( '.ff-notes-read-list' );
+
+			if ( want < rendered && list ) {
+				var trimmed = false;
+				while ( list.children.length > want ) {
+					list.removeChild( list.lastElementChild );
+					trimmed = true;
+				}
+
+				// However many are left, that is where the next batch starts.
+				// A member with three notes and a page size of ten still has
+				// three, and nothing more to load.
+				button.dataset.offset = list.children.length;
+
+				if ( trimmed && wrap && 'numbers' !== section.dataset.paging ) {
+					wrap.hidden = false;
+				}
+
+				// The numbers were counted in desktop pages, so they need
+				// rebuilding — the rows themselves are already correct.
+				if ( section.querySelector( '.ff-notes-pager' ) ) {
+					request( section, button, 0 )
+						.then( function ( data ) {
+							refreshControls( section, wrap, data );
+						} )
+						.catch( function () {} );
+				}
+				return;
+			}
+
+			// This screen wants a longer page than was rendered.
+			request( section, button, 0 )
+				.then( function ( data ) {
+					replaceRows( results, data );
+					button.dataset.offset = data.offset;
+					refreshControls( section, wrap, data );
+				} )
+				.catch( function () {} );
+		} )();
+
 		// --- Load more: append the next batch. ---
 		button.addEventListener( 'click', function () {
 			if ( button.disabled ) {
@@ -241,7 +322,7 @@
 				return;
 			}
 
-			var perPage = parseInt( button.dataset.perPage, 10 ) || 0;
+			var perPage = devicePerPage( button );
 			var page    = parseInt( link.dataset.page, 10 ) || 1;
 			var offset  = ( page - 1 ) * perPage;
 
