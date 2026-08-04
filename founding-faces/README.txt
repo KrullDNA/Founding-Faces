@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.79
+Stable tag: 1.0.80
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.80 =
+* "The product on this page (automatic)" now resolves on a note's page too, to
+  the product that note belongs to. On a Single Note template that makes a "more
+  from this formulation" block possible without naming a product anywhere. On a
+  Single Product template nothing changes.
 
 = 1.0.79 =
 * Products have two more stages: Formula finalised and Complete. They are on the
