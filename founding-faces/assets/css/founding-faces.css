@@ -999,7 +999,22 @@
 	max-width: none;
 }
 
+/*
+ * Leaflet gives its own furniture high z-indexes — panes at 400, controls at
+ * 800, the corner containers at 1000 — which are numbers meant for a page where
+ * the map is the page. Dropped into a layout they beat a sticky header, and the
+ * zoom buttons and attribution paint straight over it.
+ *
+ * isolation + a z-index of 0 make this element a stacking context, so all of
+ * that stays contained: 1000 now means "1000 within the map", and the map as a
+ * whole sits at 0 among its siblings. Nothing inside can climb out. The
+ * widget's own z-index (Elementor's Advanced tab) still positions the map
+ * against the rest of the page, which is the level that decision belongs at.
+ */
 .ff-members-map {
+	position: relative;
+	z-index: 0;
+	isolation: isolate;
 	width: 100%;
 	min-height: 320px;
 	border-radius: var(--ff-radius);

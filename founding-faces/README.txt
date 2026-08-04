@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.71
+Stable tag: 1.0.72
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -195,6 +195,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.72 =
+* Fixed: the map's zoom buttons, legend and attribution painted over a sticky
+  header. Leaflet numbers its own furniture for a page where the map IS the
+  page — panes at 400, controls at 800, corners at 1000 — and those numbers
+  beat any normal header. The map now forms its own stacking context, so those
+  numbers only mean anything inside it and nothing can climb out.
+* The widget's own z-index (Elementor → Advanced) still decides where the map
+  sits against the rest of the page, which is where that decision belongs.
 
 = 1.0.71 =
 * The no-poll message now accepts HTML — links, bold, italics, lists — and a
