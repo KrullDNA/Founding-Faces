@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.81
+Stable tag: 1.0.82
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,22 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.82 =
+* Note cards can be shortened: "Body length" takes a number of words or of
+  characters, so a long note no longer runs the length of the column. A
+  shortened body is plain text — formatting is dropped rather than cut in half —
+  and it can carry a link through to the whole note, with your own wording and
+  its own style controls.
+* Every part of a note card now has its own switch: title, stage badge, version
+  number, date, vault chip, body copy and images. Turn one off and nothing is
+  left behind — a card with no title and no chips has no header element holding
+  space where they used to be.
+* On the Notes, Notes Archive, Single Note and Home widgets, all four. The
+  editor samples honour the same settings, so the shortened length can be judged
+  where it is set rather than guessed at.
+* Shortcode equivalents: body_trim, body_unit ("words" or "characters"),
+  body_more, body_more_text, and hide="date,vault" for the parts.
 
 = 1.0.81 =
 * Fixed: the Edit Product and Edit Note screens showed no permalink row, so the

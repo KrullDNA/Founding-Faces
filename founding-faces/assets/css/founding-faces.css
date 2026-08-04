@@ -1595,3 +1595,13 @@
 		transition: none;
 	}
 }
+
+/* The "read the full note" link under a shortened body. Placement only — the
+ * colour, type, underline and spacing are all controls. */
+.ff-note-more {
+	margin: 0;
+}
+
+.ff-note-more-link {
+	display: inline-block;
+}
