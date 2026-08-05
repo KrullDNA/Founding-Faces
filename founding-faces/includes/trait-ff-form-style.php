@@ -114,7 +114,20 @@ trait FF_Form_Style_Controls {
 			'label' => __( 'Fields (inputs & text areas)', 'founding-faces' ),
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
-		$fields = '{{WRAPPER}} .ff-field input[type="text"], {{WRAPPER}} .ff-field input[type="email"], {{WRAPPER}} .ff-field textarea';
+		// Every typed field the plugin renders is listed. A type left off is a
+		// field that keeps the browser's own border and ignores everything set
+		// here, which is how a password box ends up looking unlike the email box
+		// directly above it.
+		$fields = implode( ', ', array(
+			'{{WRAPPER}} .ff-field input[type="text"]',
+			'{{WRAPPER}} .ff-field input[type="email"]',
+			'{{WRAPPER}} .ff-field input[type="password"]',
+			'{{WRAPPER}} .ff-field input[type="tel"]',
+			'{{WRAPPER}} .ff-field input[type="url"]',
+			'{{WRAPPER}} .ff-field input[type="number"]',
+			'{{WRAPPER}} .ff-field input[type="date"]',
+			'{{WRAPPER}} .ff-field textarea',
+		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
 			'name'     => 'field_typo',
 			'selector' => $fields,
