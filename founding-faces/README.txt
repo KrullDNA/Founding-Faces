@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.89
+Stable tag: 1.0.90
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.90 =
+* The Login widget takes a "Show in the editor as" choice: both states one above
+  the other, a logged-out visitor (the form), or a signed-in member (the
+  message). The canvas only — the front end always shows the right one for
+  whoever is looking.
+* Fixed at the same time: the editor's two-state preview never ran. The flag that
+  asked for it was not among the shortcode's declared attributes, so it was
+  dropped before it was read, and the canvas only ever showed the signed-in
+  panel — which is exactly why the form could not be styled.
+* The signed-in panel is now built in one place rather than twice, with the
+  log-out link going nowhere in the editor.
 
 = 1.0.89 =
 * The note gallery now moves one way. Forward always slides left and back always
