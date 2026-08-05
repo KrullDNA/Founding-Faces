@@ -70,8 +70,16 @@
 	margin-bottom: 0.4rem;
 }
 
+/* Every typed field is listed, not just the text one: a type left off this list
+ * keeps the browser's own border and ignores the Elementor field controls, so
+ * one field in a form ends up looking unlike the rest of it. */
 .ff-field input[type="text"],
 .ff-field input[type="email"],
+.ff-field input[type="password"],
+.ff-field input[type="tel"],
+.ff-field input[type="url"],
+.ff-field input[type="number"],
+.ff-field input[type="date"],
 .ff-field textarea {
 	font-family: inherit;
 	font-size: 1rem;

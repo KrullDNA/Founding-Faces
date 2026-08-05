@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.91
+Stable tag: 1.0.92
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,13 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.92 =
+* Fixed: password fields kept the browser's own black border and ignored every
+  Field control in the Style tab, so the password box on the Login widget looked
+  nothing like the email box directly above it. Only text, email and text areas
+  were ever listed; password, date, telephone, URL and number are now listed too,
+  in the stylesheet and in the Elementor controls alike.
 
 = 1.0.91 =
 * The Login widget's signed-in message takes an alignment and a margin, which it
