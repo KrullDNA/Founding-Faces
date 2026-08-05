@@ -196,6 +196,60 @@ class FF_Login_Widget extends \Elementor\Widget_Base {
 			'label'    => __( 'Signed-in message text', 'founding-faces' ),
 			'selector' => '{{WRAPPER}} .ff-login-status',
 		) );
+		$this->add_responsive_control( 'status_align', array(
+			'label'     => __( 'Signed-in message alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-login-status' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'status_margin', array(
+			'label'      => __( 'Signed-in message margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-login-status' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'in_box_heading', array(
+			'label'     => __( 'The signed-in panel', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'in_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-login--in' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'in_border',
+			'selector' => '{{WRAPPER}} .ff-login--in',
+		) );
+		$this->add_responsive_control( 'in_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-login--in' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'in_shadow',
+			'selector' => '{{WRAPPER}} .ff-login--in',
+		) );
+		$this->add_responsive_control( 'in_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-login--in' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'in_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-login--in' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
 		$this->end_controls_section();
 	}
 

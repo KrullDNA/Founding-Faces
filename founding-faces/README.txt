@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.90
+Stable tag: 1.0.91
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.91 =
+* The Login widget's signed-in message takes an alignment and a margin, which it
+  had neither of — only a colour and a typeface, which is not enough to place
+  something on a page.
+* The signed-in panel it sits in gained its own background, border, corner
+  radius, shadow, padding and margin, so it can be a card in its own right
+  rather than two lines of text where a form used to be.
 
 = 1.0.90 =
 * The Login widget takes a "Show in the editor as" choice: both states one above
