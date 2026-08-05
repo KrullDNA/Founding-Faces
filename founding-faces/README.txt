@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.93
+Stable tag: 1.0.94
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.94 =
+* Fixed: a logged-out visitor who opened a restricted page, a gated note or a
+  product page was sent to the WordPress login screen, ignoring the login page
+  set in Settings. Every one of those redirects now uses your login page, and
+  the WordPress screen is only ever used when no login page has been set.
+* The page they were trying to reach travels with them, so logging in returns
+  them to it rather than dropping them on the hub. A wrong password keeps the
+  destination too.
+* Guarded against a loop: if the login page is itself given an access level, the
+  WordPress login screen is used rather than redirecting the page to itself.
 
 = 1.0.93 =
 * New "Emails" screen under Founding Faces: every email the plugin sends, shown

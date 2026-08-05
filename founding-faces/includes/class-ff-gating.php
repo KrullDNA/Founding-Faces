@@ -241,7 +241,7 @@ class FF_Gating {
 		}
 
 		if ( ! is_user_logged_in() ) {
-			wp_safe_redirect( wp_login_url( self::current_url() ) );
+			wp_safe_redirect( FF_Menu_Items::login_redirect_target( self::current_url() ) );
 			exit;
 		}
 
@@ -271,7 +271,7 @@ class FF_Gating {
 		}
 
 		if ( ! is_user_logged_in() ) {
-			wp_safe_redirect( wp_login_url( self::current_url() ) );
+			wp_safe_redirect( FF_Menu_Items::login_redirect_target( self::current_url() ) );
 			exit;
 		}
 

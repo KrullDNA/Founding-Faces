@@ -165,6 +165,15 @@ class FF_Menu_Items {
 	 * @return string
 	 */
 	public static function login_redirect_url() {
+		// Someone turned away from a locked page arrives carrying where they
+		// were going. Honouring it is the whole point of sending them here: a
+		// member who asked for a note should land on that note once they are
+		// in, not on the hub with the note still to find.
+		$wanted = self::requested_redirect();
+		if ( '' !== $wanted ) {
+			return $wanted;
+		}
+
 		$url = trim( (string) get_option( self::OPT_LOGIN_REDIRECT, '' ) );
 		if ( '' !== $url ) {
 			return $url;
@@ -172,6 +181,64 @@ class FF_Menu_Items {
 
 		$portal = FF_Messages::portal_url();
 		return '' !== $portal ? $portal : home_url( '/' );
+	}
+
+	/**
+	 * Where to send a visitor who has been turned away from a locked page.
+	 *
+	 * The same as login_url(), with one guard: if the login page is itself
+	 * locked — easily done by giving it a group in its own access box — sending
+	 * someone there produces a redirect loop with no way in. In that one case
+	 * the WordPress login screen is used, which is always reachable, so a
+	 * misconfiguration costs a plain-looking login page rather than the site.
+	 *
+	 * @param string $return_to Where to send them once they are in.
+	 * @return string
+	 */
+	public static function login_redirect_target( $return_to = '' ) {
+		$url  = self::login_url( $return_to );
+		$page = trim( (string) get_option( self::OPT_LOGIN_PAGE, '' ) );
+
+		if ( '' !== $page && self::same_page( $page, $return_to ) ) {
+			return wp_login_url( $return_to );
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Whether two URLs point at the same page, ignoring anything after the path.
+	 *
+	 * @param string $a First URL.
+	 * @param string $b Second URL.
+	 * @return bool
+	 */
+	private static function same_page( $a, $b ) {
+		$path_a = untrailingslashit( (string) wp_parse_url( $a, PHP_URL_PATH ) );
+		$path_b = untrailingslashit( (string) wp_parse_url( $b, PHP_URL_PATH ) );
+
+		return '' !== $path_a && $path_a === $path_b;
+	}
+
+	/**
+	 * The destination asked for in the address bar, if it is safe to use.
+	 *
+	 * wp_validate_redirect() refuses anything off this site, so a link of the
+	 * form /login/?redirect_to=https://elsewhere.example can't be used to walk
+	 * a member off the site through our own login form.
+	 *
+	 * @return string An on-site URL, or an empty string.
+	 */
+	private static function requested_redirect() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $_GET['redirect_to'] ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$url = esc_url_raw( wp_unslash( $_GET['redirect_to'] ) );
+
+		return (string) wp_validate_redirect( $url, '' );
 	}
 
 	/**

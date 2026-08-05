@@ -384,7 +384,7 @@ class FF_Settings {
 
 		<h2><?php esc_html_e( 'Log in and log out', 'founding-faces' ); ?></h2>
 		<p class="description">
-			<?php esc_html_e( 'Used by the "Log in / Log out" menu item (set it per item in Appearance → Menus) and by the Founding Faces Login widget.', 'founding-faces' ); ?>
+			<?php esc_html_e( 'Used by the "Log in / Log out" menu item (set it per item in Appearance → Menus), by the Founding Faces Login widget, and by every redirect that sends a logged-out visitor away from restricted content.', 'founding-faces' ); ?>
 		</p>
 		<table class="form-table" role="presentation">
 			<tr>
@@ -394,7 +394,7 @@ class FF_Settings {
 						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_PAGE ); ?>"
 						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGIN_PAGE, '' ) ); ?>"
 						placeholder="<?php echo esc_attr( home_url( '/login/' ) ); ?>" />
-					<p class="description"><?php esc_html_e( 'The page holding your Founding Faces Login widget. Leave empty to use the standard WordPress login screen.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The page holding your Founding Faces Login widget. Used everywhere the plugin asks someone to log in — the menu item, the login widget, and anyone turned away from a restricted page or a gated note. Leave empty to use the standard WordPress login screen.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
