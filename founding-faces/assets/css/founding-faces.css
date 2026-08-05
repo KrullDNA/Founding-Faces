@@ -228,10 +228,14 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
-	/* Row or column, set by the widget's "Meta row layout" control. Vertical
-	 * centring belongs to each group, not here, so a column of groups is free
-	 * to stretch to the card's width and align its own contents. */
-	flex-direction: var(--ff-meta-dir, row);
+	/* Row or column, set by the widget's "Meta row layout" control. The
+	 * fallback is the control's own default, not the other value: until
+	 * Elementor regenerates its CSS there is no custom property to read, and a
+	 * fallback that disagreed with the default would mean the default was only
+	 * true on a second look. Vertical centring belongs to each group, not here,
+	 * so a column of groups is free to stretch to the card's width and align
+	 * its own contents. */
+	flex-direction: var(--ff-meta-dir, column);
 }
 
 .ff-note-meta-group {
