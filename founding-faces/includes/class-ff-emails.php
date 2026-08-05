@@ -522,6 +522,8 @@ class FF_Emails {
 		$anchors = array();
 		$values  = array();
 
+		$template = self::pull_up_link_lines( $template, array_keys( $labels ) );
+
 		foreach ( $replacements as $key => $value ) {
 			// A link placeholder becomes a linked phrase, not a pasted address.
 			// Nobody wants sixty characters of query string in the middle of a
@@ -543,6 +545,35 @@ class FF_Emails {
 		$filled = wpautop( make_clickable( strtr( $template, $values ) ) );
 
 		return strtr( $filled, $anchors );
+	}
+
+	/**
+	 * Bring a link that sits alone on the next line up onto the sentence above.
+	 *
+	 * The templates were written when the placeholder produced a bare URL, and
+	 * a URL on its own line is the only sensible way to set one out. Now that
+	 * it produces a few linked words, the same line break leaves the link
+	 * stranded under the sentence that introduces it.
+	 *
+	 * Only a single line break is closed up. A deliberate blank line before the
+	 * placeholder makes it a paragraph of its own, and that is left alone.
+	 *
+	 * @param string $template     The template text.
+	 * @param array  $placeholders The link placeholders to look for.
+	 * @return string
+	 */
+	private static function pull_up_link_lines( $template, $placeholders ) {
+		$alternatives = array();
+		foreach ( $placeholders as $placeholder ) {
+			$alternatives[] = preg_quote( $placeholder, '/' );
+		}
+		if ( empty( $alternatives ) ) {
+			return $template;
+		}
+
+		$pattern = '/([^\n])[ \t]*\n[ \t]*(' . implode( '|', $alternatives ) . ')/u';
+
+		return preg_replace( $pattern, '$1 $2', (string) $template );
 	}
 
 	/**

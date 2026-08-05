@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,13 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.1 =
+* A link placeholder sitting alone on the line under its sentence is brought up
+  onto that sentence. The templates were written when the placeholder produced a
+  bare URL, where a line of its own is the only sensible way to set one out. Now
+  that it produces a few linked words, the same line break left the link
+  stranded. A deliberate blank line still makes it a paragraph of its own.
 
 = 1.1.0 =
 * Heading size and weight for the emails, alongside the two heading colours.
