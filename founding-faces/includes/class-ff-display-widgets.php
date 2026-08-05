@@ -200,11 +200,30 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
 
+		$this->add_responsive_control( 'meta_layout', array(
+			'label'       => __( 'Meta row layout', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'column',
+			'options'     => array(
+				'row'    => __( 'All on one line', 'founding-faces' ),
+				'column' => __( 'Badges above, version and date below', 'founding-faces' ),
+			),
+			'description' => __( 'Two lines keeps the pills together and the plain text together, rather than letting each chip wrap wherever it runs out of room.', 'founding-faces' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-note-meta' => '--ff-meta-dir: {{VALUE}};' ),
+		) );
 		$this->add_responsive_control( 'badge_gap', array(
 			'label'     => __( 'Gap between chips', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SLIDER,
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
-			'selectors' => array( '{{WRAPPER}} .ff-note-meta' => 'gap: {{SIZE}}{{UNIT}};' ),
+			'selectors' => array( '{{WRAPPER}} .ff-note-meta-group' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'meta_line_gap', array(
+			'label'       => __( 'Gap between the two lines', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SLIDER,
+			'size_units'  => array( 'px', 'em', 'rem' ),
+			'range'       => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors'   => array( '{{WRAPPER}} .ff-note-meta' => 'gap: {{SIZE}}{{UNIT}};' ),
+			'condition'   => array( 'meta_layout' => 'column' ),
 		) );
 		$this->add_responsive_control( 'meta_align', array(
 			'label'     => __( 'Alignment', 'founding-faces' ),
@@ -214,7 +233,10 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 				'center'     => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
 				'flex-end'   => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
 			),
-			'selectors' => array( '{{WRAPPER}} .ff-note-meta' => 'justify-content: {{VALUE}};' ),
+			'selectors' => array(
+				'{{WRAPPER}} .ff-note-meta'       => 'justify-content: {{VALUE}};',
+				'{{WRAPPER}} .ff-note-meta-group' => 'justify-content: {{VALUE}};',
+			),
 		) );
 		$this->add_responsive_control( 'meta_margin', array(
 			'label'      => __( 'Row margin', 'founding-faces' ),

@@ -228,7 +228,17 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
+	/* Row or column, set by the widget's "Meta row layout" control. Vertical
+	 * centring belongs to each group, not here, so a column of groups is free
+	 * to stretch to the card's width and align its own contents. */
+	flex-direction: var(--ff-meta-dir, row);
+}
+
+.ff-note-meta-group {
+	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
+	gap: 0.5rem;
 }
 
 .ff-note-trial,

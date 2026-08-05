@@ -973,32 +973,46 @@ class FF_Display {
 	}
 
 	/**
-	 * Join the meta row's chips, putting the mark only where it belongs.
+	 * Build the meta row as two groups: the pills, then the plain text.
 	 *
-	 * Between two pieces of plain text and nowhere else. A pill already has an
-	 * edge of its own — a shape, usually a background — so a mark beside one is
-	 * a second boundary drawn over the first, which reads as a mistake. The
-	 * version and the date have no edge at all, which is exactly why they run
-	 * together and why the mark exists.
+	 * Grouping them is what lets the row be one line or two without the markup
+	 * changing — the widget's Layout control turns the row into a column, and
+	 * the badges land above the version and date rather than each chip wrapping
+	 * wherever it happens to run out of space.
+	 *
+	 * The separator goes between two pieces of plain text and nowhere else. A
+	 * pill already has an edge of its own — a shape, usually a background — so a
+	 * mark beside one is a second boundary drawn over the first. The version and
+	 * the date have no edge at all, which is why they ran together.
+	 *
+	 * An empty group isn't rendered, so turning every pill off doesn't leave a
+	 * gap where they used to be.
 	 *
 	 * @param array $items Each entry array( 'pill'|'text', html ).
 	 * @param array $args  The filled-in card options.
 	 * @return string
 	 */
 	private static function meta_row( $items, $args ) {
-		$sep  = self::meta_separator( $args );
-		$out  = '';
-		$prev = '';
+		$sep    = self::meta_separator( $args );
+		$groups = array( 'pill' => '', 'text' => '' );
+		$prev   = '';
 
 		foreach ( $items as $item ) {
 			list( $kind, $html ) = $item;
 
-			if ( '' !== $sep && 'text' === $kind && 'text' === $prev ) {
-				$out .= $sep;
+			if ( 'text' === $kind && '' !== $sep && 'text' === $prev ) {
+				$groups['text'] .= $sep;
 			}
 
-			$out .= $html;
-			$prev = $kind;
+			$groups[ $kind ] .= $html;
+			$prev             = $kind;
+		}
+
+		$out = '';
+		foreach ( array( 'pill', 'text' ) as $kind ) {
+			if ( '' !== $groups[ $kind ] ) {
+				$out .= '<span class="ff-note-meta-group ff-note-meta-' . ( 'pill' === $kind ? 'pills' : 'text' ) . '">' . $groups[ $kind ] . '</span>';
+			}
 		}
 
 		return $out;

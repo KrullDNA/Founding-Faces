@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.86
+Stable tag: 1.0.87
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.87 =
+* The meta row is now built as two groups — the pills, then the plain text — and
+  a "Meta row layout" control puts them on one line or two. Two lines is the new
+  default: the stage badge and vault chip together, the version and date beneath.
+* Because they are groups rather than loose chips, a narrow card no longer wraps
+  at whatever point it runs out of room; the pills stay with the pills.
+* "Gap between chips" now spaces the chips within each line, and a new "Gap
+  between the two lines" spaces the lines. Alignment applies to both.
+* Set per device, so a card can be one line on desktop and two on a phone, or
+  the other way round.
 
 = 1.0.86 =
 * The mark between the chips now goes between two pieces of plain text and
