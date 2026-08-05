@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.84
+Stable tag: 1.0.85
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.85 =
+* Every chip on a note now has its own Style section — Stage badge, Version
+  number, Date, and The 35 vault chip — each with typography, text colour,
+  background, border, corner radius, padding, box shadow and a vertical nudge.
+  One typography setting across all four was the wrong shape: a pill, two pieces
+  of quiet text and a small-caps marker are three jobs that only looked like one.
+* "Badges & chips" now holds what belongs to the row rather than the chips: the
+  gap, the alignment, the row's margin, and the separator's controls.
+* Two settings change hands. Any typography set under the old shared control now
+  applies to the stage badge alone, and the combined "Version & date colour" is
+  gone — set the colour in the Version number and Date sections instead.
 
 = 1.0.84 =
 * A note's stage, version and date ran into one another. There is now a mark
