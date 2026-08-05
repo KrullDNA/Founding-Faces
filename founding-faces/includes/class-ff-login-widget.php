@@ -123,6 +123,20 @@ class FF_Login_Widget extends \Elementor\Widget_Base {
 			'raw'             => __( 'A signed-in member sees this message and a log-out link instead of the form, so the page is never a dead end.', 'founding-faces' ),
 			'content_classes' => 'elementor-descriptor',
 		) );
+
+		$this->add_control( 'editor_view', array(
+			'label'       => __( 'Show in the editor as', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'both',
+			'separator'   => 'before',
+			'options'     => array(
+				'both' => __( 'Both states, one above the other', 'founding-faces' ),
+				'out'  => __( 'A logged-out visitor (the form)', 'founding-faces' ),
+				'in'   => __( 'A signed-in member (the message)', 'founding-faces' ),
+			),
+			'description' => __( 'Only changes the canvas. The front end always shows the right one for whoever is looking. You are signed in while you design, so without this the form could never be seen.', 'founding-faces' ),
+		) );
+
 		$this->end_controls_section();
 
 		// The shared form Style tab: box, labels, fields, hints, button, notices.
@@ -204,9 +218,11 @@ class FF_Login_Widget extends \Elementor\Widget_Base {
 			'lost_text'      => isset( $s['lost_text'] ) ? $s['lost_text'] : '',
 			'logged_in_text' => isset( $s['logged_in_text'] ) ? $s['logged_in_text'] : '',
 			'form_class'     => 'ff-form--full',
-			// In the editor render both states (signed-in panel and the form)
-			// with a sample error, so every part can be styled in one pass.
-			'editor_preview' => FF_History::is_editor() ? 'yes' : '',
+			// Which state the canvas draws. Empty on the front end, where the
+			// viewer decides it and nothing here should.
+			'editor_preview' => FF_History::is_editor()
+				? ( isset( $s['editor_view'] ) && '' !== $s['editor_view'] ? $s['editor_view'] : 'both' )
+				: '',
 		) );
 	}
 }

@@ -568,6 +568,11 @@ class FF_Menu_Items {
 				'lost_text'      => __( 'Forgotten your password?', 'founding-faces' ),
 				'logged_in_text' => '',
 				'form_class'     => '',
+				// '' live, or which state the Elementor editor should draw:
+				// 'both', 'in' or 'out'. Declared here because shortcode_atts
+				// keeps only the keys it is given — left out, it was silently
+				// dropped and the editor never previewed anything.
+				'editor_preview' => '',
 			),
 			$atts,
 			'ff_login'
@@ -590,42 +595,59 @@ class FF_Menu_Items {
 		$redirect = '' !== trim( (string) $atts['redirect'] ) ? $atts['redirect'] : self::login_redirect_url();
 		$classes  = 'ff-login ff-form' . ( '' !== $atts['form_class'] ? ' ' . $atts['form_class'] : '' );
 
-		// Already signed in: show who they are and a way out, not a login form.
-		// In the editor both states are rendered instead — Nick is always signed
-		// in, so the form itself would otherwise never be visible to style.
-		if ( is_user_logged_in() && ! empty( $atts['editor_preview'] ) ) {
-			$text = '' !== trim( (string) $atts['logged_in_text'] )
-				? $atts['logged_in_text']
-				: __( "You're signed in.", 'founding-faces' );
+		// In the editor, which state to draw is a choice, not a consequence of
+		// who is looking. Nick is always signed in, so left to itself the canvas
+		// would only ever show the signed-in panel and the form could never be
+		// styled at all.
+		$preview = sanitize_key( (string) $atts['editor_preview'] );
+		if ( '' !== $preview ) {
+			if ( 'in' === $preview ) {
+				return self::login_signed_in_html( $atts, $classes, true );
+			}
+			if ( 'out' === $preview ) {
+				return self::login_form_html( $atts, $classes, true );
+			}
 
-			$signed_in  = '<div class="' . esc_attr( $classes ) . ' ff-login--in">';
-			$signed_in .= '<p class="ff-login-status">' . FF_Text::inline( $text ) . '</p>';
-			$signed_in .= '<p class="ff-login-actions"><a class="ff-login-logout" href="#">'
-				. esc_html( self::logout_label() ) . '</a></p>';
-			$signed_in .= '</div>';
-
-			return $signed_in . self::login_form_html( $atts, $classes, false );
+			// Both, with the error notice showing, so one pass covers the lot.
+			return self::login_signed_in_html( $atts, $classes, true )
+				. self::login_form_html( $atts, $classes, true );
 		}
 
+		// Already signed in: show who they are and a way out, not a login form.
 		if ( is_user_logged_in() ) {
-			$text = '' !== trim( (string) $atts['logged_in_text'] )
-				? $atts['logged_in_text']
-				: __( "You're signed in.", 'founding-faces' );
-
-			$out  = '<div class="' . esc_attr( $classes ) . ' ff-login--in">';
-			$out .= '<p class="ff-login-status">' . FF_Text::inline( $text ) . '</p>';
-			$out .= '<p class="ff-login-actions"><a class="ff-login-logout" href="' . esc_url( self::logout_url() ) . '">'
-				. esc_html( self::logout_label() ) . '</a></p>';
-			$out .= '</div>';
-			return $out;
+			return self::login_signed_in_html( $atts, $classes, false );
 		}
 
 		// A failed attempt comes back with ?login=failed; say so plainly. In the
 		// editor the error is shown as a sample, so it can be styled.
-		$failed = ( isset( $_GET['login'] ) && 'failed' === sanitize_key( wp_unslash( $_GET['login'] ) ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			|| ! empty( $atts['editor_preview'] );
+		$failed = isset( $_GET['login'] ) && 'failed' === sanitize_key( wp_unslash( $_GET['login'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		return self::login_form_html( $atts, $classes, $failed );
+	}
+
+	/**
+	 * The signed-in panel: who they are, and the way out.
+	 *
+	 * @param array  $atts    The resolved attributes.
+	 * @param string $classes The wrapper classes.
+	 * @param bool   $sample  Whether this is the editor's preview, where the
+	 *                        log-out link must go nowhere.
+	 * @return string
+	 */
+	private static function login_signed_in_html( $atts, $classes, $sample ) {
+		$text = '' !== trim( (string) $atts['logged_in_text'] )
+			? $atts['logged_in_text']
+			: __( "You're signed in.", 'founding-faces' );
+
+		$href = $sample ? '#' : self::logout_url();
+
+		$out  = '<div class="' . esc_attr( $classes ) . ' ff-login--in">';
+		$out .= '<p class="ff-login-status">' . FF_Text::inline( $text ) . '</p>';
+		$out .= '<p class="ff-login-actions"><a class="ff-login-logout" href="' . esc_url( $href ) . '">'
+			. esc_html( self::logout_label() ) . '</a></p>';
+		$out .= '</div>';
+
+		return $out;
 	}
 
 	/**
