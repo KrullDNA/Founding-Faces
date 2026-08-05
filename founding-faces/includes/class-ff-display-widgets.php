@@ -92,7 +92,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'default'     => '|',
 			'separator'   => 'before',
 			'placeholder' => __( 'Leave blank for none', 'founding-faces' ),
-			'description' => __( 'A mark between the stage, version and date so they do not run together. Styled under Badges & chips.', 'founding-faces' ),
+			'description' => __( 'Goes between the version and the date, which have no edge of their own. Never beside the stage badge or the vault chip — they have a shape already. Styled under Badges & chips.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'body_unit', array(

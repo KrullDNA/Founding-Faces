@@ -614,16 +614,16 @@ class FF_Display {
 
 		$meta = array();
 		if ( $stage && self::shows( $a, 'stage' ) ) {
-			$meta[] = self::stage_badge( $stage );
+			$meta[] = array( 'pill', self::stage_badge( $stage ) );
 		}
 		if ( '' !== (string) $trial && self::shows( $a, 'version' ) ) {
-			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>' );
 		}
 		if ( $date && self::shows( $a, 'date' ) ) {
-			$meta[] = '<span class="ff-note-date">' . esc_html( $date ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( $date ) . '</span>' );
 		}
 		if ( 'the-35-only' === $audience && self::shows( $a, 'vault' ) ) {
-			$meta[] = '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
 		}
 
 		// No header at all when everything that would go in it is turned off,
@@ -631,7 +631,7 @@ class FF_Display {
 		if ( '' !== $title || $meta ) {
 			$out .= '<header class="ff-note-head">' . $title;
 			if ( $meta ) {
-				$out .= '<div class="ff-note-meta">' . implode( self::meta_separator( $a ), $meta ) . '</div>';
+				$out .= '<div class="ff-note-meta">' . self::meta_row( $meta, $a ) . '</div>';
 			}
 			$out .= '</header>';
 		}
@@ -695,22 +695,22 @@ class FF_Display {
 
 		$meta = array();
 		if ( self::shows( $a, 'stage' ) ) {
-			$meta[] = self::stage_badge( $stage );
+			$meta[] = array( 'pill', self::stage_badge( $stage ) );
 		}
 		if ( self::shows( $a, 'version' ) ) {
-			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>' );
 		}
 		if ( self::shows( $a, 'date' ) ) {
-			$meta[] = '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>' );
 		}
 		if ( $vault && self::shows( $a, 'vault' ) ) {
-			$meta[] = '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
 		}
 
 		if ( '' !== $head || $meta ) {
 			$out .= '<header class="ff-note-head">' . $head;
 			if ( $meta ) {
-				$out .= '<div class="ff-note-meta">' . implode( self::meta_separator( $a ), $meta ) . '</div>';
+				$out .= '<div class="ff-note-meta">' . self::meta_row( $meta, $a ) . '</div>';
 			}
 			$out .= '</header>';
 		}
@@ -970,6 +970,38 @@ class FF_Display {
 		$args['hide'] = array_filter( array_map( 'sanitize_key', array_map( 'trim', $args['hide'] ) ) );
 
 		return $args;
+	}
+
+	/**
+	 * Join the meta row's chips, putting the mark only where it belongs.
+	 *
+	 * Between two pieces of plain text and nowhere else. A pill already has an
+	 * edge of its own — a shape, usually a background — so a mark beside one is
+	 * a second boundary drawn over the first, which reads as a mistake. The
+	 * version and the date have no edge at all, which is exactly why they run
+	 * together and why the mark exists.
+	 *
+	 * @param array $items Each entry array( 'pill'|'text', html ).
+	 * @param array $args  The filled-in card options.
+	 * @return string
+	 */
+	private static function meta_row( $items, $args ) {
+		$sep  = self::meta_separator( $args );
+		$out  = '';
+		$prev = '';
+
+		foreach ( $items as $item ) {
+			list( $kind, $html ) = $item;
+
+			if ( '' !== $sep && 'text' === $kind && 'text' === $prev ) {
+				$out .= $sep;
+			}
+
+			$out .= $html;
+			$prev = $kind;
+		}
+
+		return $out;
 	}
 
 	/**

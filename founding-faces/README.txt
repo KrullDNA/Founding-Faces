@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.85
+Stable tag: 1.0.86
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.86 =
+* The mark between the chips now goes between two pieces of plain text and
+  nowhere else — so between the version and the date, but never beside the stage
+  badge or the vault chip. A pill has an edge of its own, and a mark next to one
+  is a second boundary drawn over the first.
 
 = 1.0.85 =
 * Every chip on a note now has its own Style section — Stage badge, Version
