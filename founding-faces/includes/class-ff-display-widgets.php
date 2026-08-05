@@ -86,6 +86,15 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			) );
 		}
 
+		$this->add_control( 'meta_sep', array(
+			'label'       => __( 'Between the chips', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '|',
+			'separator'   => 'before',
+			'placeholder' => __( 'Leave blank for none', 'founding-faces' ),
+			'description' => __( 'A mark between the stage, version and date so they do not run together. Styled under Badges & chips.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'body_unit', array(
 			'label'     => __( 'Body length', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SELECT,
@@ -158,6 +167,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 
 		return array(
 			'hide'           => implode( ',', $hidden ),
+			'sep'            => isset( $s['meta_sep'] ) ? $s['meta_sep'] : '|',
 			'body_trim'      => ( '' !== $unit && isset( $s['body_trim'] ) ) ? absint( $s['body_trim'] ) : 0,
 			'body_unit'      => ( 'characters' === $unit ) ? 'characters' : 'words',
 			'body_more'      => ( isset( $s['body_more'] ) && 'yes' === $s['body_more'] ) ? 'yes' : 'no',
@@ -176,62 +186,143 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Stage badge / version / date / vault chips.
+	 * The meta row as a whole: how far apart the chips sit, and what goes
+	 * between them.
+	 *
+	 * Everything about an individual chip lives in its own section below. A
+	 * shared typography control was the wrong shape: the stage badge is a pill,
+	 * the version and date are quiet text, and the vault chip is a small caps
+	 * marker — three different jobs that only looked like one.
 	 */
 	protected function ffds_badge_section() {
 		$this->start_controls_section( 'ff_badges_sec', array(
 			'label' => __( 'Badges & chips', 'founding-faces' ),
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
-		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
-			'name'     => 'badge_typo',
-			'label'    => __( 'Badge text', 'founding-faces' ),
-			'selector' => '{{WRAPPER}} .ff-badge, {{WRAPPER}} .ff-note-trial, {{WRAPPER}} .ff-note-date, {{WRAPPER}} .ff-note-vault',
-		) );
-		$this->add_control( 'badge_bg', array(
-			'label'     => __( 'Stage badge background', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-badge' => 'background-color: {{VALUE}};' ),
-		) );
-		$this->add_control( 'badge_color', array(
-			'label'     => __( 'Stage badge text', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-badge' => 'color: {{VALUE}};' ),
-		) );
-		$this->add_responsive_control( 'badge_padding', array(
-			'label'      => __( 'Badge padding', 'founding-faces' ),
-			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
-			'size_units' => array( 'px', 'em' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-badge' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
-		) );
-		$this->add_responsive_control( 'badge_radius', array(
-			'label'      => __( 'Badge corner radius', 'founding-faces' ),
-			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
-			'size_units' => array( 'px', '%' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-badge' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
-		) );
-		$this->add_control( 'trial_color', array(
-			'label'     => __( 'Version & date colour', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::COLOR,
-			'separator' => 'before',
-			'selectors' => array( '{{WRAPPER}} .ff-note-trial, {{WRAPPER}} .ff-note-date' => 'color: {{VALUE}};' ),
-		) );
-		$this->add_control( 'vault_bg', array(
-			'label'     => __( 'Vault chip background', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-note-vault' => 'background-color: {{VALUE}};' ),
-		) );
-		$this->add_control( 'vault_color', array(
-			'label'     => __( 'Vault chip text', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-note-vault' => 'color: {{VALUE}};' ),
-		) );
+
 		$this->add_responsive_control( 'badge_gap', array(
 			'label'     => __( 'Gap between chips', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SLIDER,
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
 			'selectors' => array( '{{WRAPPER}} .ff-note-meta' => 'gap: {{SIZE}}{{UNIT}};' ),
 		) );
+		$this->add_responsive_control( 'meta_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'flex-start' => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center'     => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'flex-end'   => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-note-meta' => 'justify-content: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'meta_margin', array(
+			'label'      => __( 'Row margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-meta' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'sep_heading', array(
+			'label'     => __( 'The mark between them', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'sep_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-sep' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'sep_typo',
+			'selector' => '{{WRAPPER}} .ff-note-sep',
+		) );
+		$this->add_responsive_control( 'sep_space', array(
+			'label'       => __( 'Space either side', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SLIDER,
+			'size_units'  => array( 'px', 'em' ),
+			'range'       => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'description' => __( 'On top of the gap above, so the mark can sit tight to one chip or breathe between both.', 'founding-faces' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-note-sep' => 'margin-left: {{SIZE}}{{UNIT}}; margin-right: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'sep_offset', array(
+			'label'      => __( 'Nudge up or down', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => -10, 'max' => 10 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-sep' => 'transform: translateY({{SIZE}}px);' ),
+		) );
+
+		$this->end_controls_section();
+
+		// One section per chip, each with the same full set. The selectors are
+		// scoped through .ff-note-meta so a chip's own settings always outrank
+		// the stylesheet's starting point for it.
+		$this->ffds_chip_section( 'badge', '.ff-badge', __( 'Stage badge', 'founding-faces' ) );
+		$this->ffds_chip_section( 'ver', '.ff-note-trial', __( 'Version number', 'founding-faces' ) );
+		$this->ffds_chip_section( 'date', '.ff-note-date', __( 'Date', 'founding-faces' ) );
+		$this->ffds_chip_section( 'vault', '.ff-note-vault', __( 'The 35 vault chip', 'founding-faces' ) );
+	}
+
+	/**
+	 * The full set of controls for one chip in the meta row.
+	 *
+	 * @param string $prefix   Control id prefix.
+	 * @param string $selector The chip's class, relative to the meta row.
+	 * @param string $label    The section heading.
+	 */
+	protected function ffds_chip_section( $prefix, $selector, $label ) {
+		// Both meta rows: the same widget base styles a note's chips and the
+		// stage badge on a product header, and the badge is the same badge.
+		$sel = '{{WRAPPER}} .ff-note-meta ' . $selector . ', {{WRAPPER}} .ff-product-meta ' . $selector;
+
+		$this->start_controls_section( 'ff_chip_' . $prefix, array(
+			'label' => $label,
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => $prefix . '_typo',
+			'selector' => $sel,
+		) );
+		$this->add_control( $prefix . '_color', array(
+			'label'     => __( 'Text', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( $sel => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( $prefix . '_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( $sel => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => $prefix . '_border',
+			'selector' => $sel,
+		) );
+		$this->add_responsive_control( $prefix . '_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( $sel => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( $prefix . '_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( $sel => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => $prefix . '_shadow',
+			'selector' => $sel,
+		) );
+		$this->add_responsive_control( $prefix . '_offset', array(
+			'label'      => __( 'Nudge up or down', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => -12, 'max' => 12 ) ),
+			'selectors'  => array( $sel => 'transform: translateY({{SIZE}}px);' ),
+		) );
+
 		$this->end_controls_section();
 	}
 
