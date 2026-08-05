@@ -514,7 +514,7 @@ class FF_Account {
 
 		$messages = array(
 			'saved'         => array( 'success', __( 'Your changes have been saved.', 'founding-faces' ) ),
-			'email_pending' => array( 'success', __( 'Almost there — check your new email address for a confirmation link.', 'founding-faces' ) ),
+			'email_pending' => array( 'success', __( 'Almost there, check your new email address for a confirmation link.', 'founding-faces' ) ),
 			'email_changed' => array( 'success', __( 'Your email address has been updated.', 'founding-faces' ) ),
 			'email_taken'   => array( 'error', __( 'That email address is already in use.', 'founding-faces' ) ),
 			'email_bad'     => array( 'error', __( 'That confirmation link is invalid or has expired.', 'founding-faces' ) ),

@@ -116,10 +116,10 @@ class FF_Admin_Emails {
 			$label  = '' !== trim( (string) $real ) ? $real : $user->display_name;
 			if ( '' !== $number ) {
 				/* translators: 1: member name, 2: founding number. */
-				$label = sprintf( __( '%1$s — No. %2$d', 'founding-faces' ), $label, (int) $number );
+				$label = sprintf( __( '%1$s, No. %2$d', 'founding-faces' ), $label, (int) $number );
 			} else {
 				/* translators: %s: member name. */
-				$label = sprintf( __( '%s — The Circle', 'founding-faces' ), $label );
+				$label = sprintf( __( '%s, The Circle', 'founding-faces' ), $label );
 			}
 			$out[ $user->ID ] = $label;
 		}
@@ -185,11 +185,11 @@ class FF_Admin_Emails {
 
 		if ( 'yes' === $result ) {
 			echo '<div class="notice notice-success is-dismissible"><p>'
-				. esc_html__( 'Test sent. If it does not arrive, the problem is with the site\'s mail delivery rather than the template — check your spam folder first, then whatever sends mail for this site.', 'founding-faces' )
+				. esc_html__( 'Test sent. If it does not arrive, the problem is with the site\'s mail delivery rather than the template, check your spam folder first, then whatever sends mail for this site.', 'founding-faces' )
 				. '</p></div>';
 		} elseif ( 'no' === $result ) {
 			echo '<div class="notice notice-error is-dismissible"><p>'
-				. esc_html__( 'WordPress refused to send that. Nothing is wrong with the template — the site cannot send mail at the moment.', 'founding-faces' )
+				. esc_html__( 'WordPress refused to send that. Nothing is wrong with the template, the site cannot send mail at the moment.', 'founding-faces' )
 				. '</p></div>';
 		} elseif ( 'bad_address' === $result ) {
 			echo '<div class="notice notice-error is-dismissible"><p>'
@@ -197,7 +197,7 @@ class FF_Admin_Emails {
 				. '</p></div>';
 		} elseif ( 'empty' === $result ) {
 			echo '<div class="notice notice-warning is-dismissible"><p>'
-				. esc_html__( 'Nothing was sent: this email\'s body has been cleared on the Settings page, which switches it off. That is exactly what a real applicant would get — nothing.', 'founding-faces' )
+				. esc_html__( 'Nothing was sent: this email\'s body has been cleared on the Settings page, which switches it off. That is exactly what a real applicant would get, nothing.', 'founding-faces' )
 				. '</p></div>';
 		}
 	}
@@ -227,7 +227,7 @@ class FF_Admin_Emails {
 		$message = FF_Emails::compose( $kind, self::replacements( $kind, $user_id ) );
 		?>
 		<div class="wrap ff-admin">
-			<h1><?php esc_html_e( 'Founding Faces — Emails', 'founding-faces' ); ?></h1>
+			<h1><?php esc_html_e( 'Founding Faces Emails', 'founding-faces' ); ?></h1>
 			<p class="description" style="max-width:46em;">
 				<?php esc_html_e( 'Every email exactly as a member receives it. This is the real message, built the same way the real one is, so what you see here is what lands in an inbox. The wording lives on the Settings page; the colours, logo and footer live in Email design on that same page.', 'founding-faces' ); ?>
 			</p>
@@ -292,7 +292,7 @@ class FF_Admin_Emails {
 
 				<?php if ( ! empty( $spec['cta_url'] ) && '{set_password_link}' === $spec['cta_url'] ) : ?>
 					<p class="description" style="max-width:46em;">
-						<?php esc_html_e( 'The button in this preview is a sample link, not a working one — a real one is only ever made when a real email is sent, so previewing can never break a link already sitting in a member\'s inbox. Following it will correctly say the link has expired.', 'founding-faces' ); ?>
+						<?php esc_html_e( 'The button in this preview is a sample link, not a working one, a real one is only ever made when a real email is sent, so previewing can never break a link already sitting in a member\'s inbox. Following it will correctly say the link has expired.', 'founding-faces' ); ?>
 					</p>
 				<?php endif; ?>
 

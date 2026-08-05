@@ -184,7 +184,7 @@ class FF_Application {
 			'postcode_hint'          => __( 'Four digits. Used only for the anonymous members map.', 'founding-faces' ),
 			'instagram_label'        => __( 'Instagram handle', 'founding-faces' ),
 			'instagram_placeholder'  => __( '@yourhandle', 'founding-faces' ),
-			'instagram_hint'         => __( 'Optional, and only used privately to review your application — it\'s never shown to other members or on the map.', 'founding-faces' ),
+			'instagram_hint'         => __( 'Optional, and only used privately to review your application, it\'s never shown to other members or on the map.', 'founding-faces' ),
 			'concerns_label'         => __( 'Your main skin concerns', 'founding-faces' ),
 			'concerns_placeholder'   => '',
 			'concerns_hint'          => '',
@@ -751,7 +751,7 @@ class FF_Application {
 	 */
 	public static function sample_status_result() {
 		return '<div class="ff-notice ff-notice--pending">'
-			. esc_html__( 'Your application is being reviewed. We\'ll email you as soon as there\'s news — thank you for your patience.', 'founding-faces' )
+			. esc_html__( 'Your application is being reviewed. We\'ll email you as soon as there\'s news, thank you for your patience.', 'founding-faces' )
 			. '</div>'
 			. self::resend_form( 'sample@example.com' );
 	}
@@ -873,7 +873,7 @@ class FF_Application {
 
 		if ( 'pending' === $status ) {
 			return '<div class="ff-notice ff-notice--pending">'
-				. esc_html__( 'Your application is being reviewed. We\'ll email you as soon as there\'s news — thank you for your patience.', 'founding-faces' )
+				. esc_html__( 'Your application is being reviewed. We\'ll email you as soon as there\'s news, thank you for your patience.', 'founding-faces' )
 				. '</div>'
 				. self::resend_form( $email );
 		}

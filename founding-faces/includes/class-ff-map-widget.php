@@ -152,23 +152,23 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 		) );
 
 		$this->add_control( 'color_35', array(
-			'label'   => __( 'The 35 — colour', 'founding-faces' ),
+			'label'   => __( 'The 35 colour', 'founding-faces' ),
 			'type'    => \Elementor\Controls_Manager::COLOR,
 			'default' => $s['c35_color'],
 		) );
 		$this->add_control( 'size_35', array(
-			'label'   => __( 'The 35 — size', 'founding-faces' ),
+			'label'   => __( 'The 35 size', 'founding-faces' ),
 			'type'    => \Elementor\Controls_Manager::SLIDER,
 			'range'   => array( 'px' => array( 'min' => 2, 'max' => 30 ) ),
 			'default' => array( 'size' => $s['c35_size'] ),
 		) );
 		$this->add_control( 'color_circle', array(
-			'label'   => __( 'The Circle — colour', 'founding-faces' ),
+			'label'   => __( 'The Circle colour', 'founding-faces' ),
 			'type'    => \Elementor\Controls_Manager::COLOR,
 			'default' => $s['circle_color'],
 		) );
 		$this->add_control( 'size_circle', array(
-			'label'   => __( 'The Circle — size', 'founding-faces' ),
+			'label'   => __( 'The Circle size', 'founding-faces' ),
 			'type'    => \Elementor\Controls_Manager::SLIDER,
 			'range'   => array( 'px' => array( 'min' => 2, 'max' => 30 ) ),
 			'default' => array( 'size' => $s['circle_size'] ),

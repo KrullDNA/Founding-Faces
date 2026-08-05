@@ -92,7 +92,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'default'     => '|',
 			'separator'   => 'before',
 			'placeholder' => __( 'Leave blank for none', 'founding-faces' ),
-			'description' => __( 'Goes between the version and the date, which have no edge of their own. Never beside the stage badge or the vault chip — they have a shape already. Styled under Badges & chips.', 'founding-faces' ),
+			'description' => __( 'Goes between the version and the date, which have no edge of their own. Never beside the stage badge or the vault chip, they have a shape already. Styled under Badges & chips.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'body_unit', array(
@@ -114,7 +114,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'min'         => 1,
 			'max'         => 2000,
 			'condition'   => array( 'card_body' => 'yes', 'body_unit!' => '' ),
-			'description' => __( 'A shortened body is plain text — formatting is dropped rather than cut in half.', 'founding-faces' ),
+			'description' => __( 'A shortened body is plain text, formatting is dropped rather than cut in half.', 'founding-faces' ),
 		) );
 		$this->add_control( 'body_more', array(
 			'label'        => __( 'Add a link to the full note', 'founding-faces' ),
@@ -971,7 +971,7 @@ class FF_Product_Header_Widget extends FF_Display_Widget_Base {
 			'type'        => \Elementor\Controls_Manager::SELECT,
 			'default'     => 'auto',
 			'options'     => array( 'auto' => __( 'The product on this page (automatic)', 'founding-faces' ) ) + FF_Display::product_choices(),
-			'description' => __( 'Automatic follows whichever product is being viewed — what a Single Product template needs.', 'founding-faces' ),
+			'description' => __( 'Automatic follows whichever product is being viewed, what a Single Product template needs.', 'founding-faces' ),
 		) );
 		$this->ffds_preview_control();
 

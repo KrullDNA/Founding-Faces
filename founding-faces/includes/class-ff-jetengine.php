@@ -44,11 +44,11 @@ class FF_JetEngine {
 	 * @return array
 	 */
 	public static function register_callbacks( $callbacks ) {
-		$callbacks['FF_JetEngine::stage_label']    = __( 'Founding Faces — Stage label', 'founding-faces' );
-		$callbacks['FF_JetEngine::stage_badge']    = __( 'Founding Faces — Stage badge', 'founding-faces' );
-		$callbacks['FF_JetEngine::audience_label'] = __( 'Founding Faces — Audience label', 'founding-faces' );
-		$callbacks['FF_JetEngine::product_title']  = __( 'Founding Faces — Product name', 'founding-faces' );
-		$callbacks['FF_JetEngine::gallery']        = __( 'Founding Faces — Image gallery', 'founding-faces' );
+		$callbacks['FF_JetEngine::stage_label']    = __( 'Founding Faces: Stage label', 'founding-faces' );
+		$callbacks['FF_JetEngine::stage_badge']    = __( 'Founding Faces: Stage badge', 'founding-faces' );
+		$callbacks['FF_JetEngine::audience_label'] = __( 'Founding Faces: Audience label', 'founding-faces' );
+		$callbacks['FF_JetEngine::product_title']  = __( 'Founding Faces: Product name', 'founding-faces' );
+		$callbacks['FF_JetEngine::gallery']        = __( 'Founding Faces: Image gallery', 'founding-faces' );
 		return $callbacks;
 	}
 
@@ -71,10 +71,10 @@ class FF_JetEngine {
 	 */
 	public static function listing_choices() {
 		if ( ! self::is_active() ) {
-			return array( 0 => __( '— JetEngine not installed —', 'founding-faces' ) );
+			return array( 0 => __( 'JetEngine not installed', 'founding-faces' ) );
 		}
 
-		$choices  = array( 0 => __( '— Select a listing —', 'founding-faces' ) );
+		$choices  = array( 0 => __( 'Select a listing', 'founding-faces' ) );
 		$listings = get_posts( array(
 			'post_type'      => 'jet-engine',
 			'post_status'    => 'publish',

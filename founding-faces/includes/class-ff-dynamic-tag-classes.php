@@ -23,7 +23,7 @@ class FF_Tag_Note_Stage extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-note-stage';
 	}
 	public function get_title() {
-		return __( 'Note — Stage', 'founding-faces' );
+		return __( 'Note: Stage', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -46,7 +46,7 @@ class FF_Tag_Note_Trial extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-note-trial';
 	}
 	public function get_title() {
-		return __( 'Note — Version number', 'founding-faces' );
+		return __( 'Note: Version number', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -68,7 +68,7 @@ class FF_Tag_Note_Date extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-note-date';
 	}
 	public function get_title() {
-		return __( 'Note — Date', 'founding-faces' );
+		return __( 'Note: Date', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -95,7 +95,7 @@ class FF_Tag_Note_Audience extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-note-audience';
 	}
 	public function get_title() {
-		return __( 'Note — Audience', 'founding-faces' );
+		return __( 'Note: Audience', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -118,7 +118,7 @@ class FF_Tag_Note_Product extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-note-product';
 	}
 	public function get_title() {
-		return __( 'Note — Product name', 'founding-faces' );
+		return __( 'Note: Product name', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -141,7 +141,7 @@ class FF_Tag_My_Number extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-my-number';
 	}
 	public function get_title() {
-		return __( 'Member — My number', 'founding-faces' );
+		return __( 'Member: My number', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -166,7 +166,7 @@ class FF_Tag_My_Group extends \Elementor\Core\DynamicTags\Tag {
 		return 'ff-my-group';
 	}
 	public function get_title() {
-		return __( 'Member — My group', 'founding-faces' );
+		return __( 'Member: My group', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -191,7 +191,7 @@ class FF_Tag_Note_Gallery extends \Elementor\Core\DynamicTags\Data_Tag {
 		return 'ff-note-gallery';
 	}
 	public function get_title() {
-		return __( 'Note — Image gallery', 'founding-faces' );
+		return __( 'Note: Image gallery', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';
@@ -233,7 +233,7 @@ class FF_Tag_Note_Image extends \Elementor\Core\DynamicTags\Data_Tag {
 		return 'ff-note-image';
 	}
 	public function get_title() {
-		return __( 'Note — First image', 'founding-faces' );
+		return __( 'Note: First image', 'founding-faces' );
 	}
 	public function get_group() {
 		return 'founding-faces';

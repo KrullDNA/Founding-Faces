@@ -93,7 +93,7 @@ class FF_Emails {
 	 */
 	public static function default_subject( $is_35 ) {
 		return $is_35
-			? __( 'Welcome — you are Founding Face {number}', 'founding-faces' )
+			? __( 'Welcome, you are Founding Face {number}', 'founding-faces' )
 			: __( 'Welcome to the Apotheca community', 'founding-faces' );
 	}
 
@@ -122,7 +122,7 @@ class FF_Emails {
 	 * @return string
 	 */
 	public static function default_promo_subject() {
-		return __( 'Congratulations — you are one of The 35', 'founding-faces' );
+		return __( 'Congratulations, you are one of The 35', 'founding-faces' );
 	}
 
 	/**
@@ -209,7 +209,7 @@ class FF_Emails {
 	public static function kinds() {
 		return array(
 			'welcome_35'   => array(
-				'label'           => __( 'Welcome — The 35', 'founding-faces' ),
+				'label'           => __( 'Welcome: The 35', 'founding-faces' ),
 				'when'            => __( 'Sent when you approve an application into The 35, and whenever you resend the set-up link.', 'founding-faces' ),
 				'subject_option'  => self::OPT_35_SUBJECT,
 				'subject_default' => self::default_subject( true ),
@@ -221,7 +221,7 @@ class FF_Emails {
 				'cta_url'         => '{set_password_link}',
 			),
 			'welcome_circle' => array(
-				'label'           => __( 'Welcome — The Circle', 'founding-faces' ),
+				'label'           => __( 'Welcome: The Circle', 'founding-faces' ),
 				'when'            => __( 'Sent when you approve an application into The Circle, and whenever you resend the set-up link. Also the email an applicant gets when auto-accept is on.', 'founding-faces' ),
 				'subject_option'  => self::OPT_CIRCLE_SUBJECT,
 				'subject_default' => self::default_subject( false ),
@@ -267,7 +267,7 @@ class FF_Emails {
 			),
 			'reset'        => array(
 				'label'           => __( 'Password reset link', 'founding-faces' ),
-				'when'            => __( 'Sent when a member asks for a new password from their account page. This one is not editable — it is deliberately plain.', 'founding-faces' ),
+				'when'            => __( 'Sent when a member asks for a new password from their account page. This one is not editable, it is deliberately plain.', 'founding-faces' ),
 				'subject_option'  => '',
 				'subject_default' => __( 'Reset your Founding Faces password', 'founding-faces' ),
 				'body_option'     => '',
@@ -496,19 +496,50 @@ class FF_Emails {
 	 * @return string
 	 */
 	private static function fill( $template, $replacements, $as_html ) {
-		if ( $as_html ) {
-			// Escape each dynamic value so a stray character can't break the HTML.
-			foreach ( $replacements as $key => $value ) {
-				$replacements[ $key ] = ( '{set_password_link}' === $key || '{login_url}' === $key )
-					? esc_url( $value )
-					: esc_html( $value );
-			}
-			$filled = strtr( $template, $replacements );
-			// Turn line breaks into paragraphs and bare URLs into links.
-			return wpautop( make_clickable( $filled ) );
+		if ( ! $as_html ) {
+			// A subject line can't hold a link, so a URL there stays a URL.
+			return strtr( $template, $replacements );
 		}
 
-		return strtr( $template, $replacements );
+		$labels  = self::link_labels();
+		$anchors = array();
+		$values  = array();
+
+		foreach ( $replacements as $key => $value ) {
+			// A link placeholder becomes a linked phrase, not a pasted address.
+			// Nobody wants sixty characters of query string in the middle of a
+			// sentence, and a wrapped URL looks broken even when it works.
+			if ( isset( $labels[ $key ] ) && '' !== (string) $value ) {
+				$token             = '{{ff-link-' . count( $anchors ) . '}}';
+				$anchors[ $token ] = '<a href="' . esc_url( $value ) . '">' . esc_html( $labels[ $key ] ) . '</a>';
+				$values[ $key ]    = $token;
+				continue;
+			}
+
+			// Escape each dynamic value so a stray character can't break the HTML.
+			$values[ $key ] = esc_html( $value );
+		}
+
+		// Line breaks become paragraphs, and any URL the author typed themselves
+		// still becomes a link. The tokens are put back last so neither step can
+		// interfere with the anchors.
+		$filled = wpautop( make_clickable( strtr( $template, $values ) ) );
+
+		return strtr( $filled, $anchors );
+	}
+
+	/**
+	 * The words each link placeholder is written as in an email body.
+	 *
+	 * Filterable, so the wording can be changed without editing every template.
+	 *
+	 * @return array Map of placeholder => link text.
+	 */
+	public static function link_labels() {
+		return apply_filters( 'ff_email_link_labels', array(
+			'{set_password_link}' => __( 'set your password', 'founding-faces' ),
+			'{login_url}'         => __( 'the login page', 'founding-faces' ),
+		) );
 	}
 
 	/**

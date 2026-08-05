@@ -73,7 +73,7 @@ class FF_Admin_Messages {
 		$thread = isset( $_GET['thread'] ) ? absint( wp_unslash( $_GET['thread'] ) ) : 0;
 
 		echo '<div class="wrap ff-admin">';
-		echo '<h1>' . esc_html__( 'Founding Faces — Messages', 'founding-faces' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'Founding Faces Messages', 'founding-faces' ) . '</h1>';
 
 		if ( isset( $_GET['ff_sent'] ) ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Reply sent.', 'founding-faces' ) . '</p></div>';

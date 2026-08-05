@@ -573,7 +573,7 @@ class FF_Polls {
 			$out .= '<p class="ff-empty-note">' . esc_html(
 				'open' === $show
 					? __( 'No open poll right now.', 'founding-faces' )
-					: __( 'No polls yet — check back soon.', 'founding-faces' )
+					: __( 'No polls yet, check back soon.', 'founding-faces' )
 			) . '</p>';
 			return $out . '</div>';
 		}
@@ -1059,7 +1059,7 @@ class FF_Polls {
 	 */
 	public static function add_metaboxes() {
 		add_meta_box( 'ff_poll_editor', __( 'Poll setup', 'founding-faces' ), array( __CLASS__, 'render_editor' ), self::POLL_CPT, 'normal', 'high' );
-		add_meta_box( 'ff_poll_results', __( 'Results — who voted for what (admin only)', 'founding-faces' ), array( __CLASS__, 'render_admin_results' ), self::POLL_CPT, 'normal', 'default' );
+		add_meta_box( 'ff_poll_results', __( 'Results: who voted for what (admin only)', 'founding-faces' ), array( __CLASS__, 'render_admin_results' ), self::POLL_CPT, 'normal', 'default' );
 	}
 
 	/**

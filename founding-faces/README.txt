@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.94
+Stable tag: 1.0.95
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,24 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.95 =
+* Emails set in Montserrat, fetched for the clients that will load a web font,
+  with an Outlook conditional that puts Outlook on Arial rather than letting it
+  guess. The font stack also lost its quoted names, which is why emails were
+  arriving in the reader's default serif: a quoted font name has to survive
+  being escaped twice, and when it doesn't the whole declaration is discarded.
+* The two link placeholders are written out as a linked phrase now, not as a
+  pasted address. "Use this secure link to {set_password_link}" reads as "Use
+  this secure link to set your password", with the words carrying the link.
+  The wording is filterable through 'ff_email_link_labels'.
+* Links in an email body take the heading colour instead of browser blue.
+* Colour fields accept a hex with the hash left off. One typed without it was
+  rejected outright and saved as nothing, which read back as the shipped
+  default, so the colour looked like it had never been set.
+* The Settings page now says where each email colour actually lands.
+* Every em dash removed from the plugin's copy, in emails and on screen, in
+  line with the Apotheca house style.
 
 = 1.0.94 =
 * Fixed: a logged-out visitor who opened a restricted page, a gated note or a

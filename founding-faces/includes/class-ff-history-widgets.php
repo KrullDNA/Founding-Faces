@@ -607,7 +607,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'selectors'       => array(
 				'{{WRAPPER}} .ff-notes-read-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
-			'description'     => __( 'Set each device separately — the tablet and mobile icons above the control.', 'founding-faces' ),
+			'description'     => __( 'Set each device separately, the tablet and mobile icons above the control.', 'founding-faces' ),
 		) );
 		$this->add_responsive_control( 'notes_equal_height', array(
 			'label'     => __( 'Note heights', 'founding-faces' ),

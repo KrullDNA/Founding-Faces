@@ -60,7 +60,7 @@ class FF_Preview {
 		}
 		$current = get_user_meta( $user->ID, FF_Gating::META_PREVIEW, true );
 		?>
-		<h2><?php esc_html_e( 'Founding Faces — Preview', 'founding-faces' ); ?></h2>
+		<h2><?php esc_html_e( 'Founding Faces Preview', 'founding-faces' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><label for="ff_preview_as"><?php esc_html_e( 'View the site as', 'founding-faces' ); ?></label></th>
@@ -70,7 +70,7 @@ class FF_Preview {
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $current, $key ); ?>><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'For testing only. When set to The 35 or The Circle, you\'ll see the members\' area exactly as that group does — including being blocked from content meant for the other group. This affects only you, and you can switch it from the toolbar at any time.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'For testing only. When set to The 35 or The Circle, you\'ll see the members\' area exactly as that group does, including being blocked from content meant for the other group. This affects only you, and you can switch it from the toolbar at any time.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>

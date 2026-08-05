@@ -116,7 +116,7 @@ class FF_Admin_Applications {
 		$view = isset( $_GET['ff_status'] ) ? sanitize_key( wp_unslash( $_GET['ff_status'] ) ) : 'pending';
 
 		echo '<div class="wrap ff-admin">';
-		echo '<h1>' . esc_html__( 'Founding Faces — Applications', 'founding-faces' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'Founding Faces Applications', 'founding-faces' ) . '</h1>';
 
 		// Show the outcome of the last action, if any.
 		self::render_notice();

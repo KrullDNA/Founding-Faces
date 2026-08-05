@@ -117,7 +117,7 @@ class FF_Display {
 	 * @return array
 	 */
 	public static function product_choices( $with_placeholder = true ) {
-		$choices  = $with_placeholder ? array( 0 => __( '— Select a product —', 'founding-faces' ) ) : array();
+		$choices  = $with_placeholder ? array( 0 => __( 'Select a product', 'founding-faces' ) ) : array();
 		$products = get_posts( array(
 			'post_type'      => FF_Post_Types::PRODUCT_CPT,
 			'post_status'    => 'publish',
@@ -137,7 +137,7 @@ class FF_Display {
 	 * @return array
 	 */
 	public static function note_choices() {
-		$choices = array( 0 => __( '— Select a note —', 'founding-faces' ) );
+		$choices = array( 0 => __( 'Select a note', 'founding-faces' ) );
 		$notes   = get_posts( array(
 			'post_type'      => FF_Post_Types::NOTE_CPT,
 			'post_status'    => 'publish',
@@ -147,7 +147,7 @@ class FF_Display {
 		) );
 		foreach ( $notes as $note ) {
 			$product_id = (int) get_post_meta( $note->ID, FF_Post_Types::META_NOTE_PRODUCT, true );
-			$prefix     = $product_id ? ( get_the_title( $product_id ) . ' — ' ) : '';
+			$prefix     = $product_id ? ( get_the_title( $product_id ) . ': ' ) : '';
 			$choices[ $note->ID ] = $prefix . ( $note->post_title ? $note->post_title : sprintf( __( 'Note #%d', 'founding-faces' ), $note->ID ) );
 		}
 		return $choices;
@@ -554,7 +554,7 @@ class FF_Display {
 				$latest = self::get_viewable_notes( 0, '', absint( $atts['latest'] ) );
 				$card   = self::card_args_from_atts( $atts );
 				if ( empty( $latest ) ) {
-					$out .= '<p class="ff-empty-note">' . esc_html__( 'Nothing new just yet — check back soon.', 'founding-faces' ) . '</p>';
+					$out .= '<p class="ff-empty-note">' . esc_html__( 'Nothing new just yet, check back soon.', 'founding-faces' ) . '</p>';
 				} else {
 					$out .= '<div class="ff-notes-cards">';
 					foreach ( $latest as $note ) {
@@ -687,7 +687,7 @@ class FF_Display {
 	 */
 	public static function sample_note_card( $title = '', $stage = 'stability_testing', $trial = '4', $vault = false, $args = array() ) {
 		$a     = self::card_args( $args );
-		$title = '' !== $title ? $title : __( 'Sample note — batch reformulation', 'founding-faces' );
+		$title = '' !== $title ? $title : __( 'Sample note, batch reformulation', 'founding-faces' );
 
 		$out = '<article class="ff-note">';
 
@@ -745,10 +745,10 @@ class FF_Display {
 	 */
 	public static function sample_note_cards( $count = 3, $args = array() ) {
 		$samples = array(
-			array( __( 'Sample note — batch reformulation', 'founding-faces' ), 'stability_testing', '4', false ),
-			array( __( 'Sample note — actives at 2%', 'founding-faces' ), 'passed', '3', true ),
-			array( __( 'Sample note — texture test', 'founding-faces' ), 'in_development', '2', false ),
-			array( __( 'Sample note — preservative swap', 'founding-faces' ), 'failed', '1', false ),
+			array( __( 'Sample note, batch reformulation', 'founding-faces' ), 'stability_testing', '4', false ),
+			array( __( 'Sample note, actives at 2%', 'founding-faces' ), 'passed', '3', true ),
+			array( __( 'Sample note, texture test', 'founding-faces' ), 'in_development', '2', false ),
+			array( __( 'Sample note, preservative swap', 'founding-faces' ), 'failed', '1', false ),
 		);
 
 		$out = '<div class="ff-notes-cards">';
@@ -767,9 +767,9 @@ class FF_Display {
 	 */
 	public static function sample_products_list() {
 		$rows = array(
-			array( __( 'Sample product — Renewal Serum', 'founding-faces' ), 'stability_testing' ),
-			array( __( 'Sample product — Barrier Cream', 'founding-faces' ), 'passed' ),
-			array( __( 'Sample product — Gentle Cleanser', 'founding-faces' ), 'in_development' ),
+			array( __( 'Sample product, Renewal Serum', 'founding-faces' ), 'stability_testing' ),
+			array( __( 'Sample product, Barrier Cream', 'founding-faces' ), 'passed' ),
+			array( __( 'Sample product, Gentle Cleanser', 'founding-faces' ), 'in_development' ),
 		);
 
 		$out = '<ul class="ff-products">';
@@ -790,7 +790,7 @@ class FF_Display {
 	 */
 	public static function sample_product_header() {
 		$out  = '<div class="ff-product-header">';
-		$out .= '<h2 class="ff-product-name">' . esc_html__( 'Sample product — Renewal Serum', 'founding-faces' ) . '</h2>';
+		$out .= '<h2 class="ff-product-name">' . esc_html__( 'Sample product, Renewal Serum', 'founding-faces' ) . '</h2>';
 		$out .= '<div class="ff-product-meta">' . self::stage_badge( 'stability_testing' );
 		$out .= '<span class="ff-product-status">' . esc_html__( 'Currently in eight-week stability testing', 'founding-faces' ) . '</span></div>';
 		$out .= '<div class="ff-product-intro"><p>' . esc_html__( 'Sample introduction copy so the product header can be styled before a real product is chosen.', 'founding-faces' ) . '</p></div>';
@@ -1326,7 +1326,7 @@ class FF_Display {
 			$src = self::placeholder_image_src( $i );
 			$img = '<img class="ff-slide-img" src="' . esc_url( $src ) . '" alt="" width="800" height="600" />';
 			/* translators: %d is the position of a sample image in the slider. */
-			$caption  = $args['caption'] ? sprintf( __( 'Sample caption %d — the image caption from the media library shows here.', 'founding-faces' ), $i ) : '';
+			$caption  = $args['caption'] ? sprintf( __( 'Sample caption %d, the image caption from the media library shows here.', 'founding-faces' ), $i ) : '';
 			$slides[] = self::slide_html( $img, $src, esc_html( $caption ), $args );
 		}
 

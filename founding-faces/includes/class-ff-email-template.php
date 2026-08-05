@@ -85,8 +85,20 @@ class FF_Email_Template {
 		$btn_text  = self::option( self::OPT_BUTTON_TEXT );
 		$footer    = self::option( self::OPT_FOOTER );
 
-		$site   = get_bloginfo( 'name' );
-		$family = 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+		$site = get_bloginfo( 'name' );
+
+		// No quoted font names anywhere in the stack. A quoted name inside an
+		// inline style attribute has to survive being escaped, re-escaped and
+		// decoded again on its way to a preview pane or a mail client, and if it
+		// doesn't the whole font-family declaration is thrown away and the email
+		// lands in the reader's default serif. Montserrat, then Arial, needs no
+		// quotes at all.
+		$family = 'Montserrat, Arial, Helvetica, sans-serif';
+
+		// Montserrat has to be fetched, because mail clients don't embed fonts.
+		// Apple Mail, iOS Mail and Samsung Mail honour the link; Gmail and
+		// Outlook ignore it and fall to Arial, which is the point of the stack.
+		$font_css = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap';
 
 		ob_start();
 		?>
@@ -97,6 +109,23 @@ class FF_Email_Template {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="color-scheme" content="light only" />
 	<title><?php echo esc_html( $heading ? $heading : $site ); ?></title>
+	<!--[if !mso]><!-->
+	<link href="<?php echo esc_url( $font_css ); ?>" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+		@import url('<?php echo esc_url( $font_css ); ?>');
+		body, table, td, p, a, span, h1, li { font-family: <?php echo esc_html( $family ); ?>; }
+		/* Links in the body take the heading colour. The button sets its own
+		   colour inline, which wins over this. */
+		a { color: <?php echo esc_html( $accent ); ?>; }
+	</style>
+	<!--<![endif]-->
+	<!--[if mso]>
+	<style type="text/css">
+		body, table, td, p, a, span, h1, li {
+			font-family: Arial, Helvetica, sans-serif !important;
+		}
+	</style>
+	<![endif]-->
 </head>
 <body style="margin:0; padding:0; background:<?php echo esc_attr( $bg ); ?>; font-family:<?php echo esc_attr( $family ); ?>; color:#2b2d33;">
 	<?php if ( '' !== trim( (string) $preheader ) ) : ?>

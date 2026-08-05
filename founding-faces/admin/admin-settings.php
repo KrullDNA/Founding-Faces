@@ -86,10 +86,10 @@ class FF_Settings {
 
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_ACCENT, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_BG, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_BG, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_ACCENT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
@@ -125,9 +125,9 @@ class FF_Settings {
 		// {z}/{x}/{y} placeholders Leaflet needs.
 		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_tile_url' ) ) );
 		register_setting( self::GROUP, FF_Map::OPT_TILE_ATTRIBUTION, array( 'sanitize_callback' => 'wp_kses_post' ) );
-		register_setting( self::GROUP, FF_Map::OPT_35_COLOR, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Map::OPT_35_COLOR, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Map::OPT_35_SIZE, array( 'sanitize_callback' => 'absint' ) );
-		register_setting( self::GROUP, FF_Map::OPT_CIRCLE_COLOR, array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( self::GROUP, FF_Map::OPT_CIRCLE_COLOR, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Map::OPT_CIRCLE_SIZE, array( 'sanitize_callback' => 'absint' ) );
 	}
 
@@ -155,7 +155,7 @@ class FF_Settings {
 		$bdecl   = get_option( FF_Emails::OPT_DECLINE_BODY, FF_Emails::default_decline_body() );
 		?>
 		<div class="wrap ff-admin">
-			<h1><?php esc_html_e( 'Founding Faces — Settings', 'founding-faces' ); ?></h1>
+			<h1><?php esc_html_e( 'Founding Faces Settings', 'founding-faces' ); ?></h1>
 
 			<form method="post" action="options.php">
 				<?php settings_fields( self::GROUP ); ?>
@@ -176,6 +176,9 @@ class FF_Settings {
 					<code>{name}</code> <code>{number}</code> <code>{group}</code>
 					<code>{public_name}</code> <code>{site_name}</code>
 					<code>{login_url}</code> <code>{set_password_link}</code>
+				</p>
+				<p class="description">
+					<?php esc_html_e( 'The two link placeholders are written out as a linked phrase, not as a pasted address, so write the sentence around them: "Use this secure link to {set_password_link}" reads as "Use this secure link to set your password", with the words carrying the link.', 'founding-faces' ); ?>
 				</p>
 				<p class="description">
 					<?php esc_html_e( 'The secure "Set your password" button is added to the welcome emails automatically, so you no longer need to include {set_password_link} in the body (though it still works if you do).', 'founding-faces' ); ?>
@@ -244,7 +247,7 @@ class FF_Settings {
 				</table>
 
 				<h2><?php esc_html_e( 'Application-received email', 'founding-faces' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Sent the moment someone submits the application, confirming it arrived — used while applications are held for manual review. (With auto-accept on, applicants get the Circle welcome email instead, so this is not also sent.) Placeholders: {name} {site_name}.', 'founding-faces' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Sent the moment someone submits the application, confirming it arrived, used while applications are held for manual review. (With auto-accept on, applicants get the Circle welcome email instead, so this is not also sent.) Placeholders: {name} {site_name}.', 'founding-faces' ); ?></p>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_RECEIVED_SUBJECT ); ?>"><?php esc_html_e( 'Subject', 'founding-faces' ); ?></label></th>
@@ -266,9 +269,9 @@ class FF_Settings {
 
 				<h2><?php esc_html_e( 'Declined-application email', 'founding-faces' ); ?></h2>
 				<p class="description">
-					<?php esc_html_e( 'Sent when you decline an application, so a decision is never silence — and so the "check your inbox" message on the status lookup is true for everyone. Placeholders: {name} {site_name}.', 'founding-faces' ); ?>
+					<?php esc_html_e( 'Sent when you decline an application, so a decision is never silence, and so the "check your inbox" message on the status lookup is true for everyone. Placeholders: {name} {site_name}.', 'founding-faces' ); ?>
 					<br />
-					<strong><?php esc_html_e( 'To decline silently, clear the body field entirely — nothing is then sent.', 'founding-faces' ); ?></strong>
+					<strong><?php esc_html_e( 'To decline silently, clear the body field entirely, nothing is then sent.', 'founding-faces' ); ?></strong>
 				</p>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -315,6 +318,32 @@ class FF_Settings {
 	 * @param mixed $value The submitted value.
 	 * @return string
 	 */
+	/**
+	 * Normalise a colour, forgiving a missing hash.
+	 *
+	 * sanitize_hex_color() rejects "b8a389" outright, and a rejected colour is
+	 * saved as nothing, which reads back as the shipped default. The colour
+	 * looks like it was never set and there is nothing on screen to say why. A
+	 * hex with the hash left off is obviously a colour, so it is treated as one.
+	 *
+	 * @param mixed $value The submitted colour.
+	 * @return string A valid hex colour, or an empty string.
+	 */
+	public static function sanitize_color( $value ) {
+		$value = trim( (string) $value );
+		if ( '' === $value ) {
+			return '';
+		}
+
+		if ( '#' !== substr( $value, 0, 1 ) && preg_match( '/^[0-9a-fA-F]{3,6}$/', $value ) ) {
+			$value = '#' . $value;
+		}
+
+		$hex = sanitize_hex_color( $value );
+
+		return ( null === $hex ) ? '' : $hex;
+	}
+
 	public static function sanitize_checkbox( $value ) {
 		return ( '1' === $value || 1 === $value || true === $value || 'on' === $value ) ? '1' : '';
 	}
@@ -358,7 +387,7 @@ class FF_Settings {
 						'name'              => FF_Page_Access::OPT_REDIRECT,
 						'id'                => FF_Page_Access::OPT_REDIRECT,
 						'selected'          => $redirect,
-						'show_option_none'  => __( '— Home page —', 'founding-faces' ),
+						'show_option_none'  => __( 'Home page', 'founding-faces' ),
 						'option_none_value' => 0,
 					) );
 					?>
@@ -373,7 +402,7 @@ class FF_Settings {
 						'name'              => FF_Messages::OPT_PORTAL_PAGE,
 						'id'                => FF_Messages::OPT_PORTAL_PAGE,
 						'selected'          => (int) get_option( FF_Messages::OPT_PORTAL_PAGE, 0 ),
-						'show_option_none'  => __( '— Home page —', 'founding-faces' ),
+						'show_option_none'  => __( 'Home page', 'founding-faces' ),
 						'option_none_value' => 0,
 					) );
 					?>
@@ -394,7 +423,7 @@ class FF_Settings {
 						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_PAGE ); ?>"
 						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGIN_PAGE, '' ) ); ?>"
 						placeholder="<?php echo esc_attr( home_url( '/login/' ) ); ?>" />
-					<p class="description"><?php esc_html_e( 'The page holding your Founding Faces Login widget. Used everywhere the plugin asks someone to log in — the menu item, the login widget, and anyone turned away from a restricted page or a gated note. Leave empty to use the standard WordPress login screen.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The page holding your Founding Faces Login widget. Used everywhere the plugin asks someone to log in, the menu item, the login widget, and anyone turned away from a restricted page or a gated note. Leave empty to use the standard WordPress login screen.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -403,7 +432,7 @@ class FF_Settings {
 					<input type="url" class="regular-text" id="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_REDIRECT ); ?>"
 						name="<?php echo esc_attr( FF_Menu_Items::OPT_LOGIN_REDIRECT ); ?>"
 						value="<?php echo esc_attr( get_option( FF_Menu_Items::OPT_LOGIN_REDIRECT, '' ) ); ?>" />
-					<p class="description"><?php esc_html_e( 'Leave empty to use the members hub page set above — recommended, since that follows the site between staging and live.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Leave empty to use the members hub page set above, recommended, since that follows the site between staging and live.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -456,7 +485,7 @@ class FF_Settings {
 						<?php esc_html_e( 'Automatically accept new applicants into The Circle', 'founding-faces' ); ?>
 					</label>
 					<p class="description">
-						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review. Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this — bot submissions never become members.', 'founding-faces' ); ?>
+						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review. Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this, bot submissions never become members.', 'founding-faces' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -476,7 +505,7 @@ class FF_Settings {
 		$footer  = FF_Email_Template::option( FF_Email_Template::OPT_FOOTER );
 		?>
 		<h2><?php esc_html_e( 'Email design', 'founding-faces' ); ?></h2>
-		<p class="description"><?php esc_html_e( 'The look applied to every programme email — welcome, promotion, password reset and application received. Set it once here.', 'founding-faces' ); ?></p>
+		<p class="description"><?php esc_html_e( 'The look applied to every programme email, welcome, promotion, password reset and application received. Set it once here.', 'founding-faces' ); ?></p>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>"><?php esc_html_e( 'Logo URL', 'founding-faces' ); ?></label></th>
@@ -488,7 +517,10 @@ class FF_Settings {
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Colours', 'founding-faces' ); ?></th>
 				<td>
-					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Heading', 'founding-faces' ); ?><br />
+					<p class="description" style="margin:0 0 0.8rem;">
+						<?php esc_html_e( 'Where each one lands: Heading & links paints the big line at the top of the card and any link in the body. Page background is the area around the white card. Button is the fill behind the call to action, and Button text the words on it. Hex codes, with or without the #.', 'founding-faces' ); ?>
+					</p>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Heading & links', 'founding-faces' ); ?><br />
 						<input name="<?php echo esc_attr( FF_Email_Template::OPT_ACCENT ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $accent ); ?>" placeholder="#2b2d33" /></label>
 					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Page background', 'founding-faces' ); ?><br />
 						<input name="<?php echo esc_attr( FF_Email_Template::OPT_BG ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $bg ); ?>" placeholder="#f6f7f8" /></label>
@@ -502,7 +534,7 @@ class FF_Settings {
 				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>"><?php esc_html_e( 'Footer text', 'founding-faces' ); ?></label></th>
 				<td>
 					<textarea name="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>" rows="3" class="large-text"><?php echo esc_textarea( $footer ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'Appears at the foot of every email — e.g. your business name and address. Line breaks are kept.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Appears at the foot of every email, e.g. your business name and address. Line breaks are kept.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -600,7 +632,7 @@ class FF_Settings {
 							if ( $configured ) {
 								echo '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Configured and ready.', 'founding-faces' ) . '</span>';
 							} else {
-								echo '<span style="color:#8a1f1f;font-weight:600;">' . esc_html__( 'Not configured yet — add the API key below.', 'founding-faces' ) . '</span>';
+								echo '<span style="color:#8a1f1f;font-weight:600;">' . esc_html__( 'Not configured yet, add the API key below.', 'founding-faces' ) . '</span>';
 							}
 							?>
 						</p>
