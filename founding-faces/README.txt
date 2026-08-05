@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.97
+Stable tag: 1.0.98
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.98 =
+* A logo width setting for the emails, in pixels. The width is written as an
+  attribute as well as a style, because Outlook ignores the style and would
+  otherwise draw the logo at whatever size the file happens to be. On a narrow
+  phone it shrinks to fit rather than overflowing the card.
 
 = 1.0.97 =
 * The heading band carries the email's own heading again ("Welcome to The 35"),

@@ -86,6 +86,7 @@ class FF_Settings {
 
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO_WIDTH, array( 'sanitize_callback' => 'absint' ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_ACCENT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
@@ -501,6 +502,7 @@ class FF_Settings {
 	 */
 	private static function render_email_design_section() {
 		$logo     = FF_Email_Template::option( FF_Email_Template::OPT_LOGO );
+		$logo_w   = FF_Email_Template::option( FF_Email_Template::OPT_LOGO_WIDTH );
 		$accent   = FF_Email_Template::option( FF_Email_Template::OPT_ACCENT );
 		$head_bg  = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_BG );
 		$head_txt = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_TEXT );
@@ -517,7 +519,16 @@ class FF_Settings {
 				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>"><?php esc_html_e( 'Logo URL', 'founding-faces' ); ?></label></th>
 				<td>
 					<input name="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_LOGO ); ?>" type="url" class="large-text code" value="<?php echo esc_attr( $logo ); ?>" placeholder="https://…/logo.png" />
-					<p class="description"><?php esc_html_e( 'Paste the full URL of your logo image (upload it in Media, then copy its file URL). Leave blank for no logo.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Paste the full URL of your logo image (upload it in Media, then copy its file URL). It sits above the card, centred. Leave blank for no logo.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>"><?php esc_html_e( 'Logo width', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>" type="number" min="40" max="600" step="1" class="small-text" value="<?php echo esc_attr( $logo_w ); ?>" /> px
+					<p class="description">
+						<?php esc_html_e( 'How wide the logo is drawn. The card is 600px, so 200 to 300 is usually right. On a narrow phone it shrinks to fit rather than overflowing. Upload the file at roughly twice this width so it stays sharp on a retina screen.', 'founding-faces' ); ?>
+					</p>
 				</td>
 			</tr>
 			<tr>
