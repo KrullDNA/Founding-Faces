@@ -168,6 +168,10 @@ class FF_Settings {
 
 				<h2><?php esc_html_e( 'Welcome emails', 'founding-faces' ); ?></h2>
 				<p class="description">
+					<strong><a href="<?php echo esc_url( admin_url( 'admin.php?page=' . FF_Admin_Emails::PAGE_SLUG ) ); ?>"><?php esc_html_e( 'See every email as a member receives it →', 'founding-faces' ); ?></a></strong>
+					<?php esc_html_e( 'Preview any of these, and send yourself a test, on the Emails screen.', 'founding-faces' ); ?>
+				</p>
+				<p class="description">
 					<?php esc_html_e( 'You can use these placeholders in a subject or body:', 'founding-faces' ); ?>
 					<code>{name}</code> <code>{number}</code> <code>{group}</code>
 					<code>{public_name}</code> <code>{site_name}</code>

@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.92
+ * Version:           1.0.93
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.92' );
+define( 'FF_VERSION', '1.0.93' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -137,6 +137,7 @@ require_once FF_PATH . 'includes/class-ff-connector.php';
 if ( is_admin() ) {
 	require_once FF_PATH . 'admin/admin-applications.php';
 	require_once FF_PATH . 'admin/admin-settings.php';
+	require_once FF_PATH . 'admin/admin-emails.php';
 	require_once FF_PATH . 'admin/admin-privacy.php';
 	require_once FF_PATH . 'admin/admin-messages.php';
 }
@@ -194,6 +195,7 @@ function ff_init() {
 		FF_Polls::register_admin();
 		FF_Admin_Applications::register();
 		FF_Settings::register();
+		FF_Admin_Emails::register();
 		FF_Admin_Privacy::register();
 		FF_Admin_Messages::register();
 	}
@@ -223,3 +225,33 @@ function ff_maybe_upgrade_db() {
 	}
 }
 add_action( 'plugins_loaded', 'ff_maybe_upgrade_db' );
+
+/**
+ * Clear Elementor's generated CSS once after the plugin is updated.
+ *
+ * Elementor turns a widget's control values into a CSS file and keeps it until
+ * something tells it not to. The selectors those values are written against
+ * live in this plugin's PHP, so a release that widens a selector — the day the
+ * field rules learned about password inputs, say — leaves every page still
+ * serving CSS built from the old ones. The control is set correctly and the
+ * page ignores it, which reads as a bug in the control.
+ *
+ * Rather than ask for a manual "Regenerate CSS" after each update, the version
+ * is remembered and the cache cleared once when it changes. Elementor rebuilds
+ * each file the next time a page is viewed.
+ */
+function ff_maybe_clear_elementor_css() {
+	if ( get_option( 'ff_css_version' ) === FF_VERSION ) {
+		return;
+	}
+
+	if ( did_action( 'elementor/loaded' ) && class_exists( '\Elementor\Plugin' ) ) {
+		$elementor = \Elementor\Plugin::$instance;
+		if ( isset( $elementor->files_manager ) ) {
+			$elementor->files_manager->clear_cache();
+		}
+	}
+
+	update_option( 'ff_css_version', FF_VERSION );
+}
+add_action( 'admin_init', 'ff_maybe_clear_elementor_css' );
