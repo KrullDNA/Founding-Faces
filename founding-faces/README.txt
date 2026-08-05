@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.92
+Stable tag: 1.0.93
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,21 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.93 =
+* New "Emails" screen under Founding Faces: every email the plugin sends, shown
+  exactly as a member receives it, with the subject line above it — and a
+  "send yourself a test" box underneath. Fill the placeholders with made-up
+  details or with a real member's name, number and group.
+* A preview never mints a set-password token, so it cannot invalidate a link
+  already sitting in a member's inbox, and a test only ever goes to the address
+  typed on the form — never to the member being previewed.
+* Every email is now built by one method that both the preview and the real
+  senders call, so a preview cannot drift out of step with what is sent.
+* Elementor's generated CSS is cleared once automatically after the plugin
+  updates. A release that widens a style selector used to leave pages serving
+  CSS built from the old one, which looks like a control that has stopped
+  working — a manual "Regenerate CSS" is no longer needed after an update.
 
 = 1.0.92 =
 * Fixed: password fields kept the browser's own black border and ignored every

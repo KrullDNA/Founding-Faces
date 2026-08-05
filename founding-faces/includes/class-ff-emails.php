@@ -186,6 +186,211 @@ class FF_Emails {
 		);
 	}
 
+	/*
+	 * -----------------------------------------------------------------------
+	 * Composing.
+	 * Every email is described once, here, and built by one method. The senders
+	 * below and the preview screen both go through it, so what Nick sees on the
+	 * preview screen is the message itself rather than a second rendering of it
+	 * that can quietly drift out of step.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * Every email the plugin sends from a template, and what is fixed about it.
+	 *
+	 * A kind's button URL is named rather than given: the value is taken from
+	 * the replacements at composing time, so the button in a preview points
+	 * wherever that preview's link points and the button in a real email points
+	 * at the real one.
+	 *
+	 * @return array Map of kind => spec.
+	 */
+	public static function kinds() {
+		return array(
+			'welcome_35'   => array(
+				'label'           => __( 'Welcome — The 35', 'founding-faces' ),
+				'when'            => __( 'Sent when you approve an application into The 35, and whenever you resend the set-up link.', 'founding-faces' ),
+				'subject_option'  => self::OPT_35_SUBJECT,
+				'subject_default' => self::default_subject( true ),
+				'body_option'     => self::OPT_35_BODY,
+				'body_default'    => self::default_body( true ),
+				'heading'         => __( 'Welcome to The 35', 'founding-faces' ),
+				'preheader'       => __( 'Set your password to step inside.', 'founding-faces' ),
+				'cta_label'       => __( 'Set your password', 'founding-faces' ),
+				'cta_url'         => '{set_password_link}',
+			),
+			'welcome_circle' => array(
+				'label'           => __( 'Welcome — The Circle', 'founding-faces' ),
+				'when'            => __( 'Sent when you approve an application into The Circle, and whenever you resend the set-up link. Also the email an applicant gets when auto-accept is on.', 'founding-faces' ),
+				'subject_option'  => self::OPT_CIRCLE_SUBJECT,
+				'subject_default' => self::default_subject( false ),
+				'body_option'     => self::OPT_CIRCLE_BODY,
+				'body_default'    => self::default_body( false ),
+				'heading'         => __( 'Welcome to Founding Faces', 'founding-faces' ),
+				'preheader'       => __( 'Set your password to step inside.', 'founding-faces' ),
+				'cta_label'       => __( 'Set your password', 'founding-faces' ),
+				'cta_url'         => '{set_password_link}',
+			),
+			'promotion'    => array(
+				'label'           => __( 'Chosen for The 35 (promotion)', 'founding-faces' ),
+				'when'            => __( 'Sent when you promote a Circle member into The 35. They already have a password, so this carries a sign-in button.', 'founding-faces' ),
+				'subject_option'  => self::OPT_PROMO_SUBJECT,
+				'subject_default' => self::default_promo_subject(),
+				'body_option'     => self::OPT_PROMO_BODY,
+				'body_default'    => self::default_promo_body(),
+				'heading'         => __( 'You are one of The 35', 'founding-faces' ),
+				'preheader'       => __( 'You have been chosen for The 35.', 'founding-faces' ),
+				'cta_label'       => __( 'Sign in', 'founding-faces' ),
+				'cta_url'         => '{login_url}',
+			),
+			'received'     => array(
+				'label'           => __( 'Application received', 'founding-faces' ),
+				'when'            => __( 'Sent the moment an application arrives, while applications are held for manual review.', 'founding-faces' ),
+				'subject_option'  => self::OPT_RECEIVED_SUBJECT,
+				'subject_default' => self::default_received_subject(),
+				'body_option'     => self::OPT_RECEIVED_BODY,
+				'body_default'    => self::default_received_body(),
+				'heading'         => __( 'Application received', 'founding-faces' ),
+				'preheader'       => __( 'Thanks for applying to Founding Faces.', 'founding-faces' ),
+			),
+			'decline'      => array(
+				'label'           => __( 'Application declined', 'founding-faces' ),
+				'when'            => __( 'Sent when you decline an application. Clearing the body on the Settings page turns it off entirely.', 'founding-faces' ),
+				'subject_option'  => self::OPT_DECLINE_SUBJECT,
+				'subject_default' => self::default_decline_subject(),
+				'body_option'     => self::OPT_DECLINE_BODY,
+				'body_default'    => self::default_decline_body(),
+				'heading'         => __( 'Your application', 'founding-faces' ),
+				'preheader'       => __( 'An update on your Founding Faces application.', 'founding-faces' ),
+				'silent_if_empty' => true,
+			),
+			'reset'        => array(
+				'label'           => __( 'Password reset link', 'founding-faces' ),
+				'when'            => __( 'Sent when a member asks for a new password from their account page. This one is not editable — it is deliberately plain.', 'founding-faces' ),
+				'subject_option'  => '',
+				'subject_default' => __( 'Reset your Founding Faces password', 'founding-faces' ),
+				'body_option'     => '',
+				'body_default'    => __( "Hi {name},\n\nUse the button below to set a new password. The link is valid for 7 days.\n\nIf you didn't ask for this, you can safely ignore this email.\n\n{site_name}", 'founding-faces' ),
+				'heading'         => __( 'Reset your password', 'founding-faces' ),
+				'preheader'       => __( 'Set a new Founding Faces password.', 'founding-faces' ),
+				'cta_label'       => __( 'Set a new password', 'founding-faces' ),
+				'cta_url'         => '{set_password_link}',
+			),
+		);
+	}
+
+	/**
+	 * Build one email: its subject line and its complete HTML.
+	 *
+	 * @param string $kind         A key from kinds().
+	 * @param array  $replacements Map of {placeholder} => value.
+	 * @return array|false ['subject' => string, 'html' => string], or false if
+	 *                     the kind is unknown or has been emptied on purpose.
+	 */
+	public static function compose( $kind, $replacements ) {
+		$kinds = self::kinds();
+		if ( ! isset( $kinds[ $kind ] ) ) {
+			return false;
+		}
+		$spec = $kinds[ $kind ];
+
+		$body_tpl = '' !== $spec['body_option']
+			? get_option( $spec['body_option'], $spec['body_default'] )
+			: $spec['body_default'];
+
+		// An emptied body is how the decline email is turned off without code.
+		if ( ! empty( $spec['silent_if_empty'] ) && '' === trim( (string) $body_tpl ) ) {
+			return false;
+		}
+
+		$subject_tpl = '' !== $spec['subject_option']
+			? get_option( $spec['subject_option'], $spec['subject_default'] )
+			: $spec['subject_default'];
+
+		$args = array(
+			'heading'   => $spec['heading'],
+			'body_html' => self::fill( $body_tpl, $replacements, true ),
+			'preheader' => $spec['preheader'],
+		);
+
+		// The button only appears when the kind has one and the link exists.
+		if ( ! empty( $spec['cta_label'] ) && ! empty( $replacements[ $spec['cta_url'] ] ) ) {
+			$args['cta'] = array(
+				'label' => $spec['cta_label'],
+				'url'   => $replacements[ $spec['cta_url'] ],
+			);
+		}
+
+		return array(
+			'subject' => self::fill( $subject_tpl, $replacements, false ),
+			'html'    => FF_Email_Template::build( $args ),
+		);
+	}
+
+	/**
+	 * Send a composed email as HTML, so its links are clickable.
+	 *
+	 * @param string $to      The recipient address.
+	 * @param array  $message The result of compose().
+	 * @return bool Whether wp_mail accepted it.
+	 */
+	private static function deliver( $to, $message ) {
+		if ( ! $message || ! is_email( $to ) ) {
+			return false;
+		}
+		return wp_mail(
+			$to,
+			$message['subject'],
+			$message['html'],
+			array( 'Content-Type: text/html; charset=UTF-8' )
+		);
+	}
+
+	/**
+	 * The placeholder values for a member, for both sending and previewing.
+	 *
+	 * @param int    $user_id The member's user id.
+	 * @param string $link    The set-password link, if the email carries one.
+	 * @return array
+	 */
+	public static function member_replacements( $user_id, $link = '' ) {
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return array();
+		}
+
+		$number    = get_user_meta( $user_id, FF_Members::META_NUMBER, true );
+		$real_name = get_user_meta( $user_id, FF_Members::META_REAL_NAME, true );
+
+		return array(
+			'{name}'              => trim( (string) $real_name ) !== ''
+				? preg_split( '/\s+/', trim( $real_name ) )[0]
+				: $user->display_name,
+			'{number}'            => '' !== $number ? (int) $number : '',
+			'{group}'             => '' !== $number ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' ),
+			'{public_name}'       => get_user_meta( $user_id, FF_Members::META_PUBLIC_NAME, true ),
+			'{site_name}'         => get_bloginfo( 'name' ),
+			'{login_url}'         => wp_login_url(),
+			'{set_password_link}' => $link,
+		);
+	}
+
+	/**
+	 * The placeholder values for an applicant, who has no account yet.
+	 *
+	 * @param string $name The applicant's name as given on the form.
+	 * @return array
+	 */
+	public static function applicant_replacements( $name ) {
+		return array(
+			'{name}'      => trim( (string) $name ) !== ''
+				? preg_split( '/\s+/', trim( $name ) )[0]
+				: __( 'there', 'founding-faces' ),
+			'{site_name}' => get_bloginfo( 'name' ),
+		);
+	}
+
 	/**
 	 * Send the decline email to an applicant.
 	 *
@@ -199,34 +404,9 @@ class FF_Emails {
 	 * @return bool
 	 */
 	public static function send_decline( $name, $email ) {
-		if ( ! is_email( $email ) ) {
-			return false;
-		}
-
-		$body_tpl = get_option( self::OPT_DECLINE_BODY, self::default_decline_body() );
-		if ( '' === trim( (string) $body_tpl ) ) {
-			return false; // Deliberately emptied: decline silently.
-		}
-
-		$first_name = trim( (string) $name ) !== '' ? preg_split( '/\s+/', trim( $name ) )[0] : __( 'there', 'founding-faces' );
-
-		$replacements = array(
-			'{name}'      => $first_name,
-			'{site_name}' => get_bloginfo( 'name' ),
-		);
-
-		$subject_tpl = get_option( self::OPT_DECLINE_SUBJECT, self::default_decline_subject() );
-
-		$subject = self::fill( $subject_tpl, $replacements, false );
-		$body    = self::fill( $body_tpl, $replacements, true );
-
-		$html = FF_Email_Template::build( array(
-			'heading'   => __( 'Your application', 'founding-faces' ),
-			'body_html' => $body,
-			'preheader' => __( 'An update on your Founding Faces application.', 'founding-faces' ),
-		) );
-
-		return wp_mail( $email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		// compose() returns false when the body has been emptied on purpose,
+		// which is how a silent decline is arranged.
+		return self::deliver( $email, self::compose( 'decline', self::applicant_replacements( $name ) ) );
 	}
 
 	/*
@@ -258,52 +438,13 @@ class FF_Emails {
 		$token = self::create_setpw_token( $user_id );
 		$link  = self::build_setpw_link( $user_id, $token );
 
-		// Pull the (possibly edited) template for this group.
-		$subject_tpl = get_option(
-			$is_35 ? self::OPT_35_SUBJECT : self::OPT_CIRCLE_SUBJECT,
-			self::default_subject( $is_35 )
+		return self::deliver(
+			$user->user_email,
+			self::compose(
+				$is_35 ? 'welcome_35' : 'welcome_circle',
+				self::member_replacements( $user_id, $link )
+			)
 		);
-		$body_tpl = get_option(
-			$is_35 ? self::OPT_35_BODY : self::OPT_CIRCLE_BODY,
-			self::default_body( $is_35 )
-		);
-
-		// The values every placeholder can be filled with.
-		$real_name  = get_user_meta( $user_id, FF_Members::META_REAL_NAME, true );
-		$first_name = trim( (string) $real_name ) !== '' ? preg_split( '/\s+/', trim( $real_name ) )[0] : $user->display_name;
-		$group      = $is_35 ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' );
-
-		$replacements = array(
-			'{name}'              => $first_name,
-			'{number}'            => $is_35 ? (int) $number : '',
-			'{group}'             => $group,
-			'{public_name}'       => get_user_meta( $user_id, FF_Members::META_PUBLIC_NAME, true ),
-			'{site_name}'         => get_bloginfo( 'name' ),
-			'{login_url}'         => wp_login_url(),
-			'{set_password_link}' => $link,
-		);
-
-		// Fill subject (plain text) and body (escaped, then made into HTML).
-		$subject = self::fill( $subject_tpl, $replacements, false );
-		$body    = self::fill( $body_tpl, $replacements, true );
-
-		// Wrap the body in the branded shell, with the secure link as a button.
-		$html = FF_Email_Template::build( array(
-			'heading'   => $is_35
-				? __( 'Welcome to The 35', 'founding-faces' )
-				: __( 'Welcome to Founding Faces', 'founding-faces' ),
-			'body_html' => $body,
-			'cta'       => array(
-				'label' => __( 'Set your password', 'founding-faces' ),
-				'url'   => $link,
-			),
-			'preheader' => __( 'Set your password to step inside.', 'founding-faces' ),
-		) );
-
-		// Send as HTML so links are clickable.
-		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-
-		return wp_mail( $user->user_email, $subject, $html, $headers );
 	}
 
 	/**
@@ -321,36 +462,10 @@ class FF_Emails {
 			return false;
 		}
 
-		$number     = get_user_meta( $user_id, FF_Members::META_NUMBER, true );
-		$real_name  = get_user_meta( $user_id, FF_Members::META_REAL_NAME, true );
-		$first_name = trim( (string) $real_name ) !== '' ? preg_split( '/\s+/', trim( $real_name ) )[0] : $user->display_name;
-
-		$replacements = array(
-			'{name}'        => $first_name,
-			'{number}'      => (int) $number,
-			'{group}'       => __( 'The 35', 'founding-faces' ),
-			'{public_name}' => get_user_meta( $user_id, FF_Members::META_PUBLIC_NAME, true ),
-			'{site_name}'   => get_bloginfo( 'name' ),
-			'{login_url}'   => wp_login_url(),
+		return self::deliver(
+			$user->user_email,
+			self::compose( 'promotion', self::member_replacements( $user_id ) )
 		);
-
-		$subject_tpl = get_option( self::OPT_PROMO_SUBJECT, self::default_promo_subject() );
-		$body_tpl    = get_option( self::OPT_PROMO_BODY, self::default_promo_body() );
-
-		$subject = self::fill( $subject_tpl, $replacements, false );
-		$body    = self::fill( $body_tpl, $replacements, true );
-
-		$html = FF_Email_Template::build( array(
-			'heading'   => __( 'You are one of The 35', 'founding-faces' ),
-			'body_html' => $body,
-			'cta'       => array(
-				'label' => __( 'Sign in', 'founding-faces' ),
-				'url'   => wp_login_url(),
-			),
-			'preheader' => __( 'You have been chosen for The 35.', 'founding-faces' ),
-		) );
-
-		return wp_mail( $user->user_email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
 	}
 
 	/**
@@ -365,30 +480,7 @@ class FF_Emails {
 	 * @return bool
 	 */
 	public static function send_application_received( $name, $email ) {
-		if ( ! is_email( $email ) ) {
-			return false;
-		}
-
-		$first_name = trim( (string) $name ) !== '' ? preg_split( '/\s+/', trim( $name ) )[0] : __( 'there', 'founding-faces' );
-
-		$replacements = array(
-			'{name}'      => $first_name,
-			'{site_name}' => get_bloginfo( 'name' ),
-		);
-
-		$subject_tpl = get_option( self::OPT_RECEIVED_SUBJECT, self::default_received_subject() );
-		$body_tpl    = get_option( self::OPT_RECEIVED_BODY, self::default_received_body() );
-
-		$subject = self::fill( $subject_tpl, $replacements, false );
-		$body    = self::fill( $body_tpl, $replacements, true );
-
-		$html = FF_Email_Template::build( array(
-			'heading'   => __( 'Application received', 'founding-faces' ),
-			'body_html' => $body,
-			'preheader' => __( 'Thanks for applying to Founding Faces.', 'founding-faces' ),
-		) );
-
-		return wp_mail( $email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		return self::deliver( $email, self::compose( 'received', self::applicant_replacements( $name ) ) );
 	}
 
 	/**
@@ -438,25 +530,10 @@ class FF_Emails {
 		$token = self::create_setpw_token( $user_id );
 		$link  = self::build_setpw_link( $user_id, $token );
 
-		$subject = __( 'Reset your Founding Faces password', 'founding-faces' );
-		$body    = wpautop( esc_html( sprintf(
-			/* translators: 1: member first name or display name, 2: site name. */
-			__( "Hi %1\$s,\n\nUse the button below to set a new password. The link is valid for 7 days.\n\nIf you didn't ask for this, you can safely ignore this email.\n\n%2\$s", 'founding-faces' ),
-			$user->display_name,
-			get_bloginfo( 'name' )
-		) ) );
-
-		$html = FF_Email_Template::build( array(
-			'heading'   => __( 'Reset your password', 'founding-faces' ),
-			'body_html' => $body,
-			'cta'       => array(
-				'label' => __( 'Set a new password', 'founding-faces' ),
-				'url'   => $link,
-			),
-			'preheader' => __( 'Set a new Founding Faces password.', 'founding-faces' ),
-		) );
-
-		return wp_mail( $user->user_email, $subject, $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		return self::deliver(
+			$user->user_email,
+			self::compose( 'reset', self::member_replacements( $user_id, $link ) )
+		);
 	}
 
 	/*
