@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.2 =
+* The emails read properly on a phone. The card was a fixed 600px, so a phone
+  had no choice but to shrink the whole email to make it fit, which is what
+  made every word too small. It is now fluid and capped at 600, with a
+  conditional block holding Outlook to 600 since Outlook cannot do max-width.
+* Below 620px the padding comes in, the body text goes up to 16px rather than
+  down, the small print goes up to 12px, and the button runs the full width so
+  it can be hit one-handed.
+* Long words and addresses wrap instead of forcing the card wider than the
+  screen, which was the other way an email ended up zoomed out.
+* Text-size adjustment is switched off, so iOS stops resizing type on its own.
 
 = 1.1.1 =
 * A link placeholder sitting alone on the line under its sentence is brought up
