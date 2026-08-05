@@ -80,7 +80,7 @@ trait FF_Poll_Style_Controls {
 		) );
 		$this->add_control( 'bar_leading_color', array(
 			'label'       => __( 'Winning bar colour', 'founding-faces' ),
-			'description' => __( 'The option with the most votes. When the member voted for the winner, this is the colour that shows — the "Your choice" label still marks it as theirs.', 'founding-faces' ),
+			'description' => __( 'The option with the most votes. When the member voted for the winner, this is the colour that shows, the "Your choice" label still marks it as theirs.', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::COLOR,
 			'selectors'   => array(
 				'{{WRAPPER}} .ff-poll-result--leading .ff-poll-bar-fill' => 'background-color: {{VALUE}};',
@@ -515,8 +515,8 @@ trait FF_Poll_Style_Controls {
 			'hint'       => array( __( 'Hint under the options', 'founding-faces' ), '' ),
 			'yours'      => array( __( '"Your choice" label', 'founding-faces' ), '' ),
 			'outcome'    => array( __( '"Where we landed" label', 'founding-faces' ), '' ),
-			'total_one'  => array( __( 'Vote count — one vote', 'founding-faces' ), __( '%s is replaced by the number.', 'founding-faces' ) ),
-			'total_many' => array( __( 'Vote count — several votes', 'founding-faces' ), __( '%s is replaced by the number.', 'founding-faces' ) ),
+			'total_one'  => array( __( 'Vote count: one vote', 'founding-faces' ), __( '%s is replaced by the number.', 'founding-faces' ) ),
+			'total_many' => array( __( 'Vote count: several votes', 'founding-faces' ), __( '%s is replaced by the number.', 'founding-faces' ) ),
 		);
 
 		foreach ( $fields as $key => $field ) {
@@ -557,7 +557,7 @@ trait FF_Poll_Style_Controls {
 			'type'        => \Elementor\Controls_Manager::TEXT,
 			'default'     => __( 'Nothing to decide right now', 'founding-faces' ),
 			'label_block' => true,
-			'description' => __( 'Inline HTML is allowed — bold, italics, a link, a line break.', 'founding-faces' ),
+			'description' => __( 'Inline HTML is allowed, bold, italics, a link, a line break.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'empty_text', array(
@@ -565,7 +565,7 @@ trait FF_Poll_Style_Controls {
 			'type'        => \Elementor\Controls_Manager::TEXTAREA,
 			'rows'        => 4,
 			'default'     => __( 'There is no poll open at the moment. When there is a decision to make, it will appear here first.', 'founding-faces' ),
-			'description' => __( 'HTML is allowed here — links, bold, italics, lists. A blank line starts a new paragraph.', 'founding-faces' ),
+			'description' => __( 'HTML is allowed here, links, bold, italics, lists. A blank line starts a new paragraph.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'empty_note', array(
@@ -583,7 +583,7 @@ trait FF_Poll_Style_Controls {
 				'poll'  => __( 'The poll', 'founding-faces' ),
 				'empty' => __( 'This message', 'founding-faces' ),
 			),
-			'description' => __( 'Editor only — switch to the message to style it without waiting for every poll to close.', 'founding-faces' ),
+			'description' => __( 'Editor only, switch to the message to style it without waiting for every poll to close.', 'founding-faces' ),
 		) );
 
 		$this->end_controls_section();
@@ -1054,7 +1054,7 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->add_control( 'intro', array(
 			'type'            => \Elementor\Controls_Manager::RAW_HTML,
-			'raw'             => __( 'Shows any open poll first, then all past polls with their results. Tip: to style the open poll differently, place two of these widgets — one set to "Open poll only", one to "Past polls only".', 'founding-faces' ),
+			'raw'             => __( 'Shows any open poll first, then all past polls with their results. Tip: to style the open poll differently, place two of these widgets, one set to "Open poll only", one to "Past polls only".', 'founding-faces' ),
 			'content_classes' => 'elementor-descriptor',
 		) );
 		$this->add_control( 'show', array(

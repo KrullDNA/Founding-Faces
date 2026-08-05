@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.93
+Stable tag: 1.0.96
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,61 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.96 =
+* The email layout rebuilt to the agreed design: the logo above the card rather
+  than inside it, a full-width heading band across the top of the card with its
+  own background and text colours, the message below it, the footer line centred
+  inside the card, and the small print outside it, under everything.
+* Two new colours: Heading band and Heading text. The old accent colour is now
+  just Links, which is the only other thing it was doing.
+* New "Small print" field for the disclaimer below the card. Takes {site_name}
+  so it follows the site between staging and live. Clear it to leave it off.
+* The heading band carries the subject line rather than a second fixed heading.
+  Two fields saying nearly the same thing is two fields to keep in step.
+* Unsubscribe, at the foot of the welcome and promotion emails. One click, no
+  sign-in: the link carries a hash only this site can produce, and it does not
+  expire, because an email sits in an inbox for years and a link that quietly
+  stops working is worse than no link at all.
+* Unsubscribing switches off the consent flag and writes the unsubscribe back to
+  the email platform, so a member who has left the list here has left it there
+  too. It never touches the account, the number or the history: leaving the
+  mailing list is not leaving the programme.
+* You are emailed every time, with the member's group stated plainly, so one of
+  The 35 going quiet is something you can follow up in person.
+* No unsubscribe on the password reset, which was asked for and has to arrive,
+  or on the application emails, where there is no account and so no list.
+* The preview's unsubscribe link is a sample, like the password link: previewing
+  an email should not be able to unsubscribe the member being previewed.
+
+= 1.0.95 =
+* Emails set in Montserrat, fetched for the clients that will load a web font,
+  with an Outlook conditional that puts Outlook on Arial rather than letting it
+  guess. The font stack also lost its quoted names, which is why emails were
+  arriving in the reader's default serif: a quoted font name has to survive
+  being escaped twice, and when it doesn't the whole declaration is discarded.
+* The two link placeholders are written out as a linked phrase now, not as a
+  pasted address. "Use this secure link to {set_password_link}" reads as "Use
+  this secure link to set your password", with the words carrying the link.
+  The wording is filterable through 'ff_email_link_labels'.
+* Links in an email body take the heading colour instead of browser blue.
+* Colour fields accept a hex with the hash left off. One typed without it was
+  rejected outright and saved as nothing, which read back as the shipped
+  default, so the colour looked like it had never been set.
+* The Settings page now says where each email colour actually lands.
+* Every em dash removed from the plugin's copy, in emails and on screen, in
+  line with the Apotheca house style.
+
+= 1.0.94 =
+* Fixed: a logged-out visitor who opened a restricted page, a gated note or a
+  product page was sent to the WordPress login screen, ignoring the login page
+  set in Settings. Every one of those redirects now uses your login page, and
+  the WordPress screen is only ever used when no login page has been set.
+* The page they were trying to reach travels with them, so logging in returns
+  them to it rather than dropping them on the hub. A wrong password keeps the
+  destination too.
+* Guarded against a loop: if the login page is itself given an access level, the
+  WordPress login screen is used rather than redirecting the page to itself.
 
 = 1.0.93 =
 * New "Emails" screen under Founding Faces: every email the plugin sends, shown

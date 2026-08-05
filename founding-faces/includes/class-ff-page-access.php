@@ -172,8 +172,11 @@ class FF_Page_Access {
 
 		// Not allowed: redirect.
 		if ( ! is_user_logged_in() ) {
-			// Send them to log in, then back to this page.
-			wp_safe_redirect( wp_login_url( self::current_url() ) );
+			// Send them to log in, then back to this page. FF_Menu_Items decides
+			// which login screen that is — the one set in Settings, or the
+			// WordPress one if none has been set. A member who has never seen
+			// wp-login.php should not meet it for the first time here.
+			wp_safe_redirect( FF_Menu_Items::login_redirect_target( self::current_url() ) );
 			exit;
 		}
 

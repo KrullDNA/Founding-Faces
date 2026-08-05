@@ -104,7 +104,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'type'        => \Elementor\Controls_Manager::SELECT,
 			'default'     => 0,
 			'options'     => array( 0 => __( 'The note on this page (automatic)', 'founding-faces' ) ) + array_slice( FF_Display::note_choices(), 1, null, true ),
-			'description' => __( 'Left automatic, this shows the gallery of whichever note is being read — which is what a Single Note template needs.', 'founding-faces' ),
+			'description' => __( 'Left automatic, this shows the gallery of whichever note is being read, which is what a Single Note template needs.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'image_size', array(

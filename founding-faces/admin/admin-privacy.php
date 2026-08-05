@@ -61,7 +61,7 @@ class FF_Admin_Privacy {
 		}
 
 		echo '<div class="wrap ff-admin">';
-		echo '<h1>' . esc_html__( 'Founding Faces — Privacy & Tools', 'founding-faces' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'Founding Faces Privacy & Tools', 'founding-faces' ) . '</h1>';
 
 		self::render_notice();
 		self::render_members_table();
@@ -87,7 +87,7 @@ class FF_Admin_Privacy {
 			'order'        => 'ASC',
 		) );
 
-		echo '<h2>' . esc_html__( 'Members — export, delete & consent audit', 'founding-faces' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Members: export, delete & consent audit', 'founding-faces' ) . '</h2>';
 		echo '<p class="description">' . esc_html__( 'Export a member\'s full record as CSV, delete their personal data (their number is retired, never reused), and see who has consented to emails and when.', 'founding-faces' ) . '</p>';
 
 		if ( empty( $members ) ) {
@@ -117,7 +117,7 @@ class FF_Admin_Privacy {
 			$app     = FF_Privacy::get_application( $uid );
 
 			echo '<tr>';
-			echo '<td>' . ( $number ? esc_html( $number ) : '—' ) . '</td>';
+			echo '<td>' . ( $number ? esc_html( $number ) : '-' ) . '</td>';
 			echo '<td>' . esc_html( $real ? $real : $member->display_name ) . '<br /><span class="ff-consent">' . esc_html( $member->user_email ) . '</span>';
 			if ( $is_test ) {
 				echo ' <span class="ff-badge">' . esc_html__( 'TEST', 'founding-faces' ) . '</span>';
@@ -131,9 +131,9 @@ class FF_Admin_Privacy {
 			if ( '' === $postcode && $app ) {
 				$postcode = $app->postcode;
 			}
-			echo '<td>' . ( $postcode ? esc_html( $postcode ) : '—' ) . '</td>';
+			echo '<td>' . ( $postcode ? esc_html( $postcode ) : '-' ) . '</td>';
 			echo '<td>' . ( $consent ? '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Yes', 'founding-faces' ) . '</span>' : '<span style="color:#8a1f1f;">' . esc_html__( 'No', 'founding-faces' ) . '</span>' ) . '</td>';
-			echo '<td>' . esc_html( $app && $app->consent_at ? $app->consent_at : '—' ) . '</td>';
+			echo '<td>' . esc_html( $app && $app->consent_at ? $app->consent_at : '-' ) . '</td>';
 			$last_login = (int) get_user_meta( $uid, FF_Members::META_LAST_LOGIN, true );
 			echo '<td>' . ( $last_login
 				? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_login ) )
@@ -213,7 +213,7 @@ class FF_Admin_Privacy {
 
 		// --- Guarded reset ---
 		echo '<h3 style="margin-top:2em;color:#8a1f1f;">' . esc_html__( 'Reset to a true zero state', 'founding-faces' ) . '</h3>';
-		echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'This deletes ALL test accounts, sets the numbering sequence back to zero, and clears the retired-numbers list — all together — so the next approved member of The 35 becomes 01. This is an "empty the database" class action and cannot be undone.', 'founding-faces' ) . '</p></div>';
+		echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'This deletes ALL test accounts, sets the numbering sequence back to zero, and clears the retired-numbers list, all together, so the next approved member of The 35 becomes 01. This is an "empty the database" class action and cannot be undone.', 'founding-faces' ) . '</p></div>';
 
 		if ( $real_exists ) {
 			echo '<div class="notice notice-error inline"><p>' . esc_html__( 'The reset is unavailable because at least one real (non-test) numbered member exists. It physically cannot run while a real Founding Face is present.', 'founding-faces' ) . '</p></div>';
@@ -335,7 +335,7 @@ class FF_Admin_Privacy {
 		$messages = array(
 			'deleted'           => array( 'success', __( 'The member\'s personal data was deleted; their number is retired.', 'founding-faces' ) ),
 			'test_created'      => array( 'success', __( 'Test member created.', 'founding-faces' ) ),
-			'reset_done'        => array( 'success', __( 'Reset complete — numbering is back to zero and test accounts are gone.', 'founding-faces' ) ),
+			'reset_done'        => array( 'success', __( 'Reset complete, numbering is back to zero and test accounts are gone.', 'founding-faces' ) ),
 			'reset_refused'     => array( 'error', __( 'Reset refused: a real numbered member exists.', 'founding-faces' ) ),
 			'reset_unconfirmed' => array( 'error', __( 'Reset not run: the confirmation word didn\'t match.', 'founding-faces' ) ),
 			'error'             => array( 'error', __( 'Something went wrong. Please try again.', 'founding-faces' ) ),

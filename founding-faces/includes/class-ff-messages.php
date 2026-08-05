@@ -98,7 +98,7 @@ class FF_Messages {
 	 */
 	public static function handle_upload( $field = 'ff_file' ) {
 		if ( empty( $_FILES[ $field ] ) || empty( $_FILES[ $field ]['name'] ) ) {
-			return null; // Nothing attached — that's fine.
+			return null; // Nothing attached, that's fine.
 		}
 		$file = $_FILES[ $field ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
@@ -106,7 +106,7 @@ class FF_Messages {
 			return array( 'error' => __( 'The file could not be uploaded. Please try again.', 'founding-faces' ) );
 		}
 		if ( (int) $file['size'] > self::MAX_UPLOAD_BYTES ) {
-			return array( 'error' => __( 'That file is too large — the limit is 8 MB.', 'founding-faces' ) );
+			return array( 'error' => __( 'That file is too large, the limit is 8 MB.', 'founding-faces' ) );
 		}
 
 		// Confirm the real type matches an allowed image/PDF, not just the name.
@@ -737,7 +737,7 @@ class FF_Messages {
 		$body  = '<p>' . esc_html__( 'You have a new reply in your Founding Faces portal.', 'founding-faces' ) . '</p>';
 		$body .= '<blockquote style="margin:0;padding:12px 16px;border-left:3px solid #d5d8dd;">' . nl2br( esc_html( $msg->body ) ) . '</blockquote>';
 		if ( ! empty( $msg->attachment_path ) || ! empty( $msg->attachment_url ) ) {
-			$body .= '<p>' . esc_html__( 'This reply includes an attachment — sign in to your portal to view it.', 'founding-faces' ) . '</p>';
+			$body .= '<p>' . esc_html__( 'This reply includes an attachment, sign in to your portal to view it.', 'founding-faces' ) . '</p>';
 		}
 		$body .= '<p>' . esc_html__( 'Sign in to read it in full and reply.', 'founding-faces' ) . '</p>';
 
@@ -838,8 +838,8 @@ class FF_Messages {
 		ob_start();
 		if ( 'sent' === $state ) {
 			echo '<div class="ff-notice ff-notice--success">' . esc_html( $is_feedback
-				? __( 'Thank you — your feedback has been sent.', 'founding-faces' )
-				: __( 'Thank you — your message has been sent. We\'ll reply in your portal.', 'founding-faces' ) ) . '</div>';
+				? __( 'Thank you, your feedback has been sent.', 'founding-faces' )
+				: __( 'Thank you, your message has been sent. We\'ll reply in your portal.', 'founding-faces' ) ) . '</div>';
 		} elseif ( 'filetype' === $state ) {
 			echo '<div class="ff-notice ff-notice--error">' . esc_html__( 'Your message wasn\'t sent: attachments must be a JPG, PNG, GIF or PDF under 8 MB. Please try again.', 'founding-faces' ) . '</div>';
 		}
@@ -867,8 +867,8 @@ class FF_Messages {
 				</label>
 				<textarea id="ff-msg-body" name="ff_body" rows="5" required></textarea>
 				<span class="ff-hint"><?php echo esc_html( $is_feedback
-					? __( 'Private — this goes to Nick only, never shown to other members.', 'founding-faces' )
-					: __( 'Private — this goes to Nick only. You\'ll get the reply in your portal and by email.', 'founding-faces' ) ); ?></span>
+					? __( 'Private, this goes to Nick only, never shown to other members.', 'founding-faces' )
+					: __( 'Private, this goes to Nick only. You\'ll get the reply in your portal and by email.', 'founding-faces' ) ); ?></span>
 			</p>
 
 			<p class="ff-field ff-field--file">
@@ -965,8 +965,8 @@ class FF_Messages {
 	 */
 	private static function render_sample_messages() {
 		$rows = array(
-			array( __( 'Feedback: Version 12 — stability at 40°C', 'founding-faces' ), true, __( 'Renewal Serum', 'founding-faces' ), __( 'Version 12 — stability at 40°C', 'founding-faces' ) ),
-			array( __( 'Feedback: Texture after 6 weeks', 'founding-faces' ), false, __( 'Barrier Cream', 'founding-faces' ), __( 'Version 4 — texture', 'founding-faces' ) ),
+			array( __( 'Feedback: Version 12, stability at 40°C', 'founding-faces' ), true, __( 'Renewal Serum', 'founding-faces' ), __( 'Version 12, stability at 40°C', 'founding-faces' ) ),
+			array( __( 'Feedback: Texture after 6 weeks', 'founding-faces' ), false, __( 'Barrier Cream', 'founding-faces' ), __( 'Version 4, texture', 'founding-faces' ) ),
 			array( __( 'Your question', 'founding-faces' ), false, '', '' ),
 		);
 		$out  = '<div class="ff-messages"><h3 class="ff-history-heading">' . esc_html__( 'Your messages', 'founding-faces' ) . '</h3>';
@@ -980,7 +980,7 @@ class FF_Messages {
 			$out .= '</span>';
 			if ( '' !== $r[2] ) {
 				$out .= '<span class="ff-thread-context"><span class="ff-thread-product">' . esc_html( $r[2] )
-					. '</span><span class="ff-thread-sep"> — </span><span class="ff-thread-note">' . esc_html( $r[3] ) . '</span></span>';
+					. '</span><span class="ff-thread-sep">, </span><span class="ff-thread-note">' . esc_html( $r[3] ) . '</span></span>';
 			}
 			$out .= '</div><span class="ff-history-item-date">' . esc_html( self::format_date( current_time( 'mysql' ) ) ) . '</span></li>';
 		}
@@ -1151,7 +1151,7 @@ class FF_Messages {
 		}
 		$parts[] = '<span class="ff-thread-note">' . esc_html( get_the_title( $ref_id ) ) . '</span>';
 
-		return '<span class="ff-thread-context">' . implode( '<span class="ff-thread-sep"> — </span>', $parts ) . '</span>';
+		return '<span class="ff-thread-context">' . implode( '<span class="ff-thread-sep">, </span>', $parts ) . '</span>';
 	}
 
 	/**

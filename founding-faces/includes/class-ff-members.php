@@ -505,7 +505,7 @@ class FF_Members {
 
 		if ( $number ) {
 			/* translators: %d is the member's Founding number. */
-			$subject = __( 'Welcome — you are one of The 35', 'founding-faces' );
+			$subject = __( 'Welcome, you are one of The 35', 'founding-faces' );
 			$body    = sprintf(
 				/* translators: 1: member number, 2: site name. */
 				__( "Welcome to Founding Faces.\n\nYou are Founding Face %1\$d.\n\nWe'll send your secure sign-in link shortly so you can set your password and see inside %2\$s.", 'founding-faces' ),
@@ -744,7 +744,7 @@ class FF_Members {
 
 		// Hard guard: never touch anything if a real numbered member exists.
 		if ( self::has_real_numbered_member() ) {
-			return new WP_Error( 'ff_real_exists', __( 'A real numbered member exists — the reset was refused.', 'founding-faces' ) );
+			return new WP_Error( 'ff_real_exists', __( 'A real numbered member exists, the reset was refused.', 'founding-faces' ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/user.php';

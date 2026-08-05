@@ -93,7 +93,7 @@ class FF_Emails {
 	 */
 	public static function default_subject( $is_35 ) {
 		return $is_35
-			? __( 'Welcome — you are Founding Face {number}', 'founding-faces' )
+			? __( 'Welcome, you are Founding Face {number}', 'founding-faces' )
 			: __( 'Welcome to the Apotheca community', 'founding-faces' );
 	}
 
@@ -106,7 +106,7 @@ class FF_Emails {
 	public static function default_body( $is_35 ) {
 		if ( $is_35 ) {
 			return __(
-				"Hi {name},\n\nWelcome to Founding Faces. You are Founding Face {number} — one of The 35.\n\nUse the button below to set your password and step inside. The link is valid for 7 days; if it ever expires you can request a fresh one from the login page.\n\nWith thanks,\n{site_name}",
+				"Hi {name},\n\nWelcome to Founding Faces. You are Founding Face {number}, one of The 35.\n\nUse the button below to set your password and step inside. The link is valid for 7 days; if it ever expires you can request a fresh one from the login page.\n\nWith thanks,\n{site_name}",
 				'founding-faces'
 			);
 		}
@@ -122,7 +122,7 @@ class FF_Emails {
 	 * @return string
 	 */
 	public static function default_promo_subject() {
-		return __( 'Congratulations — you are one of The 35', 'founding-faces' );
+		return __( 'Congratulations, you are one of The 35', 'founding-faces' );
 	}
 
 	/**
@@ -135,7 +135,7 @@ class FF_Emails {
 	 */
 	public static function default_promo_body() {
 		return __(
-			"Hi {name},\n\nWe have some special news. You have been chosen as one of The 35 — the inner circle of Founding Faces.\n\nYou are now Founding Face {number}. Your place, your number, and everything you've taken part in are yours alone.\n\nSign in any time to see inside.\n\nWith thanks,\n{site_name}",
+			"Hi {name},\n\nWe have some special news. You have been chosen as one of The 35, the inner circle of Founding Faces.\n\nYou are now Founding Face {number}. Your place, your number, and everything you've taken part in are yours alone.\n\nSign in any time to see inside.\n\nWith thanks,\n{site_name}",
 			'founding-faces'
 		);
 	}
@@ -181,7 +181,7 @@ class FF_Emails {
 	 */
 	public static function default_decline_body() {
 		return __(
-			"Hi {name},\n\nThank you for applying to Founding Faces, and for the time you took over it.\n\nWe had far more applications than places, and on this occasion we haven't been able to offer you one. That isn't a reflection on you — the group is deliberately small, and the choices were genuinely hard.\n\nWe'd love to stay in touch, and you're very welcome to apply again if we open more places.\n\nWith thanks and warm wishes,\n{site_name}",
+			"Hi {name},\n\nThank you for applying to Founding Faces, and for the time you took over it.\n\nWe had far more applications than places, and on this occasion we haven't been able to offer you one. That isn't a reflection on you, the group is deliberately small, and the choices were genuinely hard.\n\nWe'd love to stay in touch, and you're very welcome to apply again if we open more places.\n\nWith thanks and warm wishes,\n{site_name}",
 			'founding-faces'
 		);
 	}
@@ -209,7 +209,7 @@ class FF_Emails {
 	public static function kinds() {
 		return array(
 			'welcome_35'   => array(
-				'label'           => __( 'Welcome — The 35', 'founding-faces' ),
+				'label'           => __( 'Welcome: The 35', 'founding-faces' ),
 				'when'            => __( 'Sent when you approve an application into The 35, and whenever you resend the set-up link.', 'founding-faces' ),
 				'subject_option'  => self::OPT_35_SUBJECT,
 				'subject_default' => self::default_subject( true ),
@@ -219,9 +219,10 @@ class FF_Emails {
 				'preheader'       => __( 'Set your password to step inside.', 'founding-faces' ),
 				'cta_label'       => __( 'Set your password', 'founding-faces' ),
 				'cta_url'         => '{set_password_link}',
+				'unsubscribe'     => true,
 			),
 			'welcome_circle' => array(
-				'label'           => __( 'Welcome — The Circle', 'founding-faces' ),
+				'label'           => __( 'Welcome: The Circle', 'founding-faces' ),
 				'when'            => __( 'Sent when you approve an application into The Circle, and whenever you resend the set-up link. Also the email an applicant gets when auto-accept is on.', 'founding-faces' ),
 				'subject_option'  => self::OPT_CIRCLE_SUBJECT,
 				'subject_default' => self::default_subject( false ),
@@ -231,6 +232,7 @@ class FF_Emails {
 				'preheader'       => __( 'Set your password to step inside.', 'founding-faces' ),
 				'cta_label'       => __( 'Set your password', 'founding-faces' ),
 				'cta_url'         => '{set_password_link}',
+				'unsubscribe'     => true,
 			),
 			'promotion'    => array(
 				'label'           => __( 'Chosen for The 35 (promotion)', 'founding-faces' ),
@@ -243,6 +245,7 @@ class FF_Emails {
 				'preheader'       => __( 'You have been chosen for The 35.', 'founding-faces' ),
 				'cta_label'       => __( 'Sign in', 'founding-faces' ),
 				'cta_url'         => '{login_url}',
+				'unsubscribe'     => true,
 			),
 			'received'     => array(
 				'label'           => __( 'Application received', 'founding-faces' ),
@@ -267,7 +270,7 @@ class FF_Emails {
 			),
 			'reset'        => array(
 				'label'           => __( 'Password reset link', 'founding-faces' ),
-				'when'            => __( 'Sent when a member asks for a new password from their account page. This one is not editable — it is deliberately plain.', 'founding-faces' ),
+				'when'            => __( 'Sent when a member asks for a new password from their account page. This one is not editable, it is deliberately plain.', 'founding-faces' ),
 				'subject_option'  => '',
 				'subject_default' => __( 'Reset your Founding Faces password', 'founding-faces' ),
 				'body_option'     => '',
@@ -308,8 +311,14 @@ class FF_Emails {
 			? get_option( $spec['subject_option'], $spec['subject_default'] )
 			: $spec['subject_default'];
 
+		// The heading band carries the subject line. Two fields saying nearly
+		// the same thing is two fields to keep in step, and the subject is
+		// already the sentence that has to work on its own in a crowded inbox.
+		// The fixed heading is only a fallback for an emptied subject.
+		$subject = self::fill( $subject_tpl, $replacements, false );
+
 		$args = array(
-			'heading'   => $spec['heading'],
+			'heading'   => '' !== trim( $subject ) ? $subject : $spec['heading'],
 			'body_html' => self::fill( $body_tpl, $replacements, true ),
 			'preheader' => $spec['preheader'],
 		);
@@ -322,8 +331,15 @@ class FF_Emails {
 			);
 		}
 
+		// The way out, on the emails that are a mailing list rather than a
+		// response to something the member just did. A password reset carries
+		// no unsubscribe: it is asked for, and it has to arrive.
+		if ( ! empty( $spec['unsubscribe'] ) && ! empty( $replacements['{unsubscribe_url}'] ) ) {
+			$args['unsubscribe'] = $replacements['{unsubscribe_url}'];
+		}
+
 		return array(
-			'subject' => self::fill( $subject_tpl, $replacements, false ),
+			'subject' => $subject,
 			'html'    => FF_Email_Template::build( $args ),
 		);
 	}
@@ -373,6 +389,7 @@ class FF_Emails {
 			'{site_name}'         => get_bloginfo( 'name' ),
 			'{login_url}'         => wp_login_url(),
 			'{set_password_link}' => $link,
+			'{unsubscribe_url}'   => FF_Unsubscribe::url( $user_id ),
 		);
 	}
 
@@ -496,19 +513,51 @@ class FF_Emails {
 	 * @return string
 	 */
 	private static function fill( $template, $replacements, $as_html ) {
-		if ( $as_html ) {
-			// Escape each dynamic value so a stray character can't break the HTML.
-			foreach ( $replacements as $key => $value ) {
-				$replacements[ $key ] = ( '{set_password_link}' === $key || '{login_url}' === $key )
-					? esc_url( $value )
-					: esc_html( $value );
-			}
-			$filled = strtr( $template, $replacements );
-			// Turn line breaks into paragraphs and bare URLs into links.
-			return wpautop( make_clickable( $filled ) );
+		if ( ! $as_html ) {
+			// A subject line can't hold a link, so a URL there stays a URL.
+			return strtr( $template, $replacements );
 		}
 
-		return strtr( $template, $replacements );
+		$labels  = self::link_labels();
+		$anchors = array();
+		$values  = array();
+
+		foreach ( $replacements as $key => $value ) {
+			// A link placeholder becomes a linked phrase, not a pasted address.
+			// Nobody wants sixty characters of query string in the middle of a
+			// sentence, and a wrapped URL looks broken even when it works.
+			if ( isset( $labels[ $key ] ) && '' !== (string) $value ) {
+				$token             = '{{ff-link-' . count( $anchors ) . '}}';
+				$anchors[ $token ] = '<a href="' . esc_url( $value ) . '">' . esc_html( $labels[ $key ] ) . '</a>';
+				$values[ $key ]    = $token;
+				continue;
+			}
+
+			// Escape each dynamic value so a stray character can't break the HTML.
+			$values[ $key ] = esc_html( $value );
+		}
+
+		// Line breaks become paragraphs, and any URL the author typed themselves
+		// still becomes a link. The tokens are put back last so neither step can
+		// interfere with the anchors.
+		$filled = wpautop( make_clickable( strtr( $template, $values ) ) );
+
+		return strtr( $filled, $anchors );
+	}
+
+	/**
+	 * The words each link placeholder is written as in an email body.
+	 *
+	 * Filterable, so the wording can be changed without editing every template.
+	 *
+	 * @return array Map of placeholder => link text.
+	 */
+	public static function link_labels() {
+		return apply_filters( 'ff_email_link_labels', array(
+			'{set_password_link}' => __( 'set your password', 'founding-faces' ),
+			'{login_url}'         => __( 'the login page', 'founding-faces' ),
+			'{unsubscribe_url}'   => __( 'unsubscribe', 'founding-faces' ),
+		) );
 	}
 
 	/**

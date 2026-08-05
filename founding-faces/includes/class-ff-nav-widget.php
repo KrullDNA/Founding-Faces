@@ -78,7 +78,7 @@ class FF_Nav_Widget extends \Elementor\Widget_Base {
 		}
 
 		if ( empty( $choices ) ) {
-			$choices[0] = __( '— No menus yet —', 'founding-faces' );
+			$choices[0] = __( 'No menus yet', 'founding-faces' );
 		}
 
 		return $choices;
@@ -101,7 +101,7 @@ class FF_Nav_Widget extends \Elementor\Widget_Base {
 			'default'     => (string) key( $choices ),
 			'description' => sprintf(
 				/* translators: %s is the Menus screen URL. */
-				__( 'Edit the items — including the login/logout swap and the count bubble — in <a href="%s" target="_blank">Appearance → Menus</a>.', 'founding-faces' ),
+				__( 'Edit the items, including the login/logout swap and the count bubble, in <a href="%s" target="_blank">Appearance → Menus</a>.', 'founding-faces' ),
 				esc_url( admin_url( 'nav-menus.php' ) )
 			),
 		) );

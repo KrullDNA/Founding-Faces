@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.93
+ * Version:           1.0.96
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.93' );
+define( 'FF_VERSION', '1.0.96' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -127,6 +127,10 @@ require_once FF_PATH . 'includes/class-ff-email-template.php';
 // Loaded always: the login page and its screens are not the admin area.
 require_once FF_PATH . 'includes/class-ff-emails.php';
 
+// The unsubscribe link at the foot of every member email, and the screen that
+// honours it. Loaded always: it has to work for someone who is not signed in.
+require_once FF_PATH . 'includes/class-ff-unsubscribe.php';
+
 // The email-platform connector interface and manager. The connectors
 // themselves (Campaign Monitor, Klaviyo) are separate add-on plugins that
 // register through the 'ff_register_connectors' hook, so the core never
@@ -173,6 +177,7 @@ function ff_init() {
 	FF_Application::register();
 	FF_Members::register();
 	FF_Emails::register();
+	FF_Unsubscribe::register();
 	FF_Connectors::register();
 	FF_Gating::register();
 	FF_Page_Access::register();

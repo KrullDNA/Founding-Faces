@@ -496,7 +496,7 @@ class FF_Post_Types {
 		<p>
 			<label for="ff_product_stage"><strong><?php esc_html_e( 'Current stage', 'founding-faces' ); ?></strong></label><br />
 			<select name="ff_product_stage" id="ff_product_stage" style="width:100%;">
-				<option value=""><?php esc_html_e( '— None —', 'founding-faces' ); ?></option>
+				<option value=""><?php esc_html_e( 'None', 'founding-faces' ); ?></option>
 				<?php foreach ( self::product_stages() as $key => $label ) : ?>
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $stage, $key ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
@@ -592,7 +592,7 @@ class FF_Post_Types {
 				<th scope="row"><label for="ff_note_product"><?php esc_html_e( 'Product', 'founding-faces' ); ?></label></th>
 				<td>
 					<select name="ff_note_product" id="ff_note_product">
-						<option value="0"><?php esc_html_e( '— Select a product —', 'founding-faces' ); ?></option>
+						<option value="0"><?php esc_html_e( 'Select a product', 'founding-faces' ); ?></option>
 						<?php foreach ( $products as $p ) : ?>
 							<option value="<?php echo esc_attr( $p->ID ); ?>" <?php selected( $product, $p->ID ); ?>>
 								<?php echo esc_html( $p->post_title ); ?>
@@ -631,7 +631,7 @@ class FF_Post_Types {
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'The 35 only keeps this note in the vault — Circle members never receive it.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The 35 only keeps this note in the vault, Circle members never receive it.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
