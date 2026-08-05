@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.99
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,12 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.0 =
+* Heading size and weight for the emails, alongside the two heading colours.
+  Montserrat is fetched at 400, 600 and 700, so those three are certain; a
+  client that falls back to Arial rounds anything else to the nearest weight
+  it has.
 
 = 1.0.99 =
 * Every em dash removed from the whole plugin: both add-ons, every screen,

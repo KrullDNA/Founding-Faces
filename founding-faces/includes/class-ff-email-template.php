@@ -30,6 +30,8 @@ class FF_Email_Template {
 	const OPT_ACCENT       = 'ff_email_accent';        // Link colour in the body.
 	const OPT_HEADING_BG   = 'ff_email_heading_bg';    // The heading band's fill.
 	const OPT_HEADING_TEXT = 'ff_email_heading_text';  // The heading's own colour.
+	const OPT_HEADING_SIZE   = 'ff_email_heading_size';    // Heading size, in pixels.
+	const OPT_HEADING_WEIGHT = 'ff_email_heading_weight';  // Heading weight.
 	const OPT_BG           = 'ff_email_bg';            // Page background behind the card.
 	const OPT_BUTTON_BG    = 'ff_email_button_bg';     // CTA button background.
 	const OPT_BUTTON_TEXT  = 'ff_email_button_text';   // CTA button text colour.
@@ -48,6 +50,8 @@ class FF_Email_Template {
 			self::OPT_ACCENT       => '#2b2d33',
 			self::OPT_HEADING_BG   => '#2b2d33',
 			self::OPT_HEADING_TEXT => '#ffffff',
+			self::OPT_HEADING_SIZE   => 26,
+			self::OPT_HEADING_WEIGHT => 700,
 			self::OPT_BG           => '#f6f7f8',
 			self::OPT_BUTTON_BG    => '#3a3d44',
 			self::OPT_BUTTON_TEXT  => '#ffffff',
@@ -108,6 +112,8 @@ class FF_Email_Template {
 		$accent    = self::option( self::OPT_ACCENT );
 		$head_bg   = self::option( self::OPT_HEADING_BG );
 		$head_text = self::option( self::OPT_HEADING_TEXT );
+		$head_size = max( 12, (int) self::option( self::OPT_HEADING_SIZE ) );
+		$head_wt   = max( 100, (int) self::option( self::OPT_HEADING_WEIGHT ) );
 		$bg        = self::option( self::OPT_BG );
 		$btn_bg    = self::option( self::OPT_BUTTON_BG );
 		$btn_text  = self::option( self::OPT_BUTTON_TEXT );
@@ -192,7 +198,7 @@ class FF_Email_Template {
 					     width of the card. -->
 					<tr>
 						<td align="center" bgcolor="<?php echo esc_attr( $head_bg ); ?>" style="padding:34px 32px; background:<?php echo esc_attr( $head_bg ); ?>;">
-							<h1 style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:26px; line-height:1.3; font-weight:700; color:<?php echo esc_attr( $head_text ); ?>;">
+							<h1 style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:<?php echo esc_attr( $head_size ); ?>px; line-height:1.25; font-weight:<?php echo esc_attr( $head_wt ); ?>; color:<?php echo esc_attr( $head_text ); ?>;">
 								<?php echo esc_html( $heading ); ?>
 							</h1>
 						</td>

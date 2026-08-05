@@ -93,6 +93,8 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_SIZE, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_WEIGHT, array( 'sanitize_callback' => 'absint' ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
 
@@ -536,6 +538,8 @@ class FF_Settings {
 		$accent   = FF_Email_Template::option( FF_Email_Template::OPT_ACCENT );
 		$head_bg  = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_BG );
 		$head_txt = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_TEXT );
+		$head_size = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_SIZE );
+		$head_wt   = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_WEIGHT );
 		$bg       = FF_Email_Template::option( FF_Email_Template::OPT_BG );
 		$btn_bg   = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_BG );
 		$btn_txt  = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_TEXT );
@@ -558,6 +562,34 @@ class FF_Settings {
 					<input name="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>" type="number" min="40" max="600" step="1" class="small-text" value="<?php echo esc_attr( $logo_w ); ?>" /> px
 					<p class="description">
 						<?php esc_html_e( 'How wide the logo is drawn. The card is 600px, so 200 to 300 is usually right. On a narrow phone it shrinks to fit rather than overflowing. Upload the file at roughly twice this width so it stays sharp on a retina screen.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Heading', 'founding-faces' ); ?></th>
+				<td>
+					<label style="display:inline-block; margin:0 1.6rem 0 0;"><?php esc_html_e( 'Size', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_HEADING_SIZE ); ?>" type="number" min="12" max="60" step="1" class="small-text" value="<?php echo esc_attr( $head_size ); ?>" /> px
+					</label>
+					<label style="display:inline-block;"><?php esc_html_e( 'Weight', 'founding-faces' ); ?><br />
+						<select name="<?php echo esc_attr( FF_Email_Template::OPT_HEADING_WEIGHT ); ?>">
+							<?php
+							$weights = array(
+								300 => __( '300 Light', 'founding-faces' ),
+								400 => __( '400 Regular', 'founding-faces' ),
+								500 => __( '500 Medium', 'founding-faces' ),
+								600 => __( '600 Semi-bold', 'founding-faces' ),
+								700 => __( '700 Bold', 'founding-faces' ),
+								800 => __( '800 Extra bold', 'founding-faces' ),
+							);
+							foreach ( $weights as $weight => $label ) :
+								?>
+								<option value="<?php echo esc_attr( $weight ); ?>" <?php selected( (int) $head_wt, $weight ); ?>><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</label>
+					<p class="description">
+						<?php esc_html_e( 'The line in the coloured band. Montserrat is fetched at 400, 600 and 700, so those three are certain; a client that has to fall back to Arial will round anything else to the nearest weight it has.', 'founding-faces' ); ?>
 					</p>
 				</td>
 			</tr>
