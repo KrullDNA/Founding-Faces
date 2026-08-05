@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.96
+Stable tag: 1.0.97
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.97 =
+* The heading band carries the email's own heading again ("Welcome to The 35"),
+  not the subject line. A subject has to earn a click from a crowded inbox; a
+  heading is read by someone who has already opened the email.
+* The gallery's corner radius is applied to the link around each image as well
+  as to the image. A linked image paints its own box over the corners, so the
+  radius was set and then covered up.
+* Updating the plugin now purges the LiteSpeed page cache as well as clearing
+  Elementor's generated CSS. Rebuilding the stylesheet is only half of it: the
+  pages that link to it are cached too, stylesheet version and all, so a fresh
+  file sat on disk while visitors were served the address of the old one.
 
 = 1.0.96 =
 * The email layout rebuilt to the agreed design: the logo above the card rather

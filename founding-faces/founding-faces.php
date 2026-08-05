@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.96
+ * Version:           1.0.97
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.96' );
+define( 'FF_VERSION', '1.0.97' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -256,6 +256,15 @@ function ff_maybe_clear_elementor_css() {
 			$elementor->files_manager->clear_cache();
 		}
 	}
+
+	// Rebuilding the CSS is only half of it. The pages that link to it are
+	// themselves cached, stylesheet version and all, so a fresh file sits on
+	// disk while every visitor is served the address of the old one. LiteSpeed
+	// listens for this; nothing happens if it isn't installed.
+	do_action( 'litespeed_purge_all' );
+
+	// Anything else that caches the front end can hang off this.
+	do_action( 'ff_version_changed', FF_VERSION, get_option( 'ff_css_version' ) );
 
 	update_option( 'ff_css_version', FF_VERSION );
 }

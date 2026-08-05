@@ -311,14 +311,14 @@ class FF_Emails {
 			? get_option( $spec['subject_option'], $spec['subject_default'] )
 			: $spec['subject_default'];
 
-		// The heading band carries the subject line. Two fields saying nearly
-		// the same thing is two fields to keep in step, and the subject is
-		// already the sentence that has to work on its own in a crowded inbox.
-		// The fixed heading is only a fallback for an emptied subject.
+		// The subject line and the heading are deliberately different sentences.
+		// A subject has to earn a click from a crowded inbox; a heading is read
+		// by someone who has already opened the email and only needs telling
+		// where they have arrived.
 		$subject = self::fill( $subject_tpl, $replacements, false );
 
 		$args = array(
-			'heading'   => '' !== trim( $subject ) ? $subject : $spec['heading'],
+			'heading'   => $spec['heading'],
 			'body_html' => self::fill( $body_tpl, $replacements, true ),
 			'preheader' => $spec['preheader'],
 		);
