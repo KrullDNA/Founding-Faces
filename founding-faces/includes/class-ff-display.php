@@ -614,16 +614,16 @@ class FF_Display {
 
 		$meta = array();
 		if ( $stage && self::shows( $a, 'stage' ) ) {
-			$meta[] = self::stage_badge( $stage );
+			$meta[] = array( 'pill', self::stage_badge( $stage ) );
 		}
 		if ( '' !== (string) $trial && self::shows( $a, 'version' ) ) {
-			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>' );
 		}
 		if ( $date && self::shows( $a, 'date' ) ) {
-			$meta[] = '<span class="ff-note-date">' . esc_html( $date ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( $date ) . '</span>' );
 		}
 		if ( 'the-35-only' === $audience && self::shows( $a, 'vault' ) ) {
-			$meta[] = '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
 		}
 
 		// No header at all when everything that would go in it is turned off,
@@ -631,7 +631,7 @@ class FF_Display {
 		if ( '' !== $title || $meta ) {
 			$out .= '<header class="ff-note-head">' . $title;
 			if ( $meta ) {
-				$out .= '<div class="ff-note-meta">' . implode( self::meta_separator( $a ), $meta ) . '</div>';
+				$out .= '<div class="ff-note-meta">' . self::meta_row( $meta, $a ) . '</div>';
 			}
 			$out .= '</header>';
 		}
@@ -695,22 +695,22 @@ class FF_Display {
 
 		$meta = array();
 		if ( self::shows( $a, 'stage' ) ) {
-			$meta[] = self::stage_badge( $stage );
+			$meta[] = array( 'pill', self::stage_badge( $stage ) );
 		}
 		if ( self::shows( $a, 'version' ) ) {
-			$meta[] = '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-trial">' . sprintf( /* translators: %s is a version number. */ esc_html__( 'Version %s', 'founding-faces' ), esc_html( $trial ) ) . '</span>' );
 		}
 		if ( self::shows( $a, 'date' ) ) {
-			$meta[] = '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>';
+			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>' );
 		}
 		if ( $vault && self::shows( $a, 'vault' ) ) {
-			$meta[] = '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>';
+			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
 		}
 
 		if ( '' !== $head || $meta ) {
 			$out .= '<header class="ff-note-head">' . $head;
 			if ( $meta ) {
-				$out .= '<div class="ff-note-meta">' . implode( self::meta_separator( $a ), $meta ) . '</div>';
+				$out .= '<div class="ff-note-meta">' . self::meta_row( $meta, $a ) . '</div>';
 			}
 			$out .= '</header>';
 		}
@@ -970,6 +970,52 @@ class FF_Display {
 		$args['hide'] = array_filter( array_map( 'sanitize_key', array_map( 'trim', $args['hide'] ) ) );
 
 		return $args;
+	}
+
+	/**
+	 * Build the meta row as two groups: the pills, then the plain text.
+	 *
+	 * Grouping them is what lets the row be one line or two without the markup
+	 * changing — the widget's Layout control turns the row into a column, and
+	 * the badges land above the version and date rather than each chip wrapping
+	 * wherever it happens to run out of space.
+	 *
+	 * The separator goes between two pieces of plain text and nowhere else. A
+	 * pill already has an edge of its own — a shape, usually a background — so a
+	 * mark beside one is a second boundary drawn over the first. The version and
+	 * the date have no edge at all, which is why they ran together.
+	 *
+	 * An empty group isn't rendered, so turning every pill off doesn't leave a
+	 * gap where they used to be.
+	 *
+	 * @param array $items Each entry array( 'pill'|'text', html ).
+	 * @param array $args  The filled-in card options.
+	 * @return string
+	 */
+	private static function meta_row( $items, $args ) {
+		$sep    = self::meta_separator( $args );
+		$groups = array( 'pill' => '', 'text' => '' );
+		$prev   = '';
+
+		foreach ( $items as $item ) {
+			list( $kind, $html ) = $item;
+
+			if ( 'text' === $kind && '' !== $sep && 'text' === $prev ) {
+				$groups['text'] .= $sep;
+			}
+
+			$groups[ $kind ] .= $html;
+			$prev             = $kind;
+		}
+
+		$out = '';
+		foreach ( array( 'pill', 'text' ) as $kind ) {
+			if ( '' !== $groups[ $kind ] ) {
+				$out .= '<span class="ff-note-meta-group ff-note-meta-' . ( 'pill' === $kind ? 'pills' : 'text' ) . '">' . $groups[ $kind ] . '</span>';
+			}
+		}
+
+		return $out;
 	}
 
 	/**
