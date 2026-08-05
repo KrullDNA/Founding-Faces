@@ -158,6 +158,24 @@ class FF_Email_Template {
 		/* Links in the body take the heading colour. The button sets its own
 		   colour inline, which wins over this. */
 		a { color: <?php echo esc_html( $accent ); ?>; }
+
+		/* A long word or address can't be allowed to force the card wider than
+		   the screen. When that happens a phone shrinks the whole email to fit,
+		   which is what makes every word too small to read. */
+		td, p, a, li { word-break: break-word; }
+
+		/* On a phone the card takes the full width and the generous desktop
+		   padding comes in, so the words have somewhere to go. The body text
+		   goes up rather than down: a phone is held closer but read faster. */
+		@media only screen and (max-width: 620px) {
+			.ff-pad { padding-left: 22px !important; padding-right: 22px !important; }
+			.ff-band { padding: 26px 22px !important; }
+			.ff-body { font-size: 16px !important; line-height: 1.7 !important; }
+			.ff-foot { font-size: 13px !important; }
+			.ff-small { font-size: 12px !important; }
+			.ff-btn-table { width: 100% !important; }
+			.ff-btn { display: block !important; text-align: center !important; }
+		}
 	</style>
 	<!--<![endif]-->
 	<!--[if mso]>
@@ -168,17 +186,24 @@ class FF_Email_Template {
 	</style>
 	<![endif]-->
 </head>
-<body style="margin:0; padding:0; background:<?php echo esc_attr( $bg ); ?>; font-family:<?php echo esc_attr( $family ); ?>; color:#2b2d33;">
+<body style="margin:0; padding:0; width:100%; background:<?php echo esc_attr( $bg ); ?>; font-family:<?php echo esc_attr( $family ); ?>; color:#2b2d33; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
 	<?php if ( '' !== trim( (string) $preheader ) ) : ?>
 		<div style="display:none; max-height:0; overflow:hidden; opacity:0;"><?php echo esc_html( $preheader ); ?></div>
 	<?php endif; ?>
 	<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:<?php echo esc_attr( $bg ); ?>;">
 		<tr>
 			<td align="center" style="padding:28px 16px;">
+				<?php
+				// Outlook ignores max-width, so without this it would draw the
+				// card at whatever width the window happens to be. Everything
+				// else uses max-width and stays fluid, which is what stops a
+				// phone shrinking the whole email to make a 600px card fit.
+				?>
+				<!--[if mso]><table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
 
 				<?php if ( '' !== trim( (string) $logo ) ) : ?>
 				<!-- The logo sits above the card, on the page, not inside it. -->
-				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%;">
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%; max-width:600px;">
 					<tr>
 						<td align="center" style="padding:0 16px 26px;">
 							<?php
@@ -192,12 +217,12 @@ class FF_Email_Template {
 				</table>
 				<?php endif; ?>
 
-				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%; background:#ffffff; border-radius:10px; overflow:hidden;">
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%; max-width:600px; background:#ffffff; border-radius:10px; overflow:hidden;">
 					<?php if ( '' !== trim( (string) $heading ) ) : ?>
 					<!-- The heading band: its own fill, its own text colour, full
 					     width of the card. -->
 					<tr>
-						<td align="center" bgcolor="<?php echo esc_attr( $head_bg ); ?>" style="padding:34px 32px; background:<?php echo esc_attr( $head_bg ); ?>;">
+						<td align="center" class="ff-band" bgcolor="<?php echo esc_attr( $head_bg ); ?>" style="padding:34px 32px; background:<?php echo esc_attr( $head_bg ); ?>;">
 							<h1 style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:<?php echo esc_attr( $head_size ); ?>px; line-height:1.25; font-weight:<?php echo esc_attr( $head_wt ); ?>; color:<?php echo esc_attr( $head_text ); ?>;">
 								<?php echo esc_html( $heading ); ?>
 							</h1>
@@ -205,17 +230,17 @@ class FF_Email_Template {
 					</tr>
 					<?php endif; ?>
 					<tr>
-						<td style="padding:34px 40px 4px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; line-height:1.7; color:#2b2d33;">
+						<td class="ff-pad ff-body" style="padding:34px 40px 4px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; line-height:1.7; color:#2b2d33;">
 							<?php echo $body_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Body is pre-built, escaped HTML. ?>
 						</td>
 					</tr>
 					<?php if ( ! empty( $cta['url'] ) && ! empty( $cta['label'] ) ) : ?>
 					<tr>
-						<td style="padding:12px 40px 8px;">
-							<table role="presentation" cellpadding="0" cellspacing="0">
+						<td class="ff-pad" style="padding:12px 40px 8px;">
+							<table role="presentation" cellpadding="0" cellspacing="0" class="ff-btn-table">
 								<tr>
 									<td align="center" bgcolor="<?php echo esc_attr( $btn_bg ); ?>" style="border-radius:6px; background:<?php echo esc_attr( $btn_bg ); ?>;">
-										<a href="<?php echo esc_url( $cta['url'] ); ?>" style="display:inline-block; padding:13px 28px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; font-weight:600; color:<?php echo esc_attr( $btn_text ); ?>; text-decoration:none; border-radius:6px;">
+										<a href="<?php echo esc_url( $cta['url'] ); ?>" class="ff-btn" style="display:inline-block; padding:13px 28px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; font-weight:600; color:<?php echo esc_attr( $btn_text ); ?>; text-decoration:none; border-radius:6px;">
 											<?php echo esc_html( $cta['label'] ); ?>
 										</a>
 									</td>
@@ -226,8 +251,8 @@ class FF_Email_Template {
 					<?php endif; ?>
 					<?php if ( '' !== trim( (string) $footer ) ) : ?>
 					<tr>
-						<td align="center" style="padding:18px 40px 34px;">
-							<p style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:13px; line-height:1.6; color:#6b7280; text-align:center;">
+						<td align="center" class="ff-pad" style="padding:18px 40px 34px;">
+							<p class="ff-foot" style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:13px; line-height:1.6; color:#6b7280; text-align:center;">
 								<?php echo nl2br( esc_html( $footer ) ); ?>
 							</p>
 						</td>
@@ -237,11 +262,11 @@ class FF_Email_Template {
 
 				<?php if ( '' !== trim( (string) $disclaimer ) || '' !== trim( (string) $unsub ) ) : ?>
 				<!-- The small print and the way out, below the card. -->
-				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%;">
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%; max-width:600px;">
 					<?php if ( '' !== trim( (string) $disclaimer ) ) : ?>
 					<tr>
 						<td align="center" style="padding:20px 24px 0;">
-							<p style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-align:center;">
+							<p class="ff-small" style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-align:center;">
 								<?php echo nl2br( esc_html( $disclaimer ) ); ?>
 							</p>
 						</td>
@@ -250,7 +275,7 @@ class FF_Email_Template {
 					<?php if ( '' !== trim( (string) $unsub ) ) : ?>
 					<tr>
 						<td align="center" style="padding:14px 24px 8px;">
-							<a href="<?php echo esc_url( $unsub ); ?>" style="font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-decoration:underline;">
+							<a href="<?php echo esc_url( $unsub ); ?>" class="ff-small" style="font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-decoration:underline;">
 								<?php esc_html_e( 'Unsubscribe', 'founding-faces' ); ?>
 							</a>
 						</td>
@@ -258,6 +283,8 @@ class FF_Email_Template {
 					<?php endif; ?>
 				</table>
 				<?php endif; ?>
+
+				<!--[if mso]></td></tr></table><![endif]-->
 
 			</td>
 		</tr>
