@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.82
+Stable tag: 1.0.83
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.83 =
+* Cards in a multi-column layout are now equal height by default: every card in
+  a row matches the tallest one, so a short note beside a long one no longer
+  leaves the row looking half-finished.
+* It is a control, not a decision: "Card heights" (or "Note heights" / "Poll
+  heights") sits under the Columns control on every widget that has one — Notes,
+  Notes Archive, Home, Member Archive and both poll layouts — with "As tall as
+  their content" if that is wanted, set per device.
 
 = 1.0.82 =
 * Note cards can be shortened: "Body length" takes a number of words or of

@@ -605,9 +605,19 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 				'4' => __( '4 columns', 'founding-faces' ),
 			),
 			'selectors'       => array(
-				'{{WRAPPER}} .ff-notes-read-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+				'{{WRAPPER}} .ff-notes-read-list' => 'display: grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
 			'description'     => __( 'Set each device separately — the tablet and mobile icons above the control.', 'founding-faces' ),
+		) );
+		$this->add_responsive_control( 'notes_equal_height', array(
+			'label'     => __( 'Note heights', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'stretch',
+			'options'   => array(
+				'stretch' => __( 'Equal across the row', 'founding-faces' ),
+				'start'   => __( 'As tall as their content', 'founding-faces' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-notes-read-list' => 'align-items: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'notes_col_gap', array(
 			'label'      => __( 'Column gap', 'founding-faces' ),

@@ -498,8 +498,18 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
 			'separator'      => 'before',
 			'selectors'      => array(
-				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
+		) );
+		$this->add_responsive_control( 'equal_height', array(
+			'label'     => __( 'Card heights', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'stretch',
+			'options'   => array(
+				'stretch' => __( 'Equal across the row', 'founding-faces' ),
+				'start'   => __( 'As tall as their content', 'founding-faces' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-notes-cards' => 'align-items: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'col_gap', array(
 			'label'     => __( 'Gap between cards', 'founding-faces' ),
@@ -621,8 +631,18 @@ class FF_Notes_Archive_Widget extends FF_Display_Widget_Base {
 			'mobile_default' => '1',
 			'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
 			'selectors'      => array(
-				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+				'{{WRAPPER}} .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
+		) );
+		$this->add_responsive_control( 'equal_height', array(
+			'label'     => __( 'Card heights', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'stretch',
+			'options'   => array(
+				'stretch' => __( 'Equal across the row', 'founding-faces' ),
+				'start'   => __( 'As tall as their content', 'founding-faces' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-notes-cards' => 'align-items: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'col_gap', array(
 			'label'     => __( 'Gap between cards', 'founding-faces' ),
@@ -925,8 +945,19 @@ class FF_Home_Widget extends FF_Display_Widget_Base {
 			'options'   => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
 			'condition' => array( 'latest_listing_layout' => 'default' ),
 			'selectors' => array(
-				'{{WRAPPER}} .ff-home-latest .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr)); align-items: start;',
+				'{{WRAPPER}} .ff-home-latest .ff-notes-cards' => 'display:grid; grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 			),
+		) );
+		$this->add_responsive_control( 'equal_height', array(
+			'label'     => __( 'Card heights', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'stretch',
+			'options'   => array(
+				'stretch' => __( 'Equal across the row', 'founding-faces' ),
+				'start'   => __( 'As tall as their content', 'founding-faces' ),
+			),
+			'condition' => array( 'latest_listing_layout' => 'default' ),
+			'selectors' => array( '{{WRAPPER}} .ff-home-latest .ff-notes-cards' => 'align-items: {{VALUE}};' ),
 		) );
 		$this->end_controls_section();
 
