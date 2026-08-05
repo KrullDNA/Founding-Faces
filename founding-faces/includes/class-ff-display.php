@@ -3,8 +3,8 @@
  * The frontend display layer.
  *
  * This is where product and note data reaches a page. The single most important
- * idea: a note is designed once and rendered automatically. Every note — single
- * or in a list — goes through the same render_note_card() template, so
+ * idea: a note is designed once and rendered automatically. Every note, single
+ * or in a list, goes through the same render_note_card() template, so
  * publishing a new note is filling in the fields and hitting publish; it appears
  * on the frontend already styled and on-brand, with no page-building.
  *
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The four display components, delivered as shortcodes so they work on free
  * Elementor (via the Shortcode widget), in the block editor, or in a classic
  * theme. If Elementor Pro is present, a Theme Builder dynamic template can take
- * over the note markup through the 'ff_render_note' filter — either path gives
+ * over the note markup through the 'ff_render_note' filter, either path gives
  * the same publish-and-it-appears result.
  */
 class FF_Display {
@@ -45,7 +45,7 @@ class FF_Display {
 		// A note is read when its own page is opened, whatever drew that page:
 		// the Single Note widget, an Elementor template of dynamic tags, or a
 		// theme template. Priority 20 so the gate (priority 10) has already had
-		// its say — a viewer who is redirected away never counts as having read.
+		// its say, a viewer who is redirected away never counts as having read.
 		add_action( 'template_redirect', array( __CLASS__, 'record_single_note_view' ), 20 );
 
 		// The slider script, registered on both the front end and inside the
@@ -80,7 +80,7 @@ class FF_Display {
 	 *
 	 * Kept out of the renderers deliberately. sc_note() used to be the only
 	 * place a view was recorded, which was right when the only way to read a
-	 * note was through that shortcode — but a note has had its own URL since
+	 * note was through that shortcode, but a note has had its own URL since
 	 * 1.0.9, and a Single Note template built from dynamic tags never calls it.
 	 * The request itself is the honest signal, so that is what is listened to.
 	 *
@@ -132,7 +132,7 @@ class FF_Display {
 	}
 
 	/**
-	 * Notes as id => "Product — Title", for a widget dropdown.
+	 * Notes as id => "Product, Title", for a widget dropdown.
 	 *
 	 * @return array
 	 */
@@ -658,7 +658,7 @@ class FF_Display {
 	/*
 	 * A note counts as read only when the member opens its own page, not when a
 	 * card appears in a list. Marking on list render looked reasonable, but it
-	 * emptied the unread list the moment a member landed on the hub — the feed
+	 * emptied the unread list the moment a member landed on the hub, the feed
 	 * there would have silently marked everything read before they had chosen to
 	 * read anything. sc_note() records the view instead, so "unread" keeps
 	 * meaning something and the count bubble stays honest.
@@ -668,8 +668,8 @@ class FF_Display {
 	 * -----------------------------------------------------------------------
 	 * Editor dummy content.
 	 *
-	 * In the Elementor editor a widget may have nothing real to show yet — no
-	 * note chosen, no products created, or the designer isn't a member — which
+	 * In the Elementor editor a widget may have nothing real to show yet, no
+	 * note chosen, no products created, or the designer isn't a member, which
 	 * would leave nothing to style. These build representative markup using the
 	 * exact same classes as the live output, so every element can be styled up
 	 * front and looks identical once real content arrives.
@@ -799,7 +799,7 @@ class FF_Display {
 	}
 
 	/**
-	 * The stage filter chips, with nothing selected — for the editor preview.
+	 * The stage filter chips, with nothing selected, for the editor preview.
 	 *
 	 * @return string
 	 */
@@ -808,7 +808,7 @@ class FF_Display {
 	}
 
 	/**
-	 * The archive filter bar, with nothing selected — for the editor preview.
+	 * The archive filter bar, with nothing selected, for the editor preview.
 	 *
 	 * @param array $atts Which filters to show.
 	 * @return string
@@ -976,12 +976,12 @@ class FF_Display {
 	 * Build the meta row as two groups: the pills, then the plain text.
 	 *
 	 * Grouping them is what lets the row be one line or two without the markup
-	 * changing — the widget's Layout control turns the row into a column, and
+	 * changing, the widget's Layout control turns the row into a column, and
 	 * the badges land above the version and date rather than each chip wrapping
 	 * wherever it happens to run out of space.
 	 *
 	 * The separator goes between two pieces of plain text and nowhere else. A
-	 * pill already has an edge of its own — a shape, usually a background — so a
+	 * pill already has an edge of its own, a shape, usually a background, so a
 	 * mark beside one is a second boundary drawn over the first. The version and
 	 * the date have no edge at all, which is why they ran together.
 	 *
@@ -1149,7 +1149,7 @@ class FF_Display {
 	 * Which note a component on this page is about.
 	 *
 	 * An explicit id always wins. Otherwise the note being viewed, and failing
-	 * that the note the current loop is on — a Theme Builder template renders
+	 * that the note the current loop is on, a Theme Builder template renders
 	 * per note, where the queried object is the archive rather than the row.
 	 *
 	 * @param int $explicit A note id chosen in the widget, or 0 for automatic.
@@ -1182,8 +1182,8 @@ class FF_Display {
 	 * what lets one Single Product template serve every product.
 	 *
 	 * A note answers the question too, through the product it belongs to. On a
-	 * Single Note template "the product on this page" is unambiguous — it is the
-	 * one that note is about — and that is what makes a "more from this
+	 * Single Note template "the product on this page" is unambiguous, it is the
+	 * one that note is about, and that is what makes a "more from this
 	 * formulation" block possible without naming a product anywhere.
 	 *
 	 * @param int|string $explicit A product id, or 'auto'/0 for automatic.
@@ -1261,7 +1261,7 @@ class FF_Display {
 	/**
 	 * The slider for one note's gallery.
 	 *
-	 * Returns an empty string — not a message — when there is nothing to show
+	 * Returns an empty string, not a message, when there is nothing to show
 	 * or the viewer isn't allowed the note. A gallery with no images should
 	 * leave no trace on the page.
 	 *
@@ -1389,7 +1389,7 @@ class FF_Display {
 	/**
 	 * Wrap prepared slides in the slider, with arrows and dots if they earn it.
 	 *
-	 * One image gets no arrows and no dots at all — there is nowhere to go, so
+	 * One image gets no arrows and no dots at all, there is nowhere to go, so
 	 * nothing is drawn. From two upwards the controls appear and the slider
 	 * loops, and the script hides them again at any screen width where every
 	 * image is already on show.
@@ -1441,7 +1441,7 @@ class FF_Display {
 	/**
 	 * The default arrow: a plain chevron in the current text colour.
 	 *
-	 * Deliberately unstyled — no background, no border, no size of its own —
+	 * Deliberately unstyled, no background, no border, no size of its own ,
 	 * so everything about how it looks comes from the widget's controls. The
 	 * widget can replace it with any icon from the library.
 	 *

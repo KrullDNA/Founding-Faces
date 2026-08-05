@@ -8,7 +8,7 @@
  * 1. A single item that reads "Log in" when logged out and "Log out" when
  *    logged in, pointing at the right URL each time (with a redirect back to
  *    the hub after login, and to a chosen page after logout).
- * 2. A count bubble — like a mini-cart — showing how many unread messages (or
+ * 2. A count bubble, like a mini-cart, showing how many unread messages (or
  *    unread notes, or unvoted polls) are waiting, so a member sees at a glance
  *    that there's something for them. The same counts are available as a
  *    standalone Member Bar widget for Elementor headers.
@@ -187,7 +187,7 @@ class FF_Menu_Items {
 	 * Where to send a visitor who has been turned away from a locked page.
 	 *
 	 * The same as login_url(), with one guard: if the login page is itself
-	 * locked — easily done by giving it a group in its own access box — sending
+	 * locked, easily done by giving it a group in its own access box, sending
 	 * someone there produces a redirect loop with no way in. In that one case
 	 * the WordPress login screen is used, which is always reachable, so a
 	 * misconfiguration costs a plain-looking login page rather than the site.
@@ -551,7 +551,7 @@ class FF_Menu_Items {
 	 * 'note_viewed' interaction, which the display layer records on first view.
 	 *
 	 * The gate runs on every note, so a Circle member only ever counts notes
-	 * their group is allowed to see — a 35-only note is never in their total.
+	 * their group is allowed to see, a 35-only note is never in their total.
 	 *
 	 * @param int $user_id The member.
 	 * @return int
@@ -614,7 +614,7 @@ class FF_Menu_Items {
 	 *
 	 * A member-facing login form that posts to WordPress's own handler, so
 	 * authentication, cookies and brute-force protection all behave exactly as
-	 * core does — this is a skin, not a replacement. A member who is already
+	 * core does, this is a skin, not a replacement. A member who is already
 	 * logged in sees a short "you're signed in" panel with a log-out link
 	 * instead, so the page is never a dead end.
 	 *
@@ -637,7 +637,7 @@ class FF_Menu_Items {
 				'form_class'     => '',
 				// '' live, or which state the Elementor editor should draw:
 				// 'both', 'in' or 'out'. Declared here because shortcode_atts
-				// keeps only the keys it is given — left out, it was silently
+				// keeps only the keys it is given, left out, it was silently
 				// dropped and the editor never previewed anything.
 				'editor_preview' => '',
 			),

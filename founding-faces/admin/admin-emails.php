@@ -2,7 +2,7 @@
 /**
  * Admin "Emails" screen: preview every email, and send yourself a test.
  *
- * Editing a template on the Settings page is writing in the dark otherwise —
+ * Editing a template on the Settings page is writing in the dark otherwise ,
  * the only way to see the result was to approve a real applicant and read a
  * real inbox. This screen renders the message exactly as it is sent, through
  * the same FF_Emails::compose() the senders use, so the preview cannot drift
@@ -10,7 +10,7 @@
  *
  * Two things it deliberately will not do. It never generates a real
  * set-password token, because that would invalidate a link already sitting in
- * a member's inbox — the preview carries a sample link that lands on the
+ * a member's inbox, the preview carries a sample link that lands on the
  * "this link has expired" screen. And a test is only ever sent to an address
  * typed in here, never to the member whose details are being previewed.
  *
@@ -156,7 +156,7 @@ class FF_Admin_Emails {
 	 * Send a test of the chosen email to a typed address.
 	 *
 	 * The address is always the one typed on the form. The member dropdown only
-	 * decides whose name and number fill the placeholders — it never decides
+	 * decides whose name and number fill the placeholders, it never decides
 	 * who receives the test.
 	 */
 	public static function handle_test_send() {
@@ -238,7 +238,7 @@ class FF_Admin_Emails {
 
 		$kinds = FF_Emails::kinds();
 
-		// phpcs:disable WordPress.Security.NonceVerification — read-only view.
+		// phpcs:disable WordPress.Security.NonceVerification, read-only view.
 		$kind    = isset( $_GET['kind'] ) ? sanitize_key( wp_unslash( $_GET['kind'] ) ) : '';
 		$user_id = isset( $_GET['member'] ) ? absint( wp_unslash( $_GET['member'] ) ) : 0;
 		// phpcs:enable WordPress.Security.NonceVerification

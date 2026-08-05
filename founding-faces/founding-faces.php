@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.0.98
+ * Version:           1.1.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.0.98' );
+define( 'FF_VERSION', '1.1.1' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -206,7 +206,7 @@ function ff_init() {
 	}
 
 	// Notes gained a single URL (rewrite slug) in 1.0.9 and products in 1.0.79,
-	// so flush the rewrite rules once on existing installs — otherwise the
+	// so flush the rewrite rules once on existing installs, otherwise the
 	// /note/… and /formulation/… URLs would 404 until permalinks are re-saved
 	// by hand.
 	if ( '3' !== get_option( 'ff_rewrite_version' ) ) {
@@ -236,8 +236,8 @@ add_action( 'plugins_loaded', 'ff_maybe_upgrade_db' );
  *
  * Elementor turns a widget's control values into a CSS file and keeps it until
  * something tells it not to. The selectors those values are written against
- * live in this plugin's PHP, so a release that widens a selector — the day the
- * field rules learned about password inputs, say — leaves every page still
+ * live in this plugin's PHP, so a release that widens a selector, the day the
+ * field rules learned about password inputs, say, leaves every page still
  * serving CSS built from the old ones. The control is set correctly and the
  * page ignores it, which reads as a bug in the control.
  *
@@ -269,3 +269,47 @@ function ff_maybe_clear_elementor_css() {
 	update_option( 'ff_css_version', FF_VERSION );
 }
 add_action( 'admin_init', 'ff_maybe_clear_elementor_css' );
+
+/**
+ * Take the em dashes out of copy that was saved before the rule was enforced.
+ *
+ * Fixing the shipped defaults did nothing for the templates that had already
+ * been edited: those live in the options table, and an install that had been
+ * written in kept every dash. This runs once and rewrites them, the same way
+ * the save filter now rewrites anything typed from here on.
+ */
+function ff_sweep_em_dashes() {
+	if ( '1' === get_option( 'ff_em_dash_swept' ) ) {
+		return;
+	}
+
+	$keys = array(
+		FF_Emails::OPT_35_SUBJECT,
+		FF_Emails::OPT_35_BODY,
+		FF_Emails::OPT_CIRCLE_SUBJECT,
+		FF_Emails::OPT_CIRCLE_BODY,
+		FF_Emails::OPT_PROMO_SUBJECT,
+		FF_Emails::OPT_PROMO_BODY,
+		FF_Emails::OPT_RECEIVED_SUBJECT,
+		FF_Emails::OPT_RECEIVED_BODY,
+		FF_Emails::OPT_DECLINE_SUBJECT,
+		FF_Emails::OPT_DECLINE_BODY,
+		FF_Email_Template::OPT_FOOTER,
+		FF_Email_Template::OPT_DISCLAIMER,
+	);
+
+	foreach ( $keys as $key ) {
+		$value = get_option( $key );
+		if ( ! is_string( $value ) || '' === $value ) {
+			continue;
+		}
+
+		$clean = FF_Text::no_em_dash( $value );
+		if ( $clean !== $value ) {
+			update_option( $key, $clean );
+		}
+	}
+
+	update_option( 'ff_em_dash_swept', '1' );
+}
+add_action( 'admin_init', 'ff_sweep_em_dashes' );

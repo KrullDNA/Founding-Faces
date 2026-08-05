@@ -1,6 +1,6 @@
 <?php
 /**
- * The admin "Messages" screen — Nick's side of the concierge channel.
+ * The admin "Messages" screen, Nick's side of the concierge channel.
  *
  * Lists every member thread newest-first with an unread bubble, opens a thread
  * to read the full conversation, and lets Nick reply. A reply emails the member

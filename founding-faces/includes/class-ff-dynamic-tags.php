@@ -5,10 +5,10 @@
  * Registers a "Founding Faces" group of dynamic tags so a note's structured
  * fields can be pulled into any Elementor widget (and, crucially, into an
  * Elementor Pro Loop Item template) by clicking the dynamic (database) icon and
- * picking the field — no meta keys to type, no JetEngine required.
+ * picking the field, no meta keys to type, no JetEngine required.
  *
  * The tags read the current post in the loop, so dropping a Heading widget in a
- * Loop Item and setting its dynamic source to "Founding Faces — Note Stage"
+ * Loop Item and setting its dynamic source to "Founding Faces, Note Stage"
  * shows that note's stage, formatted.
  *
  * Adds nothing if Elementor isn't installed.
@@ -50,7 +50,7 @@ class FF_Dynamic_Tags {
 		$done = true;
 
 		// The tag classes extend Elementor base classes, which only exist once
-		// Elementor is loaded — which it is, since this runs on its hook.
+		// Elementor is loaded, which it is, since this runs on its hook.
 		require_once FF_PATH . 'includes/class-ff-dynamic-tag-classes.php';
 
 		if ( method_exists( $dynamic_tags, 'register_group' ) ) {

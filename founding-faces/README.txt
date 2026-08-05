@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.98
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,23 +27,23 @@ Governing principles:
 
 == Build progress ==
 
-Stage 1 — Foundation & data layer:
+Stage 1: Foundation & data layer
 * Plugin activates cleanly.
 * Three custom tables created: ff_applications, ff_poll_votes, ff_interactions.
 * Products (ff_product) and Notes (ff_note) post types registered.
 * Group taxonomy (ff_group) registered on users, seeded with the two terms
   "The 35" and "The Circle".
 
-Stage 2 — Application form & status lookup:
+Stage 2: Application form & status lookup
 * Front-end application form via [ff_application_form] shortcode (works in
   Elementor too), storing submissions to ff_applications as pending with the
   consent flag and a timestamp.
 * Four-digit Australian postcode field, validated server-side, for the map.
-* Logged-out status lookup via [ff_status_lookup] — enter your email, see
+* Logged-out status lookup via [ff_status_lookup], enter your email, see
   pending or decided, without exposing group or number.
 * All input sanitised, all output escaped, every submission nonce-protected.
 
-Stage 3 — Moderation & member creation:
+Stage 3: Moderation & member creation
 * Admin "Founding Faces" menu with a moderation queue (pending count bubble),
   tabbed by status, showing each application's details.
 * Approve into The 35 or The Circle; The 35 gets the next sequential Founding
@@ -57,17 +57,17 @@ Stage 3 — Moderation & member creation:
 * Resend-welcome-email button. Every action nonce- and capability-checked.
 * Interaction-log spine helper (FF_Interactions) in use from approval onward.
 
-Stage 4 — Welcome emails & account access:
+Stage 4: Welcome emails & account access
 * Group-specific welcome emails on approval, from editable templates on a new
   Settings page (placeholders for name, number, group, links, etc.).
 * The 35 email states the assigned Founding number; The Circle email welcomes
   them to the Apotheca community.
-* Secure set-password link — a one-time token (SHA-256 hashed, 7-day expiry).
+* Secure set-password link, a one-time token (SHA-256 hashed, 7-day expiry).
   Members set their own password; a plain-text password is never emailed.
 * Set-password and "resend my set-up link" screens live on the WordPress login
   page, so an expired link is never a dead end and no page needs creating.
 
-Stage 5 — Email connector + Campaign Monitor:
+Stage 5: Email connector + Campaign Monitor
 * Abstract FF_Connector contract with a manager that holds the one active
   connector (only one at a time), plus the Campaign Monitor add-on.
 * On approval a consented member is synced with name, email, group and number;
@@ -77,23 +77,23 @@ Stage 5 — Email connector + Campaign Monitor:
 * API key and list ID on the Settings page; the Group and Number custom fields
   are created on the list automatically. Uses WordPress's HTTP API, no SDK.
 
-Stage 6 — Products & notes with gating:
+Stage 6: Products & notes with gating
 * Notes (ff_note) are structured records: linked product, date, version number,
   development stage (in development / stability testing / passed / failed),
   image gallery and a per-note audience flag (everyone / the-35-only), all
   entered in a clean "Note details" metabox with a media-library gallery
   picker.
 * Server-side gating (FF_Gating): can_view_note() plus member / The 35 / The
-  Circle checks — the single source of truth for who sees what.
+  Circle checks, the single source of truth for who sees what.
 * Elementor "Show to" visibility condition on every element (Everyone /
   Logged-out / All members / The 35 / The Circle), enforced via should_render
   so gated content is never produced or sent to the browser.
 * Notes and Products kept out of the REST API to close any path around the gate.
 
-Stage 7 — Frontend display:
+Stage 7: Frontend display
 * A note is designed once and rendered automatically: every note (single or in
   a list) goes through one render_note_card() template, so publishing note 30
-  is just filling in fields — it appears already styled and on-brand.
+  is just filling in fields, it appears already styled and on-brand.
 * Components as shortcodes (Elementor-compatible): [ff_note], [ff_notes]
   (newest first, filterable by stage with filter chips), [ff_product_header],
   [ff_home] (a hybrid home: latest-notes feed above a products list), and
@@ -106,7 +106,7 @@ Stage 7 — Frontend display:
 * First views recorded to the interaction spine (note_viewed) for the later
   personal-history page.
 
-Stage 8 — Poll widget:
+Stage 8: Poll widget
 * Polls as a non-public ff_poll type: question, two-or-more options each with an
   optional image, per-poll audience (everyone / the-35-only), open/closed
   status, an "active poll" flag, and an outcome/reasoning field.
@@ -121,20 +121,20 @@ Stage 8 — Poll widget:
 * Admin "who voted for what" view on the poll screen: each option's count and
   the members (real name + number) who chose it. Never exposed on the frontend.
 
-Stage 9 — Personal history page:
+Stage 9: Personal history page
 * [ff_history] shortcode: a logged-in member sees their number and group, the
   polls they voted in and how they voted, the notes they've read, and any
   feedback they've shared.
 * Reads only the current member's own rows from ff_poll_votes and
-  ff_interactions — the member id always comes from the session, never the
+  ff_interactions, the member id always comes from the session, never the
   request, so no other member's data is ever visible.
-* This is the seed of the launch "fingerprint" — the same data, later made
+* This is the seed of the launch "fingerprint", the same data, later made
   presentable and optionally public with consent.
 
-Stage 10 — The members map:
+Stage 10: The members map
 * [ff_members_map] shortcode: an anonymous dot per member, placed from their
   postcode via a bundled Australian postcode-to-coordinates table (3,170
-  postcodes) — no external API call.
+  postcodes), no external API call.
 * Leaflet (bundled locally, no CDN) with the pale grey Positron OpenStreetMap
   style as the base map, from a no-key provider. The tile URL is a single
   setting so it can be repointed later.
@@ -149,38 +149,38 @@ Bundled data attribution: Australian postcode coordinates derived from the
 Matthew Proctor Australian postcodes dataset (matthewproctor.com), deduplicated
 to one centroid per postcode.
 
-Stage 11 — Account settings:
+Stage 11: Account settings
 * [ff_account] page: change email (with a confirmation link sent to the new
   address), change password (secure token reset, the same mechanism as the
   welcome link), and edit name.
-* Email-consent toggle that writes back through the connector — turning it off
+* Email-consent toggle that writes back through the connector, turning it off
   unsubscribes at Campaign Monitor, not just locally; turning it on re-syncs.
 * Self-service data export (CSV) and delete buttons, calling the shared privacy
   core (FF_Privacy): export gathers the whole record; delete removes the
   application and personal meta, unsubscribes, retires (never reuses) the
   number, and anonymises/deactivates the account.
-* Number, group and standing are shown read-only — Nick's to control, never the
+* Number, group and standing are shown read-only, Nick's to control, never the
   member's to edit.
 
-Stage 12 — Privacy & admin tools:
+Stage 12: Privacy & admin tools
 * Privacy & Tools admin page: per-member CSV export, delete-with-number-
   retention (personal data removed, number retired never reused), and a consent
   audit (who consented and when) in one members table.
 * Test mode: create test members (they take real numbers to exercise the whole
   flow; consent off so they never sync to the email platform).
 * Guarded reset: deletes ALL test accounts, zeroes the numbering sequence and
-  clears the retired list — together — so the next real The 35 member is 01.
+  clears the retired list, together, so the next real The 35 member is 01.
   Refuses to run if any real numbered member exists, and requires typing the
   word RESET, not a single click.
 
-Stage 13 — Klaviyo add-on:
+Stage 13: Klaviyo add-on
 * Second connector implementing the same FF_Connector contract, for when
   Klaviyo is purchased; group sent as BOTH a tag and a profile property.
 
-Stage 14 (this release) — Members map Elementor widget & add-on split:
+Stage 14 (this release), Members map Elementor widget & add-on split:
 * The members map is now a native Elementor widget (Founding Faces Map, Atomic
   architecture) wrapping the same renderer. The [ff_members_map] shortcode
-  still works as a fallback — the widget doesn't replace it.
+  still works as a fallback, the widget doesn't replace it.
 * Widget controls: centre point (defaults to the centre of Australia), default
   zoom, min/max zoom, scroll-wheel zoom (default off), pan/drag with an option
   to lock panning to Australia's bounds, zoom buttons on/off, map height; dot
@@ -189,13 +189,35 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   and an optional legend with position. All map behaviour options are standard
   Leaflet options. Still reads postcode only, nothing clickable.
 * Leaflet and the widget assets load only where a map is present.
-* The connectors are now SEPARATE add-on plugins ("Founding Faces — Campaign
-  Monitor" and "Founding Faces — Klaviyo"), each in its own zip. The core
+* The connectors are now SEPARATE add-on plugins ("Founding Faces, Campaign
+  Monitor" and "Founding Faces, Klaviyo"), each in its own zip. The core
   exposes an 'ff_register_connectors' hook they register through, so the core
   no longer depends on any connector being installed. Install only the platform
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.1 =
+* A link placeholder sitting alone on the line under its sentence is brought up
+  onto that sentence. The templates were written when the placeholder produced a
+  bare URL, where a line of its own is the only sensible way to set one out. Now
+  that it produces a few linked words, the same line break left the link
+  stranded. A deliberate blank line still makes it a paragraph of its own.
+
+= 1.1.0 =
+* Heading size and weight for the emails, alongside the two heading colours.
+  Montserrat is fetched at 400, 600 and 700, so those three are certain; a
+  client that falls back to Arial rounds anything else to the nearest weight
+  it has.
+
+= 1.0.99 =
+* Every em dash removed from the whole plugin: both add-ons, every screen,
+  every stylesheet and script, the readme and the code comments. 363 of them.
+* The email copy already saved in the database is rewritten once on update.
+  Fixing the shipped defaults did nothing for templates that had been edited,
+  which is where the ones you were still seeing came from.
+* Author copy is filtered on save from here on, so an em dash pasted in from a
+  document becomes a comma rather than waiting to be spotted in an inbox.
 
 = 1.0.98 =
 * A logo width setting for the emails, in pixels. The width is written as an
@@ -272,18 +294,18 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.93 =
 * New "Emails" screen under Founding Faces: every email the plugin sends, shown
-  exactly as a member receives it, with the subject line above it — and a
+  exactly as a member receives it, with the subject line above it, and a
   "send yourself a test" box underneath. Fill the placeholders with made-up
   details or with a real member's name, number and group.
 * A preview never mints a set-password token, so it cannot invalidate a link
   already sitting in a member's inbox, and a test only ever goes to the address
-  typed on the form — never to the member being previewed.
+  typed on the form, never to the member being previewed.
 * Every email is now built by one method that both the preview and the real
   senders call, so a preview cannot drift out of step with what is sent.
 * Elementor's generated CSS is cleared once automatically after the plugin
   updates. A release that widens a style selector used to leave pages serving
   CSS built from the old one, which looks like a control that has stopped
-  working — a manual "Regenerate CSS" is no longer needed after an update.
+  working, a manual "Regenerate CSS" is no longer needed after an update.
 
 = 1.0.92 =
 * Fixed: password fields kept the browser's own black border and ignored every
@@ -294,7 +316,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.91 =
 * The Login widget's signed-in message takes an alignment and a margin, which it
-  had neither of — only a colour and a typeface, which is not enough to place
+  had neither of, only a colour and a typeface, which is not enough to place
   something on a page.
 * The signed-in panel it sits in gained its own background, border, corner
   radius, shadow, padding and margin, so it can be a card in its own right
@@ -303,24 +325,24 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.90 =
 * The Login widget takes a "Show in the editor as" choice: both states one above
   the other, a logged-out visitor (the form), or a signed-in member (the
-  message). The canvas only — the front end always shows the right one for
+  message). The canvas only, the front end always shows the right one for
   whoever is looking.
 * Fixed at the same time: the editor's two-state preview never ran. The flag that
   asked for it was not among the shortcode's declared attributes, so it was
   dropped before it was read, and the canvas only ever showed the signed-in
-  panel — which is exactly why the form could not be styled.
+  panel, which is exactly why the form could not be styled.
 * The signed-in panel is now built in one place rather than twice, with the
   log-out link going nowhere in the editor.
 
 = 1.0.89 =
 * The note gallery now moves one way. Forward always slides left and back always
-  slides right, at every point in the gallery — reaching the last image and
+  slides right, at every point in the gallery, reaching the last image and
   pressing forward again carries on into the first instead of rewinding the whole
   strip to get there.
 * Done by rotating the track rather than scrolling it, so the strip never has an
   end to rewind from. Nothing is cloned: the lightbox still holds the images the
   note actually has, and the browser is asked for each of them once.
-* A dot still jumps straight to its image — rotating a step at a time would be a
+* A dot still jumps straight to its image, rotating a step at a time would be a
   long walk across a gallery of any size.
 
 = 1.0.88 =
@@ -329,7 +351,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   regenerated its CSS. The fallback now matches the control's default.
 
 = 1.0.87 =
-* The meta row is now built as two groups — the pills, then the plain text — and
+* The meta row is now built as two groups, the pills, then the plain text, and
   a "Meta row layout" control puts them on one line or two. Two lines is the new
   default: the stage badge and vault chip together, the version and date beneath.
 * Because they are groups rather than loose chips, a narrow card no longer wraps
@@ -341,13 +363,13 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.86 =
 * The mark between the chips now goes between two pieces of plain text and
-  nowhere else — so between the version and the date, but never beside the stage
+  nowhere else, so between the version and the date, but never beside the stage
   badge or the vault chip. A pill has an edge of its own, and a mark next to one
   is a second boundary drawn over the first.
 
 = 1.0.85 =
-* Every chip on a note now has its own Style section — Stage badge, Version
-  number, Date, and The 35 vault chip — each with typography, text colour,
+* Every chip on a note now has its own Style section, Stage badge, Version
+  number, Date, and The 35 vault chip, each with typography, text colour,
   background, border, corner radius, padding, box shadow and a vertical nudge.
   One typography setting across all four was the wrong shape: a pill, two pieces
   of quiet text and a small-caps marker are three jobs that only looked like one.
@@ -355,17 +377,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   gap, the alignment, the row's margin, and the separator's controls.
 * Two settings change hands. Any typography set under the old shared control now
   applies to the stage badge alone, and the combined "Version & date colour" is
-  gone — set the colour in the Version number and Date sections instead.
+  gone, set the colour in the Version number and Date sections instead.
 
 = 1.0.84 =
 * A note's stage, version and date ran into one another. There is now a mark
-  between them — "Between the chips" in the Content tab, a "|" by default, any
+  between them, "Between the chips" in the Content tab, a "|" by default, any
   wording or none.
 * It has its own controls under Badges & chips: colour, typography, the space
   either side (on top of the chip gap, so it can sit tight to one and breathe
   from the other), and a nudge up or down for marks that don't sit on the same
   optical line as the text.
-* The mark is hidden from screen readers — it is punctuation for the eye, and
+* The mark is hidden from screen readers, it is punctuation for the eye, and
   read out between every chip it would be noise.
 
 = 1.0.83 =
@@ -373,19 +395,19 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   a row matches the tallest one, so a short note beside a long one no longer
   leaves the row looking half-finished.
 * It is a control, not a decision: "Card heights" (or "Note heights" / "Poll
-  heights") sits under the Columns control on every widget that has one — Notes,
-  Notes Archive, Home, Member Archive and both poll layouts — with "As tall as
+  heights") sits under the Columns control on every widget that has one, Notes,
+  Notes Archive, Home, Member Archive and both poll layouts, with "As tall as
   their content" if that is wanted, set per device.
 
 = 1.0.82 =
 * Note cards can be shortened: "Body length" takes a number of words or of
   characters, so a long note no longer runs the length of the column. A
-  shortened body is plain text — formatting is dropped rather than cut in half —
+  shortened body is plain text, formatting is dropped rather than cut in half ,
   and it can carry a link through to the whole note, with your own wording and
   its own style controls.
 * Every part of a note card now has its own switch: title, stage badge, version
   number, date, vault chip, body copy and images. Turn one off and nothing is
-  left behind — a card with no title and no chips has no header element holding
+  left behind, a card with no title and no chips has no header element holding
   space where they used to be.
 * On the Notes, Notes Archive, Single Note and Home widgets, all four. The
   editor samples honour the same settings, so the shortened length can be judged
@@ -411,7 +433,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.79 =
 * Products have two more stages: Formula finalised and Complete. They are on the
-  product only — a note never reaches either, so they don't appear on the note
+  product only, a note never reaches either, so they don't appear on the note
   editor or as a filter chip on a notes page.
 * Products now have their own single URL (/formulation/…), so Elementor Theme
   Builder can preview and target them exactly as it can notes: Products appears
@@ -467,7 +489,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.76 =
 * Notes are now flagged show_in_nav_menus, which is the flag Elementor reads
   directly to decide what its Theme Builder can preview and target. 1.0.75
-  filtered Elementor's list, which was not enough — the conditions dialog reads
+  filtered Elementor's list, which was not enough, the conditions dialog reads
   the flag itself. Notes now appear both in Preview Settings and in "Where do
   you want to display your Template?" under Singular.
 * The cost of that flag is its own meaning: a note is now an addable item in
@@ -477,7 +499,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.75 =
 * Notes now appear in Elementor's Theme Builder preview picker and display
   conditions. Elementor builds that list from post types flagged
-  show_in_nav_menus, and notes are deliberately not flagged that way — they are
+  show_in_nav_menus, and notes are deliberately not flagged that way, they are
   not pages anyone links to from a menu. The plugin now tells Elementor about
   them directly instead, which changes nothing about how WordPress treats the
   post type anywhere else.
@@ -487,7 +509,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.74 =
 * Every text field an administrator writes into now accepts HTML, decided in
   one place (class-ff-text.php) instead of field by field. Headings, labels,
-  hints, buttons, badges and the map legend take inline markup — bold, italics,
+  hints, buttons, badges and the map legend take inline markup, bold, italics,
   a link, a line break. Messages and intros take what a post takes.
 * Covered: the member archive headings and header subheading, the note filter
   labels, every poll phrase (closed capsule, hint, "Your choice", "Where we
@@ -498,8 +520,8 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   three phrases, and the map legend labels.
 * Placeholders stay plain text: they live inside an HTML attribute, where a tag
   can only ever arrive as visible angle brackets.
-* No field accepts scripts, styles or iframes. Text a MEMBER writes — feedback,
-  messages, their own name — is untouched by this and stays escaped.
+* No field accepts scripts, styles or iframes. Text a MEMBER writes, feedback,
+  messages, their own name, is untouched by this and stays escaped.
 * Fixed: the Feedback widget did not attach the note it was placed on unless a
   note ID was typed in by hand, while the [ff_feedback] shortcode did. Both now
   resolve the note the same way, so a feedback form in a Single Note template
@@ -511,7 +533,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 * Unread notes can now differ from read ones by more than a background: border,
   corner radius, padding, title colour, product-label colour and date colour,
   alongside the row background and bold title that were already there.
-* The section is renamed "Unread notes (badge & row)" — the row controls were
+* The section is renamed "Unread notes (badge & row)", the row controls were
   sitting inside a section called '"Unread" badge', which is not where anyone
   would look for them.
 * Read rows keep whatever the "Item box" section gives them; every control here
@@ -520,14 +542,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.72 =
 * Fixed: the map's zoom buttons, legend and attribution painted over a sticky
   header. Leaflet numbers its own furniture for a page where the map IS the
-  page — panes at 400, controls at 800, corners at 1000 — and those numbers
+  page, panes at 400, controls at 800, corners at 1000, and those numbers
   beat any normal header. The map now forms its own stacking context, so those
   numbers only mean anything inside it and nothing can climb out.
 * The widget's own z-index (Elementor → Advanced) still decides where the map
   sits against the rest of the page, which is where that decision belongs.
 
 = 1.0.71 =
-* The no-poll message now accepts HTML — links, bold, italics, lists — and a
+* The no-poll message now accepts HTML, links, bold, italics, lists, and a
   blank line starts a new paragraph. It was being escaped, so tags showed as
   text on the page.
 * The heading accepts inline HTML (bold, italics, a link, a line break) but not
@@ -537,7 +559,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   code.
 
 = 1.0.70 =
-* New: a "When there is no poll" section on both poll widgets — a heading and a
+* New: a "When there is no poll" section on both poll widgets, a heading and a
   message shown between polls, where the widget used to render nothing at all.
   Both fields are pre-filled and both can be cleared to go back to showing
   nothing.
@@ -554,7 +576,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   winning option, instead of the your-choice colour. The "Your choice" label
   still marks the row as theirs, so nothing is lost by it.
 * Fixed: the stylesheet carried a rule for the member's own bar that painted
-  the same colour the base fill already paints — visually nothing, but its
+  the same colour the base fill already paints, visually nothing, but its
   specificity outranked the widget's winning-bar colour, so a member who voted
   for the winner never saw that colour whatever it was set to. Both states are
   now the widget's to colour.
@@ -563,13 +585,13 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 * New "Show" control on the poll widget: the latest poll, all current polls, or
   one specific poll.
 * "All current polls" lists open polls first, newest first, then closed polls
-  while they are still inside their hide time — a decision is worth reading
+  while they are still inside their hide time, a decision is worth reading
   after the voting has finished, but only for as long as it was meant to be on
   the site. "The latest poll" is the first of that same order, so it means the
   newest poll still taking votes, falling back to the most recent decision.
 * New Columns section for the "all" view: up to four columns set separately for
   desktop, tablet and mobile, with column and row gaps.
-* The editor shows three sample polls in that view — one open, two closed — so
+* The editor shows three sample polls in that view, one open, two closed, so
   the columns have something to lay out.
 * Poll widgets placed before this update keep rendering exactly the poll they
   were set to.
@@ -587,7 +609,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 * "Notes per page" is now a responsive control: a different page size for
   desktop, tablet and mobile. The page is built at the desktop size and the
   script cuts it to the screen's own size before anything is painted, because
-  one document is served to every screen — and behind LiteSpeed's page cache,
+  one document is served to every screen, and behind LiteSpeed's page cache,
   the same document is served to every visitor, so the size cannot be decided
   on the server.
 * A smaller screen drops the surplus rows with no extra request. The page
@@ -610,7 +632,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.64 =
 * New: numbered pages on the member's notes list, as an alternative to the
   "Load more" button or alongside it. A new Paging control offers "Load more"
-  button, Page numbers, or both — with both, a member can jump to roughly the
+  button, Page numbers, or both, with both, a member can jump to roughly the
   right page and then keep loading from there.
 * Long lists show a window of numbers rather than all of them: the first and
   last pages, the two either side of the current one, and a "…" where pages
@@ -626,7 +648,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 * The Elementor editor now shows sample content by default, on the Member
   Archive widget, all five display widgets and the message centre. Samples used
   to appear only when the real render came back empty, so an account holding
-  two real notes rendered two real notes — no full page, no "Load more" button,
+  two real notes rendered two real notes, no full page, no "Load more" button,
   nothing to design against. The editor is where the design is made, so it
   shows the full case.
 * New "Editor preview" control on each of those widgets, should the real
@@ -644,8 +666,8 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.61 =
 * New: a "Field wording" section in the application form widget's Content tab.
-  Every field gets three fields of its own — its label, its placeholder and the
-  hint below it — covering all six questions and the consent checkbox. The
+  Every field gets three fields of its own, its label, its placeholder and the
+  hint below it, covering all six questions and the consent checkbox. The
   required-field marker is editable too, and clearing it drops it everywhere.
 * Every field is pre-filled with the wording it replaces, so the panel shows
   what is actually on the page. Clearing a hint or a placeholder removes it.
@@ -669,17 +691,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   in the editor, and the hover ring and accent border on the voting buttons,
   which overrode the button's own border and shadow. The Hover tab now carries
   border colour and box shadow, so hover is styled rather than assumed.
-* New: a "Poll card" style section — background, border, corner radius, box
+* New: a "Poll card" style section, background, border, corner radius, box
   shadow, padding and margin for the poll as a whole.
-* New: full box controls for the "Your choice" label — background, border,
-  radius, shadow, padding, margin and a baseline nudge — and for the result row
+* New: full box controls for the "Your choice" label, background, border,
+  radius, shadow, padding, margin and a baseline nudge, and for the result row
   the member voted for: background, border, radius and padding.
 * Added the missing controls elsewhere in the poll: question alignment, margin
   and padding; border and shadow on the "Poll closed" capsule; border, shadow
   and alignment on the outcome block; box shadow on the voting buttons.
 * New: a "Wording" section in the poll widget's Content tab. Every fixed phrase
-  — "Poll closed", the hint under the options, "Your choice", "Where we landed"
-  and the vote-count line (singular and plural) — is now a field, pre-filled
+ , "Poll closed", the hint under the options, "Your choice", "Where we landed"
+  and the vote-count line (singular and plural), is now a field, pre-filled
   with the wording it replaces. Clearing a field leaves that line off entirely.
 * The wording travels with the poll, so the results shown straight after a
   member votes say the same things as the rest of the poll.
@@ -707,14 +729,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   line above the title, so a member can see what a note is about before they
   read what happened. Notes with no product attached skip the line rather than
   showing an empty one.
-* The line is switchable on the widget and has its own style section — colour,
-  typography, background, border, corner radius, padding and margin — and it
+* The line is switchable on the widget and has its own style section, colour,
+  typography, background, border, corner radius, padding and margin, and it
   shows in the editor sample so it can be styled before there is any real data.
 * The products named in a batch of rows are loaded in one query, so the label
   costs nothing per row as the list grows.
 
 = 1.0.56 =
-* New: filters on the member's notes list, each switchable on the widget —
+* New: filters on the member's notes list, each switchable on the widget ,
   read/unread, product, type (development stage), date period (last 30 days,
   3 months, 12 months) and sort (unread first, newest, oldest). Changing one
   refreshes the list in place over AJAX, without a page reload and without
@@ -725,7 +747,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 * Sorting by newest or oldest treats the list as one run ordered by the note's
   date; "unread first" keeps the two groups apart. Read rows show when the
   member opened them, unread rows show the note's own date.
-* New: full style controls for the filter bar — label colour and typography,
+* New: full style controls for the filter bar, label colour and typography,
   select background, text, border, radius and padding, plus gap and margin.
 * Every filter value is validated server-side against the offered options, so a
   hand-edited request can't reach for anything the bar doesn't offer, and the
@@ -738,8 +760,8 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   once). Each request returns only that next batch, so a member with hundreds of
   notes never waits on one long list, and the unread-first order holds across
   pages.
-* New: full style controls for the "Load more" button — typography, normal and
-  hover colours, border, radius, padding, alignment and margin — and it shows in
+* New: full style controls for the "Load more" button, typography, normal and
+  hover colours, border, radius, padding, alignment and margin, and it shows in
   the Elementor editor whatever the page size, so it can be styled without first
   creating enough notes to trigger it.
 * The AJAX endpoint takes the member id from the session, never the request, and
@@ -748,7 +770,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.54 =
 * Change: the Member Archive's "Notes you've read" section is now simply
-  "Notes". It lists every note the member is allowed to see — unread ones first,
+  "Notes". It lists every note the member is allowed to see, unread ones first,
   each with an "Unread" badge and a bolder title, then the read ones ordered by
   when they were opened. Previously it only listed notes already read, which is
   the one thing a member doesn't need help finding.
@@ -757,14 +779,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   emptied the unread list the moment a member landed on the hub, since the feed
   there silently marked everything read before they had chosen to read anything.
   This also keeps the menu count bubble honest.
-* New: style controls for the "Unread" badge on the Member Archive widget —
-  background, text colour, typography, padding, radius and gap — plus an unread
+* New: style controls for the "Unread" badge on the Member Archive widget ,
+  background, text colour, typography, padding, radius and gap, plus an unread
   row background and a bold-the-unread-titles switch.
 
 = 1.0.53 =
 * New: a Founding Faces Nav Menu widget. It renders a WordPress menu from
   Appearance → Menus, with every per-item setting intact (group visibility, the
-  login/logout swap, the count bubble), but as an Elementor widget — so the
+  login/logout swap, the count bubble), but as an Elementor widget, so the
   links and the count circle are both styled in the editor, live, instead of
   through a settings page. Full controls for the links (typography, normal /
   hover / active colours and backgrounds, underline, padding, radius), the
@@ -794,7 +816,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   the chain note to product tells a member (and Nick) what the conversation
   concerns. A general question has no reference, so it shows no context line
   rather than a misleading one.
-* New: the unread count bubble can be styled on the Settings page — background,
+* New: the unread count bubble can be styled on the Settings page, background,
   number colour, circle size, number size, corner radius and the gap from the
   label. Nav menu items are rendered by the theme (or Elementor's Nav Menu
   widget), which has no Founding Faces controls of its own, so the bubble is
@@ -804,30 +826,30 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.50 =
 * Fix: editor dummy content now covers every widget, and no longer depends on
   who is looking. The remaining widgets keyed off "is the viewer a member?",
-  which is true for Nick — so a member with no messages, no history or no
+  which is true for Nick, so a member with no messages, no history or no
   account activity yet saw a real empty state instead of the samples. They now
   fall back to samples whenever the real render is empty:
-  * Messages — a sample conversation list with the "New message" badge.
-  * Member Archive — sample votes, notes and feedback.
-  * Account — the sample profile panel.
+  * Messages, a sample conversation list with the "New message" badge.
+  * Member Archive, sample votes, notes and feedback.
+  * Account, the sample profile panel.
 * New: editor samples for the widgets that previously had none at all.
-  * Login — the form and the signed-in panel are both rendered, with a sample
+  * Login, the form and the signed-in panel are both rendered, with a sample
     error notice. Previously a signed-in administrator only ever saw the
     "You're signed in" panel, so the form itself could never be styled.
-  * Members Map — sample dots across the Australian capitals, so dot colour,
+  * Members Map, sample dots across the Australian capitals, so dot colour,
     size and opacity can be previewed before there are members.
-  * Application form — the success notice shown above the form as a sample (it
+  * Application form, the success notice shown above the form as a sample (it
     normally replaces the form, so it was impossible to style).
-  * Feedback and Ask — the "message sent" notice shown as a sample.
+  * Feedback and Ask, the "message sent" notice shown as a sample.
 
 = 1.0.49 =
 * Fix: the editor dummy content added in 1.0.45 never appeared for an
   administrator. It was shown only when the viewer failed the members-area
-  check, and an administrator always passes it — so the person designing the
+  check, and an administrator always passes it, so the person designing the
   page was the one person who could never see the samples. The samples now key
   off the render itself: if the real output is empty, a gate notice or an
   empty state, the sample stands in.
-* New: the Status Lookup widget now previews its result in the editor — the
+* New: the Status Lookup widget now previews its result in the editor, the
   status notice, the "Didn't receive it?" prompt and the "Send it again" button
   all appear as samples, since they otherwise only exist after a real
   submission. The form stays visible alongside them, so everything can be
@@ -839,7 +861,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   applicant is now emailed, from a template editable on the Settings page
   alongside the two welcome emails. Clearing the body field declines silently.
 * New: a "Send it again" button under the status lookup result. It re-sends to
-  the address already on file — a fresh welcome email with a brand-new
+  the address already on file, a fresh welcome email with a brand-new
   set-password link for an approved member (which also fixes an expired
   seven-day token), the decline email for a declined applicant, or the received
   confirmation for one still pending. The reply is identical in every case,
@@ -855,14 +877,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 
 = 1.0.47 =
 * Change: the notes bubble now counts genuinely unread notes rather than notes
-  published since the member's last login — a session where they read two of five
+  published since the member's last login, a session where they read two of five
   leaves three on the bubble instead of clearing it. A note counts as read once
   it has been rendered to that member, and the gate still applies, so a Circle
   member only ever counts notes their group may see.
 * Fix: reading notes in a list (the hub feed, a product's notes, the archive) now
   records the view. Previously only a single-note page did, so notes read in a
   list would never clear the count.
-* New: Founding Faces Member Bar widget — a header strip of Messages / Notes /
+* New: Founding Faces Member Bar widget, a header strip of Messages / Notes /
   Polls links, each with its own count circle, plus an optional Log in / Log out
   link. Full style controls for the circle (background, number colour and
   typography, size, radius, border) and its position, either beside the label or
@@ -876,12 +898,12 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   Menus: it shows "Log in" (linking to your login page) when logged out and
   "Log out" when logged in, swapping automatically. "Log in only" and "Log out
   only" modes hide the item when it doesn't apply.
-* New: an unread count bubble on any menu item — mini-cart style. Choose the
+* New: an unread count bubble on any menu item, mini-cart style. Choose the
   source per item: unread private messages, new notes since the member's last
   visit, open polls they haven't voted in, or everything combined. The bubble is
   hidden entirely at zero and for logged-out visitors, and only ever counts the
   viewer's own messages and content their group may see.
-* New: a Founding Faces Login widget (and [ff_login] shortcode) — a skin over
+* New: a Founding Faces Login widget (and [ff_login] shortcode), a skin over
   WordPress's own login handler, with the shared form Style tab plus link and
   signed-in-panel controls. A member who is already signed in sees a short
   message and a log-out link instead of the form.
@@ -896,7 +918,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   under the Home and Member Archive section headings, and the line under the
   product header). Every heading now has an "Underline" switch instead, with its
   own colour, thickness and gap, so it's there only when wanted.
-* New: full Style tabs on the display widgets — Notes, Notes Archive, Single Note,
+* New: full Style tabs on the display widgets, Notes, Notes Archive, Single Note,
   Product Header and Home now control the card (background, border, radius,
   shadow, padding, margin), the title, the meta row, badges and chips, the body,
   the gallery, the filter bar/chips and the "View all" link, each with typography,
@@ -920,19 +942,19 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   rather than all-lowercase.
 
 = 1.0.43 =
-* New: vote-count styling on both poll widgets — the "X votes" line under the
+* New: vote-count styling on both poll widgets, the "X votes" line under the
   results now has its own colour, typography, and top-spacing controls, in the
   "Question & labels" Style section.
 
 = 1.0.42 =
 * Fix: the poll "your choice" label now respects the typography control's
   text-transform. The label no longer forces uppercase by default (so "Default"
-  shows natural case), and "Capitalize" now renders "Your Choice" correctly — the
+  shows natural case), and "Capitalize" now renders "Your Choice" correctly, the
   label is an inline-block, so it's read as its own word rather than running into
   the option name (which was why the "y" in "your" stayed lowercase).
 
 = 1.0.41 =
-* New: "Your choice" styling on both poll widgets — the your-choice bar colour
+* New: "Your choice" styling on both poll widgets, the your-choice bar colour
   (which takes priority when an option is both winning and the member's choice),
   plus the "your choice" label colour, typography, and a gap control between the
   answer and the label.
@@ -968,15 +990,15 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.37 =
 * New: admin "view as a member" preview. From your own profile (or the toolbar
   switcher), pick The 35 or The Circle and browse the site exactly as that group
-  does — gated notes, polls, pages and menu items included, and blocked from the
+  does, gated notes, polls, pages and menu items included, and blocked from the
   other tier's content just like a real member. It only affects you; switch back
   to "Administrator" any time. A "Viewing as…" indicator shows in the toolbar.
-* New: the Polls Archive widget has a "Show" option — open poll then past polls
-  (default), open only, or past only — so you can place two widgets (one open,
+* New: the Polls Archive widget has a "Show" option, open poll then past polls
+  (default), open only, or past only, so you can place two widgets (one open,
   one past) and style each area differently.
 
 = 1.0.36 =
-* New: "Founding Faces Polls Archive" widget for a polls page — shows any open
+* New: "Founding Faces Polls Archive" widget for a polls page, shows any open
   poll first (votable, or results if the member has voted), then every past poll
   with its results and outcome. All gated. A Columns control lays them out in a
   grid.
@@ -990,9 +1012,9 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   for the message-reply link). Members headed to a specific gated page still land
   there; admins keep the dashboard.
 * New: the Notes widget can now show a "View all" link (with your text and a
-  chosen page) beneath the list — ideal for a "latest 5 notes" block on the hub
+  chosen page) beneath the list, ideal for a "latest 5 notes" block on the hub
   that links to the full notes page. (It already had a "Maximum notes" number.)
-* New: "Founding Faces Notes Archive" widget for the dedicated notes page — a
+* New: "Founding Faces Notes Archive" widget for the dedicated notes page, a
   filter bar (Product, Type/stage, Newest/Oldest) over every note the member may
   see. Filters live in the URL so a view can be bookmarked. Each filter can be
   toggled off.
@@ -1000,7 +1022,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   can sit on the hub and only appear when a poll is live.
 
 = 1.0.34 =
-* New: "Founding Faces Welcome" Elementor widget — a personalised greeting built
+* New: "Founding Faces Welcome" Elementor widget, a personalised greeting built
   from editable before / middle / after text around the member's own first name
   and Founding number (e.g. "Hi Sarah, Founding Member 4, welcome back."). Toggle
   the name and number on/off independently, choose the HTML tag, and style the
@@ -1028,14 +1050,14 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   Elementor's get_settings_for_display() inside the should_render filter, which
   fires for EVERY container, section and widget on the page. That prematurely
   finalised each element's display settings, so containers lost their applied
-  width/flex values on the front end and collapsed to content width — a page-
+  width/flex values on the front end and collapsed to content width, a page-
   wide layout bug that only appeared with the plugin active (and not in the
   editor). It now reads the raw setting with get_settings(), so element widths
   render exactly as designed. This fixes forms/columns rendering too narrow.
 
 = 1.0.30 =
 * Privacy: deleting a member now also removes their private messages and every
-  attachment file (from the protected directory, and any legacy public upload) —
+  attachment file (from the protected directory, and any legacy public upload) ,
   so no personal words or files are left behind. This runs only on a data
   delete (self-service "Delete my data" or the admin privacy tool); withdrawal
   still just deactivates and keeps the record.
@@ -1053,7 +1075,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   protected directory (uploads/founding-faces-private, with a deny .htaccess and
   no directory listing) instead of the public uploads folder, under a random
   name. Every attachment is served only through a gated endpoint that checks the
-  viewer is the thread's own member or an administrator — direct URL access is
+  viewer is the thread's own member or an administrator, direct URL access is
   denied. Notification-email attachment links require signing in.
   Note for NGINX hosts: .htaccess is ignored by NGINX, so also deny web access
   to /wp-content/uploads/founding-faces-private/ in your server config; the
@@ -1063,7 +1085,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   update. Any attachment from 1.0.27 keeps working via its stored link.
 
 = 1.0.27 =
-* New: messages can carry an attachment — an image or PDF (JPG, PNG, GIF or PDF,
+* New: messages can carry an attachment, an image or PDF (JPG, PNG, GIF or PDF,
   up to 8 MB). The type is validated by real content, not just the file name.
   Attachments show inline in the conversation (image thumbnail or a file link),
   both in the member's portal and in Nick's admin reply view, and are linked in
@@ -1170,7 +1192,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   its thickness, colour and spacing controls appear only when it is on.
 
 = 1.0.16 =
-* Change: Style-tab controls now match the selected Section — pick "Header" and
+* Change: Style-tab controls now match the selected Section, pick "Header" and
   you only see header styles; pick a list section and you see its styles; "Full
   record" shows everything. Votes-only, feedback-only and link controls appear
   only when relevant.
@@ -1189,7 +1211,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   item, instead of on its own row (no more big gap under the left column).
 * Change: removed the default line under the number & group header; added a
   "Show intro line under header" toggle (off by default).
-* Change: feedback items redesigned — the product/where-it's-for is a linked
+* Change: feedback items redesigned, the product/where-it's-for is a linked
   heading with the date on the right, and the member's feedback text runs full
   width beneath (supports long text). New "Feedback text" style controls.
   (Feedback text is supplied via the ff_feedback_text filter by the feedback-
@@ -1198,8 +1220,8 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 = 1.0.12 =
 * Change: the four activity widgets are replaced by ONE "Founding Faces Member
   Archive" widget with a Section selector (Full record / Header / Votes / Notes
-  / Feedback) — drop it multiple times to build any layout.
-* New: a full Style tab — typography, colour, background, padding, margin,
+  / Feedback), drop it multiple times to build any layout.
+* New: a full Style tab, typography, colour, background, padding, margin,
   border and radius for the header, section headings, section box, items, and
   item text (title / sub text / date), plus note-link colours.
 * New: notes in "Notes you've read" now link to the note's own page (toggle).
@@ -1213,16 +1235,16 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   member their own real data (or the login prompt).
 
 = 1.0.10 =
-* New: "Note — First image" dynamic tag (single image) for the Elementor Image
-  widget. The existing "Note — Image gallery" tag is for gallery/carousel
+* New: "Note, First image" dynamic tag (single image) for the Elementor Image
+  widget. The existing "Note, Image gallery" tag is for gallery/carousel
   widgets; a single Image widget needs this single-image tag.
 
 = 1.0.9 =
-* New: member-activity Elementor widgets — "My Activity" (with section toggles
+* New: member-activity Elementor widgets, "My Activity" (with section toggles
   and editable headings), plus "My Votes", "My Notes Read" and "My Feedback".
   Each reads only the signed-in member's own data; admins see a placeholder
   when building.
-* New: "Member — My number" and "Member — My group" dynamic tags, for designing
+* New: "Member, My number" and "Member, My group" dynamic tags, for designing
   the activity header freely.
 * New: notes now have a single URL (slug /note/), so Elementor Theme Builder
   can target them with a Single template and display conditions. The single
@@ -1231,7 +1253,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   are flushed once automatically.
 
 = 1.0.8 =
-* New: Elementor dynamic tags in a "Founding Faces" group — Note Stage, Trial
+* New: Elementor dynamic tags in a "Founding Faces" group, Note Stage, Trial
   number, Date, Audience, Product name, and Image gallery. Use them in an
   Elementor (Pro) Loop Item to design the note card visually: click a widget's
   dynamic (database) icon and pick the field. Reads the note being looped.
@@ -1266,7 +1288,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   extra work. Admins and The 35 still see everything.
 
 = 1.0.3 =
-* New: native Elementor widgets for the note display — Founding Faces Notes
+* New: native Elementor widgets for the note display, Founding Faces Notes
   (notes by product, stage filter), Single Note, Product Header, and Home. The
   [ff_note]/[ff_notes]/[ff_product_header]/[ff_home] shortcodes still work.
 * Change: administrators can now preview members-area content (notes, home) on
@@ -1283,7 +1305,7 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
 * Change: the anonymous members map now renders for everyone (it exposes no
   personal data); restrict it with the Elementor "Show to" control or page
   access if desired.
-* New: page-level access control — a "Founding Faces Access" box on every Page
+* New: page-level access control, a "Founding Faces Access" box on every Page
   and Post (Public / All members / The 35 / The Circle) that redirects
   unauthorised visitors, with a restricted-page redirect setting.
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Founding Faces — Campaign Monitor
+ * Plugin Name:       Founding Faces, Campaign Monitor
  * Description:        Campaign Monitor connector add-on for the Founding Faces membership plugin. Syncs approved, consented members (name, email, group and number) to a Campaign Monitor list. Requires the Founding Faces core plugin.
  * Version:           1.0.0
  * Requires PHP:      7.4
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the Campaign Monitor connector with the core.
  *
  * Hooks 'ff_register_connectors', which the core fires once its connector
- * interface is loaded — so the class (which extends FF_Connector) is only
+ * interface is loaded, so the class (which extends FF_Connector) is only
  * defined when that parent exists. If the core plugin isn't active, this add-on
  * quietly does nothing.
  */
@@ -91,6 +91,6 @@ function ff_cm_core_notice() {
 		return;
 	}
 	echo '<div class="notice notice-warning"><p>'
-		. esc_html__( 'Founding Faces — Campaign Monitor needs the Founding Faces core plugin to be active.', 'founding-faces' )
+		. esc_html__( 'Founding Faces, Campaign Monitor needs the Founding Faces core plugin to be active.', 'founding-faces' )
 		. '</p></div>';
 }

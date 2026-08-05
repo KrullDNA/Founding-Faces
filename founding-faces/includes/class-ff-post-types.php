@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Each has a single URL so an Elementor template can style it once, and each is
  * gated server-side before it renders, kept out of site search, out of the
  * sitemap and marked noindex. Both are registered "public", which in WordPress
- * means only that the type has a front end — the protection is the gate, not
+ * means only that the type has a front end, the protection is the gate, not
  * the flag. Neither is exposed over REST: that would be a path straight around
  * the gate.
  */
@@ -76,7 +76,7 @@ class FF_Post_Types {
 	 *
 	 * Elementor builds that list from post types flagged show_in_nav_menus, and
 	 * it drives the Theme Builder preview picker and the display conditions.
-	 * Notes now carry that flag, so they arrive on their own — this is the belt
+	 * Notes now carry that flag, so they arrive on their own, this is the belt
 	 * to that braces, and it covers any Elementor list built through this
 	 * filter rather than from the flag. Nothing is added twice: an entry
 	 * already present is left alone.
@@ -129,7 +129,7 @@ class FF_Post_Types {
 	 * The stages a product can be in.
 	 *
 	 * A superset of the note stages: a product carries the same four while it is
-	 * being worked on, and then two a note never has — the formula is settled,
+	 * being worked on, and then two a note never has, the formula is settled,
 	 * and the whole thing is finished. Kept as its own list so those two don't
 	 * appear on the note editor or as filter chips on a notes page, where there
 	 * is nothing for them to describe.
@@ -173,7 +173,7 @@ class FF_Post_Types {
 	 * Each product is a container for its own set of formulation notes. It has
 	 * a title and an editor for a short description, and a featured image. Since
 	 * 1.0.79 it also has a single URL, so a product page can be built once as an
-	 * Elementor template rather than by hand for each product — gated, kept out
+	 * Elementor template rather than by hand for each product, gated, kept out
 	 * of search and out of the sitemap, exactly as a note is.
 	 */
 	public static function register_product_cpt() {
@@ -195,7 +195,7 @@ class FF_Post_Types {
 		$args = array(
 			'labels'              => $labels,
 			// Public in the one sense WordPress means by it: this type has a
-			// front end. That is now true, and the flag has to say so — the
+			// front end. That is now true, and the flag has to say so, the
 			// editor screen reads it directly to decide whether to show the
 			// permalink row, so with it false a product had a working URL that
 			// was nowhere on screen and whose slug could not be edited.
@@ -285,10 +285,10 @@ class FF_Post_Types {
 			// Elementor decides which post types its Theme Builder can preview
 			// and target by reading this flag directly, not through any list a
 			// plugin can filter. Notes need a Single template, so it has to be
-			// true — this is what makes them appear in both the preview picker
+			// true, this is what makes them appear in both the preview picker
 			// and the "Where do you want to display your Template?" conditions.
 			//
-			// Its own meaning — "may be added to a nav menu" — is the cost: a
+			// Its own meaning, "may be added to a nav menu", is the cost: a
 			// note now appears as an addable item in Appearance -> Menus. That
 			// is a link nobody should add, but adding one is a deliberate act,
 			// and every menu item carries a Founding Faces visibility rule, so

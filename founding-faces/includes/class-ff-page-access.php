@@ -5,7 +5,7 @@
  * Adds a "Founding Faces Access" choice to every Page and Post so a whole page
  * can be set Public, All members, The 35 only, or The Circle only. Unlike the
  * per-element Elementor "Show to" control (which hides content within a page),
- * this locks the whole URL: an unauthorised visitor is redirected — logged-out
+ * this locks the whole URL: an unauthorised visitor is redirected, logged-out
  * people to the login page (and back once they sign in), logged-in members who
  * aren't in the right tier to a page you choose (or the home page).
  *
@@ -173,7 +173,7 @@ class FF_Page_Access {
 		// Not allowed: redirect.
 		if ( ! is_user_logged_in() ) {
 			// Send them to log in, then back to this page. FF_Menu_Items decides
-			// which login screen that is — the one set in Settings, or the
+			// which login screen that is, the one set in Settings, or the
 			// WordPress one if none has been set. A member who has never seen
 			// wp-login.php should not meet it for the first time here.
 			wp_safe_redirect( FF_Menu_Items::login_redirect_target( self::current_url() ) );
@@ -202,7 +202,7 @@ class FF_Page_Access {
 	 * @return bool
 	 */
 	public static function is_allowed( $level, $post_id = 0 ) {
-		// Admins and page editors are never locked out — unless an admin is
+		// Admins and page editors are never locked out, unless an admin is
 		// previewing the site as a member, in which case they get the real gate.
 		if ( '' === FF_Gating::preview_group()
 			&& ( current_user_can( 'manage_options' ) || ( $post_id && current_user_can( 'edit_post', $post_id ) ) ) ) {

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Note — Stage (formatted label, e.g. "In development").
+ * Note, Stage (formatted label, e.g. "In development").
  */
 class FF_Tag_Note_Stage extends \Elementor\Core\DynamicTags\Tag {
 
@@ -38,7 +38,7 @@ class FF_Tag_Note_Stage extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Note — Version number.
+ * Note, Version number.
  */
 class FF_Tag_Note_Trial extends \Elementor\Core\DynamicTags\Tag {
 
@@ -60,7 +60,7 @@ class FF_Tag_Note_Trial extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Note — Date (formatted to the site's date format).
+ * Note, Date (formatted to the site's date format).
  */
 class FF_Tag_Note_Date extends \Elementor\Core\DynamicTags\Tag {
 
@@ -87,7 +87,7 @@ class FF_Tag_Note_Date extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Note — Audience (formatted label).
+ * Note, Audience (formatted label).
  */
 class FF_Tag_Note_Audience extends \Elementor\Core\DynamicTags\Tag {
 
@@ -110,7 +110,7 @@ class FF_Tag_Note_Audience extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Note — Product name (the linked product's title).
+ * Note, Product name (the linked product's title).
  */
 class FF_Tag_Note_Product extends \Elementor\Core\DynamicTags\Tag {
 
@@ -133,7 +133,7 @@ class FF_Tag_Note_Product extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Member — My Founding number (the signed-in member's own number).
+ * Member, My Founding number (the signed-in member's own number).
  */
 class FF_Tag_My_Number extends \Elementor\Core\DynamicTags\Tag {
 
@@ -158,7 +158,7 @@ class FF_Tag_My_Number extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Member — My group (the signed-in member's own group label).
+ * Member, My group (the signed-in member's own group label).
  */
 class FF_Tag_My_Group extends \Elementor\Core\DynamicTags\Tag {
 
@@ -183,7 +183,7 @@ class FF_Tag_My_Group extends \Elementor\Core\DynamicTags\Tag {
 }
 
 /**
- * Note — Image gallery (a gallery data tag for Elementor's Gallery / Carousel).
+ * Note, Image gallery (a gallery data tag for Elementor's Gallery / Carousel).
  */
 class FF_Tag_Note_Gallery extends \Elementor\Core\DynamicTags\Data_Tag {
 
@@ -222,7 +222,7 @@ class FF_Tag_Note_Gallery extends \Elementor\Core\DynamicTags\Data_Tag {
 }
 
 /**
- * Note — First image (a single-image data tag for the Image widget).
+ * Note, First image (a single-image data tag for the Image widget).
  *
  * The gallery tag only appears on widgets that take a set of images. This gives
  * a single image (the first in the note's gallery) for a plain Image widget.

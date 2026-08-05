@@ -1,12 +1,12 @@
 <?php
 /**
- * The Application Form Elementor widget — the intake form, fully styleable.
+ * The Application Form Elementor widget, the intake form, fully styleable.
  *
  * A thin wrapper around FF_Application::render_form(): it renders the exact
  * same form markup as the [ff_application_form] shortcode (one source of truth)
  * and adds a complete Style tab (shared with the Status Lookup widget through
- * the FF_Form_Style_Controls trait) — form box, labels, fields, hints, the
- * submit button and the success/error notices — every control scoped to this
+ * the FF_Form_Style_Controls trait), form box, labels, fields, hints, the
+ * submit button and the success/error notices, every control scoped to this
  * widget so it never leaks into another form on the page.
  *
  * Atomic architecture.

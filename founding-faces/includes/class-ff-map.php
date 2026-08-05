@@ -3,7 +3,7 @@
  * The anonymous members map.
  *
  * A dot per member, placed from their postcode via a bundled Australian
- * postcode-to-coordinates table — no external API call, and the postcode is
+ * postcode-to-coordinates table, no external API call, and the postcode is
  * the only location the map ever reads. No names, no labels, nothing clickable.
  *
  * Delivered two ways over one shared renderer: the [ff_members_map] shortcode
@@ -95,7 +95,7 @@ class FF_Map {
 	 */
 	public static function settings() {
 		// Fall back to the default if the stored value is empty OR looks broken
-		// (missing the {z}/{x}/{y} placeholders — e.g. mangled by an old save).
+		// (missing the {z}/{x}/{y} placeholders, e.g. mangled by an old save).
 		$tile = trim( (string) get_option( self::OPT_TILE_URL, '' ) );
 		if ( '' === $tile || false === strpos( $tile, '{z}' ) || false === strpos( $tile, '{x}' ) || false === strpos( $tile, '{y}' ) ) {
 			$tile = self::default_tile_url();
@@ -167,7 +167,7 @@ class FF_Map {
 	/**
 	 * The points to draw, standing in samples while designing.
 	 *
-	 * With no approved members yet — or none with a postcode — the map would be
+	 * With no approved members yet, or none with a postcode, the map would be
 	 * an empty grey rectangle in the Elementor editor, leaving the dot colour,
 	 * size and opacity controls with nothing to preview. Sample dots across the
 	 * Australian capitals fill that gap; they never appear on the live site.
@@ -318,7 +318,7 @@ class FF_Map {
 
 		$args = wp_parse_args( $args, $defaults );
 
-		// The map is fully anonymous — only coordinates and tier, no names — so
+		// The map is fully anonymous, only coordinates and tier, no names, so
 		// it is safe to show to anyone, and it is not gated here. Restrict where
 		// it appears, if you want to, with the Elementor "Show to" control or the
 		// page-level access setting.
@@ -328,7 +328,7 @@ class FF_Map {
 		$id     = 'ff-members-map-' . self::$instance;
 		$height = absint( $args['height'] );
 
-		// The config handed to Leaflet. Points are coordinates and tier only —
+		// The config handed to Leaflet. Points are coordinates and tier only ,
 		// no names, ids or postcodes. They travel in this instance's own data
 		// attribute (rather than a shared global) so the map initialises the
 		// same way on the front end and inside the Elementor editor.
@@ -387,7 +387,7 @@ class FF_Map {
 	}
 
 	/**
-	 * Enqueue Leaflet (bundled locally) and the map script — only when a map is
+	 * Enqueue Leaflet (bundled locally) and the map script, only when a map is
 	 * actually rendered, so nothing loads on pages without one.
 	 *
 	 * Each map's data (points and options) travels in its own data attribute, so

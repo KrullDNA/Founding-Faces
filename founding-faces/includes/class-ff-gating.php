@@ -59,7 +59,7 @@ class FF_Gating {
 	/**
 	 * Wire up the Elementor visibility control and its server-side enforcement.
 	 *
-	 * The Elementor hooks are harmless if Elementor isn't installed — they
+	 * The Elementor hooks are harmless if Elementor isn't installed, they
 	 * simply never fire.
 	 */
 	public static function register() {
@@ -109,7 +109,7 @@ class FF_Gating {
 		// When resolving the CURRENT viewer and that viewer is a previewing admin,
 		// report the previewed group, so the whole site treats them as it would a
 		// real member of that group. (This must run whether the caller passed null
-		// or the current user's own id — is_member() resolves the id first.)
+		// or the current user's own id, is_member() resolves the id first.)
 		if ( (int) $user_id === get_current_user_id() ) {
 			$preview = self::preview_group();
 			if ( '' !== $preview ) {
@@ -174,7 +174,7 @@ class FF_Gating {
 	 * Exclude 35-only notes from front-end note queries for anyone not in The 35.
 	 *
 	 * Runs on every query. It leaves admin screens and members of The 35 (and
-	 * administrators) untouched — they see everything — and for everyone else it
+	 * administrators) untouched, they see everything, and for everyone else it
 	 * appends a meta condition that drops notes flagged the-35-only. Because it
 	 * works at the query level, a JetEngine Listing Grid or any other loop over
 	 * ff_note stays gated with no extra work.
@@ -257,7 +257,7 @@ class FF_Gating {
 	/**
 	 * Send anyone who isn't a member away from a product's own page.
 	 *
-	 * A product has no audience flag — there is no vault version of a product —
+	 * A product has no audience flag, there is no vault version of a product ,
 	 * so the only question is whether the viewer is in the members area at all.
 	 *
 	 * @return void
@@ -324,7 +324,7 @@ class FF_Gating {
 	 */
 	public static function can_view_note( $note_id, $user_id = null ) {
 		// Administrators always see everything (they build the pages and, per
-		// the governing principle, can always see the full record) — unless the
+		// the governing principle, can always see the full record), unless the
 		// admin is previewing the site as a member, in which case they are gated
 		// exactly as that member would be.
 		$is_current = ( null === $user_id );
@@ -426,7 +426,7 @@ class FF_Gating {
 		// IMPORTANT: read the RAW setting here, never get_settings_for_display().
 		// should_render() fires before each element sets up its own render, and
 		// get_settings_for_display() would prematurely finalise and cache the
-		// element's display settings — which makes every container lose its
+		// element's display settings, which makes every container lose its
 		// applied width/flex values and collapse to content width on the front
 		// end (a page-wide layout bug). get_settings() reads the stored value
 		// without any of that side effect.

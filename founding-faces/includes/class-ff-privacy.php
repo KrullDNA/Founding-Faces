@@ -6,7 +6,7 @@
  * tools (Stage 12) both call. Because the plugin holds real women's names,
  * skin concerns and email addresses, these operations are deliberate and
  * complete: an export gathers everything held about one member, and a delete
- * removes the personal data while retiring — never reusing — the number, so the
+ * removes the personal data while retiring, never reusing, the number, so the
  * honest record survives without keeping anyone's personal details.
  *
  * @package FoundingFaces

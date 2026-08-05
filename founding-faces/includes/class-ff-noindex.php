@@ -7,8 +7,8 @@
  * logged-out, so it hits the redirect). This adds the explicit, belt-and-braces
  * layer on top: every note, every product and every access-restricted page is
  * marked
- * "noindex, nofollow" — as both a <meta> robots tag and an X-Robots-Tag HTTP
- * header — and restricted pages are dropped from the sitemap. So member-only
+ * "noindex, nofollow", as both a <meta> robots tag and an X-Robots-Tag HTTP
+ * header, and restricted pages are dropped from the sitemap. So member-only
  * URLs are never listed by Google, even if one is discovered.
  *
  * @package FoundingFaces

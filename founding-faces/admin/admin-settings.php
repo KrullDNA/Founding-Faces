@@ -58,31 +58,31 @@ class FF_Settings {
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_35_SUBJECT,
-			array( 'sanitize_callback' => 'sanitize_text_field' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) )
 		);
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_35_BODY,
-			array( 'sanitize_callback' => 'wp_kses_post' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) )
 		);
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_CIRCLE_SUBJECT,
-			array( 'sanitize_callback' => 'sanitize_text_field' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) )
 		);
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_CIRCLE_BODY,
-			array( 'sanitize_callback' => 'wp_kses_post' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) )
 		);
 
 		// Promotion (chosen for The 35) and application-received templates.
-		register_setting( self::GROUP, FF_Emails::OPT_PROMO_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_PROMO_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_PROMO_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_PROMO_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
 
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
@@ -93,8 +93,10 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_SIZE, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_WEIGHT, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
 
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
 		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
@@ -348,6 +350,36 @@ class FF_Settings {
 		return ( null === $hex ) ? '' : $hex;
 	}
 
+	/**
+	 * A subject line or other single line of author copy.
+	 *
+	 * @param mixed $value The submitted text.
+	 * @return string
+	 */
+	public static function sanitize_line( $value ) {
+		return FF_Text::no_em_dash( sanitize_text_field( $value ) );
+	}
+
+	/**
+	 * An email body, which may carry light HTML.
+	 *
+	 * @param mixed $value The submitted text.
+	 * @return string
+	 */
+	public static function sanitize_copy( $value ) {
+		return FF_Text::no_em_dash( wp_kses_post( $value ) );
+	}
+
+	/**
+	 * The footer line and the small print, which are plain text.
+	 *
+	 * @param mixed $value The submitted text.
+	 * @return string
+	 */
+	public static function sanitize_small_print( $value ) {
+		return FF_Text::no_em_dash( sanitize_textarea_field( $value ) );
+	}
+
 	public static function sanitize_checkbox( $value ) {
 		return ( '1' === $value || 1 === $value || true === $value || 'on' === $value ) ? '1' : '';
 	}
@@ -506,6 +538,8 @@ class FF_Settings {
 		$accent   = FF_Email_Template::option( FF_Email_Template::OPT_ACCENT );
 		$head_bg  = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_BG );
 		$head_txt = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_TEXT );
+		$head_size = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_SIZE );
+		$head_wt   = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_WEIGHT );
 		$bg       = FF_Email_Template::option( FF_Email_Template::OPT_BG );
 		$btn_bg   = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_BG );
 		$btn_txt  = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_TEXT );
@@ -528,6 +562,34 @@ class FF_Settings {
 					<input name="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_LOGO_WIDTH ); ?>" type="number" min="40" max="600" step="1" class="small-text" value="<?php echo esc_attr( $logo_w ); ?>" /> px
 					<p class="description">
 						<?php esc_html_e( 'How wide the logo is drawn. The card is 600px, so 200 to 300 is usually right. On a narrow phone it shrinks to fit rather than overflowing. Upload the file at roughly twice this width so it stays sharp on a retina screen.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Heading', 'founding-faces' ); ?></th>
+				<td>
+					<label style="display:inline-block; margin:0 1.6rem 0 0;"><?php esc_html_e( 'Size', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_HEADING_SIZE ); ?>" type="number" min="12" max="60" step="1" class="small-text" value="<?php echo esc_attr( $head_size ); ?>" /> px
+					</label>
+					<label style="display:inline-block;"><?php esc_html_e( 'Weight', 'founding-faces' ); ?><br />
+						<select name="<?php echo esc_attr( FF_Email_Template::OPT_HEADING_WEIGHT ); ?>">
+							<?php
+							$weights = array(
+								300 => __( '300 Light', 'founding-faces' ),
+								400 => __( '400 Regular', 'founding-faces' ),
+								500 => __( '500 Medium', 'founding-faces' ),
+								600 => __( '600 Semi-bold', 'founding-faces' ),
+								700 => __( '700 Bold', 'founding-faces' ),
+								800 => __( '800 Extra bold', 'founding-faces' ),
+							);
+							foreach ( $weights as $weight => $label ) :
+								?>
+								<option value="<?php echo esc_attr( $weight ); ?>" <?php selected( (int) $head_wt, $weight ); ?>><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</label>
+					<p class="description">
+						<?php esc_html_e( 'The line in the coloured band. Montserrat is fetched at 400, 600 and 700, so those three are certain; a client that has to fall back to Arial will round anything else to the nearest weight it has.', 'founding-faces' ); ?>
 					</p>
 				</td>
 			</tr>

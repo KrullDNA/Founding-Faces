@@ -45,7 +45,7 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 
 	/**
 	 * The assets the widget needs, so Elementor loads Leaflet and the map
-	 * script — including inside the editor — and only where the widget is used.
+	 * script, including inside the editor, and only where the widget is used.
 	 *
 	 * @return array
 	 */

@@ -1,5 +1,5 @@
 /**
- * Founding Faces — front-end styles.
+ * Founding Faces, front-end styles.
  *
  * Apotheca brand tokens: Montserrat, a cool-grey palette and consistent
  * spacing. Kept minimal and scoped to the plugin's own classes so it never
@@ -40,7 +40,7 @@
 }
 
 /* Make the plugin's widgets fill their Elementor container even when that
- * container is a horizontal (row) flexbox — where a widget would otherwise
+ * container is a horizontal (row) flexbox, where a widget would otherwise
  * shrink to its content width and never reach 100%. This is the usual reason
  * a form looks half-width no matter what "Max width" is set to.
  *
@@ -128,8 +128,8 @@
 
 /*
  * A label whose wording has been cleared in the editor. It stays in the markup
- * so screen readers can still name the field — a field nobody can name is a
- * field nobody can fill in — but takes no space on screen.
+ * so screen readers can still name the field, a field nobody can name is a
+ * field nobody can fill in, but takes no space on screen.
  */
 .ff-sr-only {
 	position: absolute;
@@ -438,7 +438,7 @@
 	line-height: 1.6;
 }
 
-/* No trailing gap under the last paragraph — the block's own padding owns it. */
+/* No trailing gap under the last paragraph, the block's own padding owns it. */
 .ff-poll-empty p:last-child {
 	margin-bottom: 0;
 }
@@ -530,7 +530,7 @@
 }
 
 /* Home screen -------------------------------------------------------------- */
-/* No decorative underline by default — the widget's heading controls add one
+/* No decorative underline by default, the widget's heading controls add one
  * (colour, thickness, gap) only when the "Underline" switch is turned on. */
 .ff-home-heading {
 	font-size: 1.15rem;
@@ -549,7 +549,7 @@
 	padding: 0;
 }
 
-/* No divider by default in the CSS — the Home widget's "Divider lines" switch
+/* No divider by default in the CSS, the Home widget's "Divider lines" switch
  * (on by default) supplies the style and thickness, so it can be turned off. */
 .ff-product-item {
 	display: flex;
@@ -721,7 +721,7 @@
 
 /*
  * No rule for the member's own bar here. It carried the same accent the base
- * fill already paints, so it changed nothing visually — but its specificity
+ * fill already paints, so it changed nothing visually, but its specificity
  * outranked the widget's winning-bar colour, which meant a member who voted
  * for the winner never saw the winning colour at all. Both states are the
  * widget's to colour; the stylesheet stays out of it.
@@ -1035,8 +1035,8 @@
 }
 
 /*
- * Leaflet gives its own furniture high z-indexes — panes at 400, controls at
- * 800, the corner containers at 1000 — which are numbers meant for a page where
+ * Leaflet gives its own furniture high z-indexes, panes at 400, controls at
+ * 800, the corner containers at 1000, which are numbers meant for a page where
  * the map is the page. Dropped into a layout they beat a sticky header, and the
  * zoom buttons and attribution paint straight over it.
  *
@@ -1197,7 +1197,7 @@
 	font-variant-numeric: tabular-nums;
 	vertical-align: middle;
 	/* Positioned so the widgets' "raise above the text" control can nudge the
-	 * bubble without affecting the line box — nothing else in the menu shifts. */
+	 * bubble without affecting the line box, nothing else in the menu shifts. */
 	position: relative;
 	top: 0;
 }
@@ -1517,8 +1517,8 @@
 }
 
 /* Note gallery slider -------------------------------------------------------
- * Mechanics only. Everything visible — the arrow icons' size and colour, the
- * dots, the image height, the box around it all — is an Elementor control, so
+ * Mechanics only. Everything visible, the arrow icons' size and colour, the
+ * dots, the image height, the box around it all, is an Elementor control, so
  * there is nothing here that draws anything. What is here is what a slider
  * cannot work without: a clipped viewport, a track that moves, and slides
  * sized from the two custom properties the widget sets per device.
@@ -1620,7 +1620,7 @@
 	}
 }
 
-/* The "read the full note" link under a shortened body. Placement only — the
+/* The "read the full note" link under a shortened body. Placement only, the
  * colour, type, underline and spacing are all controls. */
 .ff-note-more {
 	margin: 0;

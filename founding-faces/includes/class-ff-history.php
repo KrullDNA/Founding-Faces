@@ -5,7 +5,7 @@
  * A logged-in member visits their own page and sees their number, the polls
  * they voted in and how they voted, the feedback they submitted, and the notes
  * they've engaged with. It reads only their own rows from the interaction log
- * and the poll-votes table — no other member's data is ever visible here.
+ * and the poll-votes table, no other member's data is ever visible here.
  *
  * This is the seed of the launch "fingerprint" moment: the same data, later
  * made presentable and optionally public with consent.
@@ -92,7 +92,7 @@ class FF_History {
 	 *
 	 * Deliberately based on the output, not on who is looking. Nick is an
 	 * administrator and usually a member too, so "is the viewer a member?" is
-	 * the wrong question in the editor — it makes the one person who designs
+	 * the wrong question in the editor, it makes the one person who designs
 	 * these pages the one person who never sees the samples. What matters is
 	 * whether real content came back: a blank render, a gate notice or an
 	 * empty state all mean there is nothing on screen to style.
@@ -352,8 +352,8 @@ class FF_History {
 	/**
 	 * Render the [ff_history] shortcode.
 	 *
-	 * Always reads the CURRENT member's id from the session — never an id from
-	 * the request — so a member can only ever see their own record.
+	 * Always reads the CURRENT member's id from the session, never an id from
+	 * the request, so a member can only ever see their own record.
 	 *
 	 * @return string
 	 */
@@ -435,7 +435,7 @@ class FF_History {
 			$question = get_the_title( (int) $vote->poll_id );
 			$choice   = FF_Polls::option_label( (int) $vote->poll_id, (int) $vote->option_id );
 
-			// The question gets the full width — poll questions are sentences,
+			// The question gets the full width, poll questions are sentences,
 			// and reserving a column for the date wrapped them early. The date
 			// sits on the answer line instead, where there is room for it.
 			$out .= '<li class="ff-history-item ff-history-item--vote">';
@@ -483,8 +483,8 @@ class FF_History {
 
 		// The page is built at the desktop size; the script trims it to the
 		// device's own size before anything is painted. HTML is one document
-		// served to every screen — and behind a page cache, the same document
-		// served to every visitor — so the size can't be decided here.
+		// served to every screen, and behind a page cache, the same document
+		// served to every visitor, so the size can't be decided here.
 		$per_page = $sizes['desktop'];
 		$total    = count( $entries );
 		$slice    = ( $per_page > 0 ) ? array_slice( $entries, 0, $per_page ) : $entries;
@@ -540,8 +540,8 @@ class FF_History {
 	/**
 	 * Normalise a page size into one value per device, plus the breakpoints.
 	 *
-	 * Accepts a plain number — every device the same, which is what the
-	 * shortcode and any older caller pass — or an array carrying a value per
+	 * Accepts a plain number, every device the same, which is what the
+	 * shortcode and any older caller pass, or an array carrying a value per
 	 * device. A device with nothing set inherits the desktop size.
 	 *
 	 * @param int|array $per_page A number, or per-device values.
@@ -699,7 +699,7 @@ class FF_History {
 			$read_dates[ (int) $row->reference_id ] = $row->created_at;
 		}
 
-		// A period filter measures the note's own date, not when it was read —
+		// A period filter measures the note's own date, not when it was read ,
 		// "the last three months of work", not "what I happened to open".
 		$cutoff = '';
 		if ( '' !== $filters['period'] ) {
@@ -941,7 +941,7 @@ class FF_History {
 	 * AJAX: return the next page of note rows for the current member.
 	 *
 	 * The member id always comes from the session, never the request, so this
-	 * can only ever return the caller's own list — and every note still passes
+	 * can only ever return the caller's own list, and every note still passes
 	 * the group gate inside note_entries().
 	 */
 	public static function ajax_load_notes() {

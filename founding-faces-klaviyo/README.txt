@@ -1,4 +1,4 @@
-=== Founding Faces — Klaviyo ===
+=== Founding Faces, Klaviyo ===
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -16,7 +16,7 @@ ever synced without stored consent.
 Set the private API key (and optional list ID) under Founding Faces → Settings
 → Email platform, then choose "Klaviyo" as the active platform.
 
-Only one connector is active at a time. This add-on does nothing on its own —
+Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==

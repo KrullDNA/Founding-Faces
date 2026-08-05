@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Founding Faces — Klaviyo
+ * Plugin Name:       Founding Faces, Klaviyo
  * Description:        Klaviyo connector add-on for the Founding Faces membership plugin. Syncs approved, consented members (name, email, group and number) to Klaviyo, with the group as both a tag and a profile property. Requires the Founding Faces core plugin.
  * Version:           1.0.0
  * Requires PHP:      7.4
@@ -86,6 +86,6 @@ function ff_klaviyo_core_notice() {
 		return;
 	}
 	echo '<div class="notice notice-warning"><p>'
-		. esc_html__( 'Founding Faces — Klaviyo needs the Founding Faces core plugin to be active.', 'founding-faces' )
+		. esc_html__( 'Founding Faces, Klaviyo needs the Founding Faces core plugin to be active.', 'founding-faces' )
 		. '</p></div>';
 }

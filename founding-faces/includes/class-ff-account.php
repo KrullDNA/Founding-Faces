@@ -2,7 +2,7 @@
 /**
  * The member account-settings page.
  *
- * Where a member manages their own login and preferences — separate from their
+ * Where a member manages their own login and preferences, separate from their
  * content (the home screen) and their record (the history page). Deliberately
  * small: change email (with a confirmation step), change password (a secure
  * token reset), edit their name, toggle email consent (writing back to the
@@ -62,7 +62,7 @@ class FF_Account {
 	 * the members-only notice in the editor and leave nothing to style. This
 	 * mirrors the real markup and classes with placeholder values, so the whole
 	 * page can be designed before there are members. It contains no live data and
-	 * no working forms — it exists only for styling.
+	 * no working forms, it exists only for styling.
 	 *
 	 * @return string
 	 */

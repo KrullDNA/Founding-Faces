@@ -1,10 +1,10 @@
 /**
- * Founding Faces — the anonymous members map.
+ * Founding Faces, the anonymous members map.
  *
  * Draws a soft, semi-transparent dot per member on a pale base map. Each map on
  * the page reads its own options AND its dot data from a single data attribute
  * (set by the shortcode or the Elementor widget). The dot data is coordinates
- * and tier only — no names, ids or postcodes.
+ * and tier only, no names, ids or postcodes.
  *
  * The dots are deliberately non-interactive: nothing clickable, no hover labels,
  * no "members near you". It stays ambient.
@@ -50,8 +50,8 @@
 		} );
 
 		// Remove Leaflet's own "Leaflet" credit (the library is BSD-licensed and
-		// doesn't require UI attribution). The tile/data attribution below —
-		// OpenStreetMap and CARTO — is legally required and stays.
+		// doesn't require UI attribution). The tile/data attribution below ,
+		// OpenStreetMap and CARTO, is legally required and stays.
 		if ( map.attributionControl ) {
 			map.attributionControl.setPrefix( false );
 		}
@@ -89,7 +89,7 @@
 				color: stroke.on ? stroke.color : tier.color,
 				weight: stroke.on ? stroke.width : 0,
 				opacity: stroke.on ? 1 : 0,
-				interactive: false // Nothing clickable — ambient only.
+				interactive: false // Nothing clickable, ambient only.
 			} ).addTo( map );
 
 			latlngs.push( [ p[ 0 ], p[ 1 ] ] );

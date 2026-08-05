@@ -1,6 +1,6 @@
 <?php
 /**
- * The Account Elementor widget — the member's account-settings page, styleable.
+ * The Account Elementor widget, the member's account-settings page, styleable.
  *
  * Renders the same markup as the [ff_account] shortcode. It reuses the shared
  * form Style tab (FF_Form_Style_Controls) for the profile form's labels, fields,

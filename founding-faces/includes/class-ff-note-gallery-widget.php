@@ -2,7 +2,7 @@
 /**
  * The Elementor widget for a note's image gallery, shown as a slider.
  *
- * The images are already on the note — this is the widget that puts them on a
+ * The images are already on the note, this is the widget that puts them on a
  * page, most usefully in a Single Note template, where it follows whichever
  * note is being read without anybody choosing one.
  *
@@ -379,7 +379,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 	}
 
 	/**
-	 * The arrows: icon, size, colour, box, position — the lot.
+	 * The arrows: icon, size, colour, box, position, the lot.
 	 */
 	private function arrow_style_section() {
 		$this->start_controls_section( 'ff_gal_arrows', array(

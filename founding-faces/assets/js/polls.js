@@ -1,9 +1,9 @@
 /**
- * Founding Faces — front-end poll voting.
+ * Founding Faces, front-end poll voting.
  *
  * When a member clicks an option, the vote is sent over AJAX and the poll's
  * inner content is swapped for the aggregate results returned by the server.
- * Aggregates only — no identities ever reach the browser. Plain vanilla JS.
+ * Aggregates only, no identities ever reach the browser. Plain vanilla JS.
  */
 ( function () {
 	'use strict';

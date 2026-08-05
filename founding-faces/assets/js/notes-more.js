@@ -32,7 +32,7 @@
 	/**
 	 * How many rows this screen should hold.
 	 *
-	 * The page arrives built at the desktop size — one document is served to
+	 * The page arrives built at the desktop size, one document is served to
 	 * every screen, and behind a page cache the same document is served to
 	 * every visitor, so the server cannot decide this. Read at request time
 	 * rather than stored, so a rotated tablet is right without any bookkeeping.
@@ -208,7 +208,7 @@
 
 		// --- First page: cut it down to this device's size. ---
 		// The rows for a desktop page are already here, so a smaller screen
-		// only has to drop the surplus — no request, no flash of the wrong
+		// only has to drop the surplus, no request, no flash of the wrong
 		// length. A larger one does need fetching.
 		( function fitFirstPage() {
 			var rendered = parseInt( button.dataset.perPage, 10 ) || 0;
@@ -237,7 +237,7 @@
 				}
 
 				// The numbers were counted in desktop pages, so they need
-				// rebuilding — the rows themselves are already correct.
+				// rebuilding, the rows themselves are already correct.
 				if ( section.querySelector( '.ff-notes-pager' ) ) {
 					request( section, button, 0 )
 						.then( function ( data ) {

@@ -1,5 +1,5 @@
 /**
- * Founding Faces — poll editor (admin).
+ * Founding Faces, poll editor (admin).
  *
  * Adds and removes option rows, and lets each option pick an image from the
  * WordPress media library. New rows are cloned from a hidden template; PHP

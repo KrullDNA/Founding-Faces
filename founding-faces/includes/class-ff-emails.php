@@ -4,7 +4,7 @@
  *
  * On approval a member is sent a group-specific welcome email built from an
  * editable template. The email carries a one-time set-password link, valid for
- * seven days, so the member sets their own password — we never email a
+ * seven days, so the member sets their own password, we never email a
  * plain-text one. The set-password screen and a "resend my set-up link" option
  * both live on the standard WordPress login page, so they inherit its look and
  * need no page to be created.
@@ -43,7 +43,7 @@ class FF_Emails {
 	const OPT_RECEIVED_BODY    = 'ff_email_received_body';
 
 	// The email sent when an application is declined, so a decision is never
-	// silence — and so the status lookup's "check your inbox" is true for
+	// silence, and so the status lookup's "check your inbox" is true for
 	// everyone, not just the members who were approved.
 	const OPT_DECLINE_SUBJECT = 'ff_email_decline_subject';
 	const OPT_DECLINE_BODY    = 'ff_email_decline_body';
@@ -129,7 +129,7 @@ class FF_Emails {
 	 * The default body for the promotion email.
 	 *
 	 * The member already has a password (they set it as a Circle member), so this
-	 * email has no set-password link — just the news and a sign-in button.
+	 * email has no set-password link, just the news and a sign-in button.
 	 *
 	 * @return string
 	 */
@@ -173,7 +173,7 @@ class FF_Emails {
 	/**
 	 * The default body for the decline email.
 	 *
-	 * Warm and final, with no reason given and no invitation to appeal — the
+	 * Warm and final, with no reason given and no invitation to appeal, the
 	 * programme is a small, chosen group, and a kind close is better than an
 	 * unanswered silence.
 	 *
@@ -411,7 +411,7 @@ class FF_Emails {
 	/**
 	 * Send the decline email to an applicant.
 	 *
-	 * Sent to the address on the application, so no account is needed — a
+	 * Sent to the address on the application, so no account is needed, a
 	 * declined applicant never has a WordPress user. Silent by design if the
 	 * template body has been emptied on the Settings page: that is how Nick
 	 * turns decline emails off without code.
@@ -522,6 +522,8 @@ class FF_Emails {
 		$anchors = array();
 		$values  = array();
 
+		$template = self::pull_up_link_lines( $template, array_keys( $labels ) );
+
 		foreach ( $replacements as $key => $value ) {
 			// A link placeholder becomes a linked phrase, not a pasted address.
 			// Nobody wants sixty characters of query string in the middle of a
@@ -543,6 +545,35 @@ class FF_Emails {
 		$filled = wpautop( make_clickable( strtr( $template, $values ) ) );
 
 		return strtr( $filled, $anchors );
+	}
+
+	/**
+	 * Bring a link that sits alone on the next line up onto the sentence above.
+	 *
+	 * The templates were written when the placeholder produced a bare URL, and
+	 * a URL on its own line is the only sensible way to set one out. Now that
+	 * it produces a few linked words, the same line break leaves the link
+	 * stranded under the sentence that introduces it.
+	 *
+	 * Only a single line break is closed up. A deliberate blank line before the
+	 * placeholder makes it a paragraph of its own, and that is left alone.
+	 *
+	 * @param string $template     The template text.
+	 * @param array  $placeholders The link placeholders to look for.
+	 * @return string
+	 */
+	private static function pull_up_link_lines( $template, $placeholders ) {
+		$alternatives = array();
+		foreach ( $placeholders as $placeholder ) {
+			$alternatives[] = preg_quote( $placeholder, '/' );
+		}
+		if ( empty( $alternatives ) ) {
+			return $template;
+		}
+
+		$pattern = '/([^\n])[ \t]*\n[ \t]*(' . implode( '|', $alternatives ) . ')/u';
+
+		return preg_replace( $pattern, '$1 $2', (string) $template );
 	}
 
 	/**

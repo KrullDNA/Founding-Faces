@@ -5,7 +5,7 @@
  * Renders a greeting built from editable before/middle/after text wrapped around
  * the member's own first name and Founding number, e.g. "Hi Sarah, Founding
  * Member 4, welcome back." Each of the name and number can be toggled on or off,
- * and the whole thing — plus the name and number individually — has full style
+ * and the whole thing, plus the name and number individually, has full style
  * controls. Because a member only ever sees their own greeting, it shows the
  * real first name (the privacy tiers govern how a member appears to OTHERS, which
  * doesn't apply here).
@@ -199,7 +199,7 @@ class FF_Welcome_Widget extends \Elementor\Widget_Base {
 	/**
 	 * The member's first name and Founding number, or sample values in the editor.
 	 *
-	 * @return array {first, number} — number is '' for The Circle / sample Circle.
+	 * @return array {first, number}, number is '' for The Circle / sample Circle.
 	 */
 	private function identity() {
 		if ( FF_Gating::is_member() ) {
@@ -236,7 +236,7 @@ class FF_Welcome_Widget extends \Elementor\Widget_Base {
 		$show_name   = ! isset( $s['show_name'] ) || 'yes' === $s['show_name'];
 		$show_number = ( ! isset( $s['show_number'] ) || 'yes' === $s['show_number'] ) && '' !== $ident['number'];
 
-		// The member's own name and number stay escaped — that is their data,
+		// The member's own name and number stay escaped, that is their data,
 		// not copy. The words around them are Nick's, so they carry markup.
 		$html  = FF_Text::inline( isset( $s['before_text'] ) ? $s['before_text'] : '' );
 		if ( $show_name && '' !== $ident['first'] ) {

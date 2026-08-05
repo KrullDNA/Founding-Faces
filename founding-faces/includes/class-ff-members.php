@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * All approval and numbering logic. Numbers are issued from a monotonic
  * sequence that only ever counts up, so a withdrawn number is never handed to
- * anyone else — the record stays truthful.
+ * anyone else, the record stays truthful.
  */
 class FF_Members {
 
@@ -296,7 +296,7 @@ class FF_Members {
 		// Send the group-specific welcome email.
 		self::send_welcome_email( $user_id );
 
-		// Let other parts of the plugin react to a new member — the email
+		// Let other parts of the plugin react to a new member, the email
 		// connector uses this to sync the member to the active platform.
 		do_action( 'ff_member_approved', $user_id );
 
@@ -681,7 +681,7 @@ class FF_Members {
 	 * Create a test member: a test-flagged application, approved into a group.
 	 *
 	 * Test accounts take real numbers (just like real ones), so this exercises
-	 * the whole flow — numbering, welcome email, map — without touching real
+	 * the whole flow, numbering, welcome email, map, without touching real
 	 * data. Consent is off, so a test account never syncs to the email platform.
 	 *
 	 * @param string $group_slug Either 'the-35' or 'the-circle'.
@@ -733,7 +733,7 @@ class FF_Members {
 	 * Run the guarded test reset: delete test accounts and reset numbering.
 	 *
 	 * Deletes every test-flagged account (and any leftover test applications),
-	 * then zeroes the sequence and clears the retired list — all together, so
+	 * then zeroes the sequence and clears the retired list, all together, so
 	 * the next approved member of The 35 becomes 01 with no gaps. Refuses to run
 	 * if any real numbered member exists.
 	 *
@@ -770,7 +770,7 @@ class FF_Members {
 		// Remove any leftover test applications that never became members.
 		$wpdb->delete( $wpdb->prefix . 'ff_applications', array( 'is_test' => 1 ), array( '%d' ) );
 
-		// Zero the sequence and clear the retired list together — true clean slate.
+		// Zero the sequence and clear the retired list together, true clean slate.
 		self::reset_numbering();
 
 		return $count;
@@ -783,7 +783,7 @@ class FF_Members {
 	 * name, or their full name. The Circle has no public display, so this never
 	 * applies to them. Everything member-facing resolves identity through
 	 * portal_display_name(), so one preference change updates the whole portal at
-	 * once. The members map never reads any of this — it stays anonymous.
+	 * once. The members map never reads any of this, it stays anonymous.
 	 * -----------------------------------------------------------------------
 	 */
 
@@ -826,7 +826,7 @@ class FF_Members {
 	public static function portal_display_name( $user_id ) {
 		$number = get_user_meta( $user_id, self::META_NUMBER, true );
 
-		// The Circle (no number): unchanged — their stored public name.
+		// The Circle (no number): unchanged, their stored public name.
 		if ( ! $number ) {
 			$public = get_user_meta( $user_id, self::META_PUBLIC_NAME, true );
 			if ( $public ) {

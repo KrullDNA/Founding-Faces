@@ -9,7 +9,7 @@
  * leaks out of the widget it belongs to.
  *
  * Every helper offers the full set a designer expects: typography, colour,
- * margin and padding — plus, on headings and links, an explicit underline
+ * margin and padding, plus, on headings and links, an explicit underline
  * toggle so the built-in look can be turned on or off per widget.
  *
  * @package FoundingFaces
@@ -27,7 +27,7 @@ trait FF_Display_Style_Controls {
 
 	/**
 	 * A heading: typography, colour, alignment, margin, padding and an
-	 * optional underline (off by default — the built-in accent underline is
+	 * optional underline (off by default, the built-in accent underline is
 	 * gone, this brings it back only when wanted).
 	 *
 	 * @param string $prefix   Unique control-name prefix.
@@ -299,7 +299,7 @@ trait FF_Display_Style_Controls {
 	 *
 	 * Deliberately based on the output, not on who is looking. An administrator
 	 * passes the members gate, so "is the viewer a member?" is the wrong
-	 * question in the editor — Nick is always a member and would never see the
+	 * question in the editor, Nick is always a member and would never see the
 	 * samples. What matters is whether any real content actually came back: an
 	 * empty state, a gate notice or a blank string all mean there is nothing on
 	 * screen to style, so the sample takes over.
@@ -311,7 +311,7 @@ trait FF_Display_Style_Controls {
 	 * The "Editor preview" control: real data, or always the sample.
 	 *
 	 * Auto only falls back to samples when the real render comes back empty,
-	 * which is right most of the time — but a page with two real notes on it
+	 * which is right most of the time, but a page with two real notes on it
 	 * can never show what ten look like. This is how that is asked for.
 	 */
 	protected function ffds_preview_control() {
@@ -332,8 +332,8 @@ trait FF_Display_Style_Controls {
 	 * Whether the editor should draw sample content rather than the real thing.
 	 *
 	 * Samples are the default, not the fallback. The editor is where the design
-	 * is made, and a design has to cover the full case — every badge, a whole
-	 * page of rows, the button under them — not whatever this site's records
+	 * is made, and a design has to cover the full case, every badge, a whole
+	 * page of rows, the button under them, not whatever this site's records
 	 * happen to hold today. Choosing "the real content" opts out.
 	 *
 	 * @param array $settings The widget settings.
