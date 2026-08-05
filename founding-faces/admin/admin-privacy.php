@@ -117,7 +117,7 @@ class FF_Admin_Privacy {
 			$app     = FF_Privacy::get_application( $uid );
 
 			echo '<tr>';
-			echo '<td>' . ( $number ? esc_html( $number ) : '—' ) . '</td>';
+			echo '<td>' . ( $number ? esc_html( $number ) : '-' ) . '</td>';
 			echo '<td>' . esc_html( $real ? $real : $member->display_name ) . '<br /><span class="ff-consent">' . esc_html( $member->user_email ) . '</span>';
 			if ( $is_test ) {
 				echo ' <span class="ff-badge">' . esc_html__( 'TEST', 'founding-faces' ) . '</span>';
@@ -131,9 +131,9 @@ class FF_Admin_Privacy {
 			if ( '' === $postcode && $app ) {
 				$postcode = $app->postcode;
 			}
-			echo '<td>' . ( $postcode ? esc_html( $postcode ) : '—' ) . '</td>';
+			echo '<td>' . ( $postcode ? esc_html( $postcode ) : '-' ) . '</td>';
 			echo '<td>' . ( $consent ? '<span style="color:#1e5631;font-weight:600;">' . esc_html__( 'Yes', 'founding-faces' ) . '</span>' : '<span style="color:#8a1f1f;">' . esc_html__( 'No', 'founding-faces' ) . '</span>' ) . '</td>';
-			echo '<td>' . esc_html( $app && $app->consent_at ? $app->consent_at : '—' ) . '</td>';
+			echo '<td>' . esc_html( $app && $app->consent_at ? $app->consent_at : '-' ) . '</td>';
 			$last_login = (int) get_user_meta( $uid, FF_Members::META_LAST_LOGIN, true );
 			echo '<td>' . ( $last_login
 				? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_login ) )

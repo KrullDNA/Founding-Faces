@@ -66,6 +66,25 @@ class FF_Admin_Emails {
 	}
 
 	/**
+	 * A dead unsubscribe link, for the same reason.
+	 *
+	 * A real one would work, and it would work on whichever member's details
+	 * are filling the preview.
+	 *
+	 * @return string
+	 */
+	private static function sample_unsubscribe_link() {
+		return add_query_arg(
+			array(
+				'action' => FF_Unsubscribe::ACTION,
+				'uid'    => 0,
+				'token'  => 'sample-preview-link',
+			),
+			wp_login_url()
+		);
+	}
+
+	/**
 	 * The placeholder values a preview is filled with.
 	 *
 	 * @param string $kind    A key from FF_Emails::kinds().
@@ -75,7 +94,13 @@ class FF_Admin_Emails {
 	 */
 	private static function replacements( $kind, $user_id = 0 ) {
 		if ( $user_id > 0 && get_userdata( $user_id ) ) {
-			return FF_Emails::member_replacements( $user_id, self::sample_link() );
+			$r = FF_Emails::member_replacements( $user_id, self::sample_link() );
+
+			// The member's real unsubscribe link works, and a preview is not the
+			// place to find that out. Same reasoning as the password link.
+			$r['{unsubscribe_url}'] = self::sample_unsubscribe_link();
+
+			return $r;
 		}
 
 		// Made-up but plausible details, so the layout is judged on something
@@ -92,6 +117,7 @@ class FF_Admin_Emails {
 			'{site_name}'         => get_bloginfo( 'name' ),
 			'{login_url}'         => wp_login_url(),
 			'{set_password_link}' => self::sample_link(),
+			'{unsubscribe_url}'   => self::sample_unsubscribe_link(),
 		);
 	}
 
@@ -292,7 +318,7 @@ class FF_Admin_Emails {
 
 				<?php if ( ! empty( $spec['cta_url'] ) && '{set_password_link}' === $spec['cta_url'] ) : ?>
 					<p class="description" style="max-width:46em;">
-						<?php esc_html_e( 'The button in this preview is a sample link, not a working one, a real one is only ever made when a real email is sent, so previewing can never break a link already sitting in a member\'s inbox. Following it will correctly say the link has expired.', 'founding-faces' ); ?>
+						<?php esc_html_e( 'The button and the unsubscribe link in this preview are samples, not working links, a real one is only ever made when a real email is sent, so previewing can never break a link already sitting in a member\'s inbox. Following it will correctly say the link has expired.', 'founding-faces' ); ?>
 					</p>
 				<?php endif; ?>
 

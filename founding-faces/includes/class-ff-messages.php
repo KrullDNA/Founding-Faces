@@ -98,7 +98,7 @@ class FF_Messages {
 	 */
 	public static function handle_upload( $field = 'ff_file' ) {
 		if ( empty( $_FILES[ $field ] ) || empty( $_FILES[ $field ]['name'] ) ) {
-			return null; // Nothing attached — that's fine.
+			return null; // Nothing attached, that's fine.
 		}
 		$file = $_FILES[ $field ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
@@ -980,7 +980,7 @@ class FF_Messages {
 			$out .= '</span>';
 			if ( '' !== $r[2] ) {
 				$out .= '<span class="ff-thread-context"><span class="ff-thread-product">' . esc_html( $r[2] )
-					. '</span><span class="ff-thread-sep"> — </span><span class="ff-thread-note">' . esc_html( $r[3] ) . '</span></span>';
+					. '</span><span class="ff-thread-sep">, </span><span class="ff-thread-note">' . esc_html( $r[3] ) . '</span></span>';
 			}
 			$out .= '</div><span class="ff-history-item-date">' . esc_html( self::format_date( current_time( 'mysql' ) ) ) . '</span></li>';
 		}
@@ -1151,7 +1151,7 @@ class FF_Messages {
 		}
 		$parts[] = '<span class="ff-thread-note">' . esc_html( get_the_title( $ref_id ) ) . '</span>';
 
-		return '<span class="ff-thread-context">' . implode( '<span class="ff-thread-sep"> — </span>', $parts ) . '</span>';
+		return '<span class="ff-thread-context">' . implode( '<span class="ff-thread-sep">, </span>', $parts ) . '</span>';
 	}
 
 	/**

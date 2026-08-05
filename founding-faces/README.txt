@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.95
+Stable tag: 1.0.96
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,32 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.96 =
+* The email layout rebuilt to the agreed design: the logo above the card rather
+  than inside it, a full-width heading band across the top of the card with its
+  own background and text colours, the message below it, the footer line centred
+  inside the card, and the small print outside it, under everything.
+* Two new colours: Heading band and Heading text. The old accent colour is now
+  just Links, which is the only other thing it was doing.
+* New "Small print" field for the disclaimer below the card. Takes {site_name}
+  so it follows the site between staging and live. Clear it to leave it off.
+* The heading band carries the subject line rather than a second fixed heading.
+  Two fields saying nearly the same thing is two fields to keep in step.
+* Unsubscribe, at the foot of the welcome and promotion emails. One click, no
+  sign-in: the link carries a hash only this site can produce, and it does not
+  expire, because an email sits in an inbox for years and a link that quietly
+  stops working is worse than no link at all.
+* Unsubscribing switches off the consent flag and writes the unsubscribe back to
+  the email platform, so a member who has left the list here has left it there
+  too. It never touches the account, the number or the history: leaving the
+  mailing list is not leaving the programme.
+* You are emailed every time, with the member's group stated plainly, so one of
+  The 35 going quiet is something you can follow up in person.
+* No unsubscribe on the password reset, which was asked for and has to arrive,
+  or on the application emails, where there is no account and so no list.
+* The preview's unsubscribe link is a sample, like the password link: previewing
+  an email should not be able to unsubscribe the member being previewed.
 
 = 1.0.95 =
 * Emails set in Montserrat, fetched for the clients that will load a web font,

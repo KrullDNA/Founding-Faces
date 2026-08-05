@@ -90,7 +90,10 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Email_Template::OPT_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
 		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
@@ -497,12 +500,15 @@ class FF_Settings {
 	 * Render the branded-email design section (logo, colours, footer).
 	 */
 	private static function render_email_design_section() {
-		$logo    = FF_Email_Template::option( FF_Email_Template::OPT_LOGO );
-		$accent  = FF_Email_Template::option( FF_Email_Template::OPT_ACCENT );
-		$bg      = FF_Email_Template::option( FF_Email_Template::OPT_BG );
-		$btn_bg  = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_BG );
-		$btn_txt = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_TEXT );
-		$footer  = FF_Email_Template::option( FF_Email_Template::OPT_FOOTER );
+		$logo     = FF_Email_Template::option( FF_Email_Template::OPT_LOGO );
+		$accent   = FF_Email_Template::option( FF_Email_Template::OPT_ACCENT );
+		$head_bg  = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_BG );
+		$head_txt = FF_Email_Template::option( FF_Email_Template::OPT_HEADING_TEXT );
+		$bg       = FF_Email_Template::option( FF_Email_Template::OPT_BG );
+		$btn_bg   = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_BG );
+		$btn_txt  = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_TEXT );
+		$footer   = FF_Email_Template::option( FF_Email_Template::OPT_FOOTER );
+		$small    = FF_Email_Template::option( FF_Email_Template::OPT_DISCLAIMER );
 		?>
 		<h2><?php esc_html_e( 'Email design', 'founding-faces' ); ?></h2>
 		<p class="description"><?php esc_html_e( 'The look applied to every programme email, welcome, promotion, password reset and application received. Set it once here.', 'founding-faces' ); ?></p>
@@ -518,9 +524,13 @@ class FF_Settings {
 				<th scope="row"><?php esc_html_e( 'Colours', 'founding-faces' ); ?></th>
 				<td>
 					<p class="description" style="margin:0 0 0.8rem;">
-						<?php esc_html_e( 'Where each one lands: Heading & links paints the big line at the top of the card and any link in the body. Page background is the area around the white card. Button is the fill behind the call to action, and Button text the words on it. Hex codes, with or without the #.', 'founding-faces' ); ?>
+						<?php esc_html_e( 'Where each one lands. Heading band and Heading text are the coloured strip across the top of the card and the words on it. Links is any link in the body. Page background is the area around the card, behind the logo and the small print. Button is the fill behind the call to action, and Button text the words on it. Hex codes, with or without the #.', 'founding-faces' ); ?>
 					</p>
-					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Heading & links', 'founding-faces' ); ?><br />
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Heading band', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_HEADING_BG ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $head_bg ); ?>" placeholder="#2b2d33" /></label>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Heading text', 'founding-faces' ); ?><br />
+						<input name="<?php echo esc_attr( FF_Email_Template::OPT_HEADING_TEXT ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $head_txt ); ?>" placeholder="#ffffff" /></label>
+					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Links', 'founding-faces' ); ?><br />
 						<input name="<?php echo esc_attr( FF_Email_Template::OPT_ACCENT ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $accent ); ?>" placeholder="#2b2d33" /></label>
 					<label style="display:inline-block; margin:0 1.2rem 0.6rem 0;"><?php esc_html_e( 'Page background', 'founding-faces' ); ?><br />
 						<input name="<?php echo esc_attr( FF_Email_Template::OPT_BG ); ?>" type="text" class="ff-color" value="<?php echo esc_attr( $bg ); ?>" placeholder="#f6f7f8" /></label>
@@ -534,7 +544,19 @@ class FF_Settings {
 				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>"><?php esc_html_e( 'Footer text', 'founding-faces' ); ?></label></th>
 				<td>
 					<textarea name="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_FOOTER ); ?>" rows="3" class="large-text"><?php echo esc_textarea( $footer ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'Appears at the foot of every email, e.g. your business name and address. Line breaks are kept.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Sits centred inside the card, under the message, e.g. "© Apotheca®". Line breaks are kept.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Email_Template::OPT_DISCLAIMER ); ?>"><?php esc_html_e( 'Small print', 'founding-faces' ); ?></label></th>
+				<td>
+					<textarea name="<?php echo esc_attr( FF_Email_Template::OPT_DISCLAIMER ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_DISCLAIMER ); ?>" rows="5" class="large-text"><?php echo esc_textarea( $small ); ?></textarea>
+					<p class="description">
+						<?php esc_html_e( 'The disclaimer below the card, outside it, in small grey type. Use {site_name} rather than typing the name, so it follows the site between staging and live. Clear the field to leave it off entirely.', 'founding-faces' ); ?>
+					</p>
+					<p class="description">
+						<?php esc_html_e( 'The Unsubscribe link sits under this, on the welcome and promotion emails. It is not offered on the password reset (that one was asked for and has to arrive) or on the application emails, where there is no account and so no list to leave. One click takes the member off the list here and on your email platform, leaves their account, number and history untouched, and emails you so you can follow it up if it is one of The 35.', 'founding-faces' ); ?>
+					</p>
 				</td>
 			</tr>
 		</table>
@@ -657,7 +679,7 @@ class FF_Settings {
 						(<?php echo esc_html( $last_error['email'] ); ?>)
 					<?php endif; ?>
 					<?php if ( ! empty( $last_error['time'] ) ) : ?>
-						— <?php echo esc_html( $last_error['time'] ); ?>
+						at <?php echo esc_html( $last_error['time'] ); ?>
 					<?php endif; ?>
 				</p>
 			</div>

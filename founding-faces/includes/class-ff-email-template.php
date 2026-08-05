@@ -25,12 +25,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FF_Email_Template {
 
 	// Editable design options.
-	const OPT_LOGO        = 'ff_email_logo';         // Logo image URL.
-	const OPT_ACCENT      = 'ff_email_accent';       // Heading / accent colour.
-	const OPT_BG          = 'ff_email_bg';           // Page background behind the card.
-	const OPT_BUTTON_BG   = 'ff_email_button_bg';    // CTA button background.
-	const OPT_BUTTON_TEXT = 'ff_email_button_text';  // CTA button text colour.
-	const OPT_FOOTER      = 'ff_email_footer';       // Footer text (plain).
+	const OPT_LOGO         = 'ff_email_logo';          // Logo image URL, above the card.
+	const OPT_ACCENT       = 'ff_email_accent';        // Link colour in the body.
+	const OPT_HEADING_BG   = 'ff_email_heading_bg';    // The heading band's fill.
+	const OPT_HEADING_TEXT = 'ff_email_heading_text';  // The heading's own colour.
+	const OPT_BG           = 'ff_email_bg';            // Page background behind the card.
+	const OPT_BUTTON_BG    = 'ff_email_button_bg';     // CTA button background.
+	const OPT_BUTTON_TEXT  = 'ff_email_button_text';   // CTA button text colour.
+	const OPT_FOOTER       = 'ff_email_footer';        // Footer text, inside the card.
+	const OPT_DISCLAIMER   = 'ff_email_disclaimer';    // Small print, below the card.
 
 	/**
 	 * The shipped design defaults.
@@ -39,12 +42,27 @@ class FF_Email_Template {
 	 */
 	public static function defaults() {
 		return array(
-			self::OPT_LOGO        => '',
-			self::OPT_ACCENT      => '#2b2d33',
-			self::OPT_BG          => '#f6f7f8',
-			self::OPT_BUTTON_BG   => '#3a3d44',
-			self::OPT_BUTTON_TEXT => '#ffffff',
-			self::OPT_FOOTER      => get_bloginfo( 'name' ),
+			self::OPT_LOGO         => '',
+			self::OPT_ACCENT       => '#2b2d33',
+			self::OPT_HEADING_BG   => '#2b2d33',
+			self::OPT_HEADING_TEXT => '#ffffff',
+			self::OPT_BG           => '#f6f7f8',
+			self::OPT_BUTTON_BG    => '#3a3d44',
+			self::OPT_BUTTON_TEXT  => '#ffffff',
+			self::OPT_FOOTER       => get_bloginfo( 'name' ),
+			self::OPT_DISCLAIMER   => self::default_disclaimer(),
+		);
+	}
+
+	/**
+	 * The shipped small print.
+	 *
+	 * @return string
+	 */
+	public static function default_disclaimer() {
+		return __(
+			'This message was sent as part of the Founding Faces programme, between {site_name} and the addressee named above. If it has reached you by mistake, we would be grateful if you told us, deleted it from your mailbox, and did not forward it or any part of it to anyone else. Thank you for your understanding.',
+			'founding-faces'
 		);
 	}
 
@@ -67,8 +85,12 @@ class FF_Email_Template {
 	 * @param array $args {
 	 *     @type string $heading   The large heading at the top of the card.
 	 *     @type string $body_html The message body, already valid HTML.
-	 *     @type array  $cta       Optional ['label' => string, 'url' => string].
-	 *     @type string $preheader Optional hidden preview line.
+	 *     @type array  $cta         Optional ['label' => string, 'url' => string].
+	 *     @type string $preheader   Optional hidden preview line.
+	 *     @type string $unsubscribe Optional unsubscribe URL. The link only
+	 *                               appears when one is given, so an applicant
+	 *                               who has no account is never offered a way
+	 *                               out of a list they are not on.
 	 * }
 	 * @return string The full HTML document.
 	 */
@@ -77,15 +99,25 @@ class FF_Email_Template {
 		$body_html = isset( $args['body_html'] ) ? $args['body_html'] : '';
 		$cta       = isset( $args['cta'] ) && is_array( $args['cta'] ) ? $args['cta'] : array();
 		$preheader = isset( $args['preheader'] ) ? $args['preheader'] : '';
+		$unsub     = isset( $args['unsubscribe'] ) ? $args['unsubscribe'] : '';
 
 		$logo      = self::option( self::OPT_LOGO );
 		$accent    = self::option( self::OPT_ACCENT );
+		$head_bg   = self::option( self::OPT_HEADING_BG );
+		$head_text = self::option( self::OPT_HEADING_TEXT );
 		$bg        = self::option( self::OPT_BG );
 		$btn_bg    = self::option( self::OPT_BUTTON_BG );
 		$btn_text  = self::option( self::OPT_BUTTON_TEXT );
 		$footer    = self::option( self::OPT_FOOTER );
 
 		$site = get_bloginfo( 'name' );
+
+		// The small print takes {site_name} so it needs no editing between
+		// staging and live.
+		$disclaimer = strtr(
+			(string) self::option( self::OPT_DISCLAIMER ),
+			array( '{site_name}' => $site )
+		);
 
 		// No quoted font names anywhere in the stack. A quoted name inside an
 		// inline style attribute has to survive being escaped, re-escaped and
@@ -134,34 +166,41 @@ class FF_Email_Template {
 	<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:<?php echo esc_attr( $bg ); ?>;">
 		<tr>
 			<td align="center" style="padding:28px 16px;">
-				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%; background:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e6e8ea;">
-					<?php if ( '' !== trim( (string) $logo ) ) : ?>
+
+				<?php if ( '' !== trim( (string) $logo ) ) : ?>
+				<!-- The logo sits above the card, on the page, not inside it. -->
+				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%;">
 					<tr>
-						<td align="center" style="padding:28px 32px 0;">
-							<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site ); ?>" style="max-height:56px; max-width:70%; height:auto; display:block;" />
+						<td align="center" style="padding:0 16px 26px;">
+							<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site ); ?>" style="max-height:70px; max-width:80%; height:auto; display:block;" />
 						</td>
 					</tr>
-					<?php endif; ?>
+				</table>
+				<?php endif; ?>
+
+				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%; background:#ffffff; border-radius:10px; overflow:hidden;">
 					<?php if ( '' !== trim( (string) $heading ) ) : ?>
+					<!-- The heading band: its own fill, its own text colour, full
+					     width of the card. -->
 					<tr>
-						<td style="padding:28px 32px 0;">
-							<h1 style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:22px; line-height:1.3; font-weight:700; color:<?php echo esc_attr( $accent ); ?>;">
+						<td align="center" bgcolor="<?php echo esc_attr( $head_bg ); ?>" style="padding:34px 32px; background:<?php echo esc_attr( $head_bg ); ?>;">
+							<h1 style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:26px; line-height:1.3; font-weight:700; color:<?php echo esc_attr( $head_text ); ?>;">
 								<?php echo esc_html( $heading ); ?>
 							</h1>
 						</td>
 					</tr>
 					<?php endif; ?>
 					<tr>
-						<td style="padding:18px 32px 4px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; line-height:1.65; color:#2b2d33;">
+						<td style="padding:34px 40px 4px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; line-height:1.7; color:#2b2d33;">
 							<?php echo $body_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Body is pre-built, escaped HTML. ?>
 						</td>
 					</tr>
 					<?php if ( ! empty( $cta['url'] ) && ! empty( $cta['label'] ) ) : ?>
 					<tr>
-						<td style="padding:12px 32px 8px;">
+						<td style="padding:12px 40px 8px;">
 							<table role="presentation" cellpadding="0" cellspacing="0">
 								<tr>
-									<td align="center" style="border-radius:6px; background:<?php echo esc_attr( $btn_bg ); ?>;">
+									<td align="center" bgcolor="<?php echo esc_attr( $btn_bg ); ?>" style="border-radius:6px; background:<?php echo esc_attr( $btn_bg ); ?>;">
 										<a href="<?php echo esc_url( $cta['url'] ); ?>" style="display:inline-block; padding:13px 28px; font-family:<?php echo esc_attr( $family ); ?>; font-size:15px; font-weight:600; color:<?php echo esc_attr( $btn_text ); ?>; text-decoration:none; border-radius:6px;">
 											<?php echo esc_html( $cta['label'] ); ?>
 										</a>
@@ -171,15 +210,41 @@ class FF_Email_Template {
 						</td>
 					</tr>
 					<?php endif; ?>
+					<?php if ( '' !== trim( (string) $footer ) ) : ?>
 					<tr>
-						<td style="padding:24px 32px 30px;">
-							<hr style="border:none; border-top:1px solid #e6e8ea; margin:0 0 16px;" />
-							<p style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:12px; line-height:1.6; color:#6b7280;">
+						<td align="center" style="padding:18px 40px 34px;">
+							<p style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:13px; line-height:1.6; color:#6b7280; text-align:center;">
 								<?php echo nl2br( esc_html( $footer ) ); ?>
 							</p>
 						</td>
 					</tr>
+					<?php endif; ?>
 				</table>
+
+				<?php if ( '' !== trim( (string) $disclaimer ) || '' !== trim( (string) $unsub ) ) : ?>
+				<!-- The small print and the way out, below the card. -->
+				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%;">
+					<?php if ( '' !== trim( (string) $disclaimer ) ) : ?>
+					<tr>
+						<td align="center" style="padding:20px 24px 0;">
+							<p style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-align:center;">
+								<?php echo nl2br( esc_html( $disclaimer ) ); ?>
+							</p>
+						</td>
+					</tr>
+					<?php endif; ?>
+					<?php if ( '' !== trim( (string) $unsub ) ) : ?>
+					<tr>
+						<td align="center" style="padding:14px 24px 8px;">
+							<a href="<?php echo esc_url( $unsub ); ?>" style="font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-decoration:underline;">
+								<?php esc_html_e( 'Unsubscribe', 'founding-faces' ); ?>
+							</a>
+						</td>
+					</tr>
+					<?php endif; ?>
+				</table>
+				<?php endif; ?>
+
 			</td>
 		</tr>
 	</table>

@@ -106,7 +106,7 @@ class FF_Emails {
 	public static function default_body( $is_35 ) {
 		if ( $is_35 ) {
 			return __(
-				"Hi {name},\n\nWelcome to Founding Faces. You are Founding Face {number} — one of The 35.\n\nUse the button below to set your password and step inside. The link is valid for 7 days; if it ever expires you can request a fresh one from the login page.\n\nWith thanks,\n{site_name}",
+				"Hi {name},\n\nWelcome to Founding Faces. You are Founding Face {number}, one of The 35.\n\nUse the button below to set your password and step inside. The link is valid for 7 days; if it ever expires you can request a fresh one from the login page.\n\nWith thanks,\n{site_name}",
 				'founding-faces'
 			);
 		}
@@ -135,7 +135,7 @@ class FF_Emails {
 	 */
 	public static function default_promo_body() {
 		return __(
-			"Hi {name},\n\nWe have some special news. You have been chosen as one of The 35 — the inner circle of Founding Faces.\n\nYou are now Founding Face {number}. Your place, your number, and everything you've taken part in are yours alone.\n\nSign in any time to see inside.\n\nWith thanks,\n{site_name}",
+			"Hi {name},\n\nWe have some special news. You have been chosen as one of The 35, the inner circle of Founding Faces.\n\nYou are now Founding Face {number}. Your place, your number, and everything you've taken part in are yours alone.\n\nSign in any time to see inside.\n\nWith thanks,\n{site_name}",
 			'founding-faces'
 		);
 	}
@@ -181,7 +181,7 @@ class FF_Emails {
 	 */
 	public static function default_decline_body() {
 		return __(
-			"Hi {name},\n\nThank you for applying to Founding Faces, and for the time you took over it.\n\nWe had far more applications than places, and on this occasion we haven't been able to offer you one. That isn't a reflection on you — the group is deliberately small, and the choices were genuinely hard.\n\nWe'd love to stay in touch, and you're very welcome to apply again if we open more places.\n\nWith thanks and warm wishes,\n{site_name}",
+			"Hi {name},\n\nThank you for applying to Founding Faces, and for the time you took over it.\n\nWe had far more applications than places, and on this occasion we haven't been able to offer you one. That isn't a reflection on you, the group is deliberately small, and the choices were genuinely hard.\n\nWe'd love to stay in touch, and you're very welcome to apply again if we open more places.\n\nWith thanks and warm wishes,\n{site_name}",
 			'founding-faces'
 		);
 	}
@@ -219,6 +219,7 @@ class FF_Emails {
 				'preheader'       => __( 'Set your password to step inside.', 'founding-faces' ),
 				'cta_label'       => __( 'Set your password', 'founding-faces' ),
 				'cta_url'         => '{set_password_link}',
+				'unsubscribe'     => true,
 			),
 			'welcome_circle' => array(
 				'label'           => __( 'Welcome: The Circle', 'founding-faces' ),
@@ -231,6 +232,7 @@ class FF_Emails {
 				'preheader'       => __( 'Set your password to step inside.', 'founding-faces' ),
 				'cta_label'       => __( 'Set your password', 'founding-faces' ),
 				'cta_url'         => '{set_password_link}',
+				'unsubscribe'     => true,
 			),
 			'promotion'    => array(
 				'label'           => __( 'Chosen for The 35 (promotion)', 'founding-faces' ),
@@ -243,6 +245,7 @@ class FF_Emails {
 				'preheader'       => __( 'You have been chosen for The 35.', 'founding-faces' ),
 				'cta_label'       => __( 'Sign in', 'founding-faces' ),
 				'cta_url'         => '{login_url}',
+				'unsubscribe'     => true,
 			),
 			'received'     => array(
 				'label'           => __( 'Application received', 'founding-faces' ),
@@ -308,8 +311,14 @@ class FF_Emails {
 			? get_option( $spec['subject_option'], $spec['subject_default'] )
 			: $spec['subject_default'];
 
+		// The heading band carries the subject line. Two fields saying nearly
+		// the same thing is two fields to keep in step, and the subject is
+		// already the sentence that has to work on its own in a crowded inbox.
+		// The fixed heading is only a fallback for an emptied subject.
+		$subject = self::fill( $subject_tpl, $replacements, false );
+
 		$args = array(
-			'heading'   => $spec['heading'],
+			'heading'   => '' !== trim( $subject ) ? $subject : $spec['heading'],
 			'body_html' => self::fill( $body_tpl, $replacements, true ),
 			'preheader' => $spec['preheader'],
 		);
@@ -322,8 +331,15 @@ class FF_Emails {
 			);
 		}
 
+		// The way out, on the emails that are a mailing list rather than a
+		// response to something the member just did. A password reset carries
+		// no unsubscribe: it is asked for, and it has to arrive.
+		if ( ! empty( $spec['unsubscribe'] ) && ! empty( $replacements['{unsubscribe_url}'] ) ) {
+			$args['unsubscribe'] = $replacements['{unsubscribe_url}'];
+		}
+
 		return array(
-			'subject' => self::fill( $subject_tpl, $replacements, false ),
+			'subject' => $subject,
 			'html'    => FF_Email_Template::build( $args ),
 		);
 	}
@@ -373,6 +389,7 @@ class FF_Emails {
 			'{site_name}'         => get_bloginfo( 'name' ),
 			'{login_url}'         => wp_login_url(),
 			'{set_password_link}' => $link,
+			'{unsubscribe_url}'   => FF_Unsubscribe::url( $user_id ),
 		);
 	}
 
@@ -539,6 +556,7 @@ class FF_Emails {
 		return apply_filters( 'ff_email_link_labels', array(
 			'{set_password_link}' => __( 'set your password', 'founding-faces' ),
 			'{login_url}'         => __( 'the login page', 'founding-faces' ),
+			'{unsubscribe_url}'   => __( 'unsubscribe', 'founding-faces' ),
 		) );
 	}
 
