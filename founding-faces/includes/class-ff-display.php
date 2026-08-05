@@ -196,6 +196,7 @@ class FF_Display {
 			'body_more'      => 'no',
 			'body_more_text' => '',
 			'hide'           => '',
+			'sep'            => '|',
 		), $atts, 'ff_note' );
 		$id   = absint( $atts['id'] );
 
@@ -258,6 +259,7 @@ class FF_Display {
 				'body_more'      => 'no',
 				'body_more_text' => '',
 				'hide'           => '',
+				'sep'            => '|',
 			),
 			$atts,
 			'ff_notes'
@@ -337,6 +339,7 @@ class FF_Display {
 				'body_more'      => 'no',
 				'body_more_text' => '',
 				'hide'           => '',
+				'sep'            => '|',
 			),
 			$atts,
 			'ff_notes_archive'
@@ -526,6 +529,7 @@ class FF_Display {
 				'body_more'        => 'no',
 				'body_more_text'   => '',
 				'hide'             => '',
+				'sep'              => '|',
 			),
 			$atts,
 			'ff_home'
@@ -627,7 +631,7 @@ class FF_Display {
 		if ( '' !== $title || $meta ) {
 			$out .= '<header class="ff-note-head">' . $title;
 			if ( $meta ) {
-				$out .= '<div class="ff-note-meta">' . implode( '', $meta ) . '</div>';
+				$out .= '<div class="ff-note-meta">' . implode( self::meta_separator( $a ), $meta ) . '</div>';
 			}
 			$out .= '</header>';
 		}
@@ -706,7 +710,7 @@ class FF_Display {
 		if ( '' !== $head || $meta ) {
 			$out .= '<header class="ff-note-head">' . $head;
 			if ( $meta ) {
-				$out .= '<div class="ff-note-meta">' . implode( '', $meta ) . '</div>';
+				$out .= '<div class="ff-note-meta">' . implode( self::meta_separator( $a ), $meta ) . '</div>';
 			}
 			$out .= '</header>';
 		}
@@ -955,6 +959,9 @@ class FF_Display {
 			// version, date, vault, body, gallery. Everything shows by default,
 			// so a caller that says nothing gets the whole card.
 			'hide'      => array(),
+			// What goes between the chips in the meta row. Blank for nothing
+			// but the gap.
+			'sep'       => '|',
 		) );
 
 		if ( ! is_array( $args['hide'] ) ) {
@@ -963,6 +970,22 @@ class FF_Display {
 		$args['hide'] = array_filter( array_map( 'sanitize_key', array_map( 'trim', $args['hide'] ) ) );
 
 		return $args;
+	}
+
+	/**
+	 * The mark that goes between the chips in a note's meta row.
+	 *
+	 * Hidden from screen readers: it is punctuation for the eye, and read aloud
+	 * between every chip it would be noise. Returns an empty string when there
+	 * is no separator, which makes it safe to implode with either way.
+	 *
+	 * @param array $args The filled-in card options.
+	 * @return string
+	 */
+	private static function meta_separator( $args ) {
+		$sep = FF_Text::inline( isset( $args['sep'] ) ? $args['sep'] : '' );
+
+		return ( '' === $sep ) ? '' : '<span class="ff-note-sep" aria-hidden="true">' . $sep . '</span>';
 	}
 
 	/**
@@ -1038,6 +1061,7 @@ class FF_Display {
 			'more'      => isset( $atts['body_more'] ) && in_array( strtolower( (string) $atts['body_more'] ), array( '1', 'yes', 'true' ), true ),
 			'more_text' => isset( $atts['body_more_text'] ) ? $atts['body_more_text'] : '',
 			'hide'      => isset( $atts['hide'] ) ? $atts['hide'] : array(),
+			'sep'       => isset( $atts['sep'] ) ? $atts['sep'] : '|',
 		) );
 	}
 

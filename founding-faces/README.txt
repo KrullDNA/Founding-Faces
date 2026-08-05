@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.83
+Stable tag: 1.0.84
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release) — Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.0.84 =
+* A note's stage, version and date ran into one another. There is now a mark
+  between them — "Between the chips" in the Content tab, a "|" by default, any
+  wording or none.
+* It has its own controls under Badges & chips: colour, typography, the space
+  either side (on top of the chip gap, so it can sit tight to one and breathe
+  from the other), and a nudge up or down for marks that don't sit on the same
+  optical line as the text.
+* The mark is hidden from screen readers — it is punctuation for the eye, and
+  read out between every chip it would be noise.
 
 = 1.0.83 =
 * Cards in a multi-column layout are now equal height by default: every card in

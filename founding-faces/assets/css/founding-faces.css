@@ -1607,3 +1607,10 @@
 .ff-note-more-link {
 	display: inline-block;
 }
+
+/* The mark between the chips on a note's meta row. Placement only: what it is,
+ * its colour, size and spacing are all controls. */
+.ff-note-sep {
+	display: inline-block;
+	line-height: 1;
+}

@@ -86,6 +86,15 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			) );
 		}
 
+		$this->add_control( 'meta_sep', array(
+			'label'       => __( 'Between the chips', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '|',
+			'separator'   => 'before',
+			'placeholder' => __( 'Leave blank for none', 'founding-faces' ),
+			'description' => __( 'A mark between the stage, version and date so they do not run together. Styled under Badges & chips.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'body_unit', array(
 			'label'     => __( 'Body length', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SELECT,
@@ -158,6 +167,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 
 		return array(
 			'hide'           => implode( ',', $hidden ),
+			'sep'            => isset( $s['meta_sep'] ) ? $s['meta_sep'] : '|',
 			'body_trim'      => ( '' !== $unit && isset( $s['body_trim'] ) ) ? absint( $s['body_trim'] ) : 0,
 			'body_unit'      => ( 'characters' === $unit ) ? 'characters' : 'words',
 			'body_more'      => ( isset( $s['body_more'] ) && 'yes' === $s['body_more'] ) ? 'yes' : 'no',
@@ -232,6 +242,37 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
 			'selectors' => array( '{{WRAPPER}} .ff-note-meta' => 'gap: {{SIZE}}{{UNIT}};' ),
 		) );
+
+		$this->add_control( 'sep_heading', array(
+			'label'     => __( 'The mark between them', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'sep_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-sep' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'sep_typo',
+			'selector' => '{{WRAPPER}} .ff-note-sep',
+		) );
+		$this->add_responsive_control( 'sep_space', array(
+			'label'       => __( 'Space either side', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SLIDER,
+			'size_units'  => array( 'px', 'em' ),
+			'range'       => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'description' => __( 'On top of the gap above, so the mark can sit tight to one chip or breathe between both.', 'founding-faces' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-note-sep' => 'margin-left: {{SIZE}}{{UNIT}}; margin-right: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'sep_offset', array(
+			'label'      => __( 'Nudge up or down', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => -10, 'max' => 10 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-sep' => 'transform: translateY({{SIZE}}px);' ),
+		) );
+
 		$this->end_controls_section();
 	}
 
