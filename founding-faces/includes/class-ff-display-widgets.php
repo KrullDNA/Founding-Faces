@@ -3,7 +3,7 @@
  * Elementor widgets for the frontend display components.
  *
  * Thin wrappers around the FF_Display shortcode methods, so a note appears on a
- * page by dragging a widget and choosing a product (or note) from a dropdown —
+ * page by dragging a widget and choosing a product (or note) from a dropdown ,
  * the same designed-once template renders it automatically. The shortcodes stay
  * as a fallback; these widgets don't replace them.
  *
@@ -67,7 +67,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 	 * The parts of a note card, and how much of the body to show.
 	 *
 	 * Every part is on by default: a card asked for with no opinion is the whole
-	 * card. Turning one off leaves nothing behind — no empty header holding
+	 * card. Turning one off leaves nothing behind, no empty header holding
 	 * space where a title used to be.
 	 */
 	protected function ffds_card_content_controls() {
@@ -192,7 +192,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 	 * Everything about an individual chip lives in its own section below. A
 	 * shared typography control was the wrong shape: the stage badge is a pill,
 	 * the version and date are quiet text, and the vault chip is a small caps
-	 * marker — three different jobs that only looked like one.
+	 * marker, three different jobs that only looked like one.
 	 */
 	protected function ffds_badge_section() {
 		$this->start_controls_section( 'ff_badges_sec', array(
@@ -524,7 +524,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 }
 
 /**
- * Notes by product — the workhorse. All notes for a product, newest first,
+ * Notes by product, the workhorse. All notes for a product, newest first,
  * optionally filtered by stage.
  */
 class FF_Notes_Widget extends FF_Display_Widget_Base {

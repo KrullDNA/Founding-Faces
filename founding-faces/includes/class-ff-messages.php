@@ -313,7 +313,7 @@ class FF_Messages {
 	 * A member's feedback threads (roots), newest first.
 	 *
 	 * Used by the personal-history "Feedback you've shared" section, so feedback
-	 * shows in one consistent place — read straight from this channel.
+	 * shows in one consistent place, read straight from this channel.
 	 *
 	 * @param int $member_id The member's user id.
 	 * @return array Root feedback message rows.
@@ -785,7 +785,7 @@ class FF_Messages {
 	 *
 	 * An explicit id wins; otherwise the note the form is being shown on. That
 	 * fallback is the whole point of dropping the form into a Single Note
-	 * template — every note gets a form, and each one knows its own note
+	 * template, every note gets a form, and each one knows its own note
 	 * without anybody typing an id.
 	 *
 	 * In a theme-builder template Elementor previews a real note, so the
@@ -830,7 +830,7 @@ class FF_Messages {
 		$state       = isset( $_GET['ff_msg'] ) ? sanitize_key( wp_unslash( $_GET['ff_msg'] ) ) : '';
 
 		// The sent/error notices only exist after a submission, so in the editor
-		// show one as a sample — otherwise it can never be styled.
+		// show one as a sample, otherwise it can never be styled.
 		if ( '' === $state && FF_History::is_editor() ) {
 			$state = 'sent';
 		}
@@ -894,7 +894,7 @@ class FF_Messages {
 	 */
 	public static function shortcode_messages( $atts = array() ) {
 		// A shortcode is handed its attributes as the first argument, which is
-		// not what sc_messages() takes — so the two are kept apart rather than
+		// not what sc_messages() takes, so the two are kept apart rather than
 		// letting an attribute array read as "show the real thing".
 		unset( $atts );
 		return self::sc_messages();
@@ -1126,7 +1126,7 @@ class FF_Messages {
 	 * The product (and note) a thread is about, for display.
 	 *
 	 * Feedback threads carry the note they were left on in reference_id, and a
-	 * note carries its product — so the chain note -> product tells us what the
+	 * note carries its product, so the chain note -> product tells us what the
 	 * conversation is really about. A general question has no reference, so it
 	 * gets no context line rather than a misleading one.
 	 *

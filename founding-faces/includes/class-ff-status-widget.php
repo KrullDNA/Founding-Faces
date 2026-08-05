@@ -1,6 +1,6 @@
 <?php
 /**
- * The Status Lookup Elementor widget — the "check your application" form.
+ * The Status Lookup Elementor widget, the "check your application" form.
  *
  * A thin wrapper around FF_Application::render_status_lookup(): same markup as
  * the [ff_status_lookup] shortcode, plus the shared form Style tab (via the

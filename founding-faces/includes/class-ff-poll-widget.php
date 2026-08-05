@@ -470,8 +470,8 @@ trait FF_Poll_Style_Controls {
 			'size_units' => array( 'px', '%' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-poll-outcome' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
-		// The block ships with no border of its own, so every edge here — one
-		// side or four — is set in the editor.
+		// The block ships with no border of its own, so every edge here, one
+		// side or four, is set in the editor.
 		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
 			'name'      => 'outcome_border',
 			'selector'  => '{{WRAPPER}} .ff-poll-outcome',
@@ -499,7 +499,7 @@ trait FF_Poll_Style_Controls {
 	 *
 	 * Each field is pre-filled with the wording the plugin would use anyway, so
 	 * the panel shows what is on the page rather than an empty box. Clearing a
-	 * field removes that line altogether — it is a way to say nothing, not a
+	 * field removes that line altogether, it is a way to say nothing, not a
 	 * way to render an empty element.
 	 */
 	protected function register_poll_text_controls() {
@@ -682,8 +682,8 @@ trait FF_Poll_Style_Controls {
 	/**
 	 * The "no poll right now" markup, or nothing if both fields were cleared.
 	 *
-	 * Both fields take HTML. The message allows what a post allows — links,
-	 * emphasis, lists — while the heading is held to inline tags, because a
+	 * Both fields take HTML. The message allows what a post allows, links,
+	 * emphasis, lists, while the heading is held to inline tags, because a
 	 * paragraph or a list inside a heading is not markup anyone meant to write.
 	 * Neither allows scripts or styles: this is copy, not a place to run code.
 	 *
@@ -972,8 +972,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		);
 
 		// A widget saved before the source control existed has no 'source' at
-		// all. Its poll id already means what it meant then — a chosen poll, or
-		// 0 for whichever poll is flagged active — so leave it to render_poll.
+		// all. Its poll id already means what it meant then, a chosen poll, or
+		// 0 for whichever poll is flagged active, so leave it to render_poll.
 		if ( ! isset( $settings['source'] ) ) {
 			$source = 'specific';
 		}

@@ -1,5 +1,5 @@
 /**
- * Founding Faces — note admin: the image gallery picker.
+ * Founding Faces, note admin: the image gallery picker.
  *
  * Uses the built-in WordPress media library (wp.media) to pick multiple images
  * for a note. The chosen attachment ids are stored, comma-separated, in a

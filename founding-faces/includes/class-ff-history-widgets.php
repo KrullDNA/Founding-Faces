@@ -1,10 +1,10 @@
 <?php
 /**
- * The Member Archive Elementor widget — a member's own activity, fully styleable.
+ * The Member Archive Elementor widget, a member's own activity, fully styleable.
  *
  * One widget with a Section selector (Full record / Header / Votes / Notes /
  * Feedback): drop it as many times as you like, each set to one section, to
- * build any layout — with a complete Style tab (typography, colours, spacing,
+ * build any layout, with a complete Style tab (typography, colours, spacing,
  * backgrounds and borders for every part). It reads ONLY the signed-in member's
  * own data (id from the session, never the request), and shows on-brand sample
  * data in the Elementor editor so it can be styled before there are members.
@@ -268,7 +268,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .ff-history-header' => 'background-color: {{VALUE}};' ),
 		) );
 
-		// A line under the header — only shown when the Content toggle is on.
+		// A line under the header, only shown when the Content toggle is on.
 		$this->add_control( 'header_divider_h', array(
 			'label'     => __( 'Line under header', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::HEADING,
@@ -850,7 +850,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		// The row itself, not just its badge. Everything here is scoped to
 		// .is-unread, so a read row keeps whatever the "Item box" section gave
-		// it — set one of these and the two states diverge, set none and they
+		// it, set one of these and the two states diverge, set none and they
 		// look identical.
 		$this->add_control( 'unread_row_h', array(
 			'label'       => __( 'Unread rows', 'founding-faces' ),
@@ -1141,7 +1141,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 	 * The page size for each device, with Elementor's own breakpoints.
 	 *
 	 * A responsive control stores the tablet and mobile values under suffixed
-	 * keys, and leaves them empty when they have not been set — an empty one
+	 * keys, and leaves them empty when they have not been set, an empty one
 	 * inherits the desktop size, which is what Elementor means by it.
 	 *
 	 * @param array $s The widget settings.
@@ -1181,7 +1181,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$real    = isset( $s['preview_mode'] ) && 'real' === $s['preview_mode'];
 
 		// Samples are what the editor shows. Nick's own record holds whatever
-		// it happens to hold — two notes, no votes — and a design made against
+		// it happens to hold, two notes, no votes, and a design made against
 		// that is a design with no page of notes, no badge and no button in it.
 		if ( $editing && ! $real ) {
 			echo $this->build( $s, null, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1192,7 +1192,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			$html = $this->build( $s, get_current_user_id(), false );
 
 			// In the editor, a member with no history yet (Nick's own account,
-			// usually) leaves nothing to style — so fall back to the sample.
+			// usually) leaves nothing to style, so fall back to the sample.
 			if ( $editing && FF_History::sample_needed( $html ) ) {
 				$html = $this->build( $s, null, true );
 			}

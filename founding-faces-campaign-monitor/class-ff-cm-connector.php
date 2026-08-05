@@ -5,7 +5,7 @@
  * Implements the core FF_Connector contract against Campaign Monitor's REST
  * API. Campaign Monitor has no tags, so the member's group and number travel as
  * custom fields on the subscriber. Talks to the API with WordPress's own HTTP
- * functions — no third-party SDK bundled (governing principle 4: lean, always).
+ * functions, no third-party SDK bundled (governing principle 4: lean, always).
  *
  * @package FoundingFaces
  */

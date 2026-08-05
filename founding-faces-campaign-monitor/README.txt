@@ -1,4 +1,4 @@
-=== Founding Faces — Campaign Monitor ===
+=== Founding Faces, Campaign Monitor ===
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -16,7 +16,7 @@ tags. Nothing is ever synced without stored consent.
 Set the API key and list ID under Founding Faces → Settings → Email platform,
 then choose "Campaign Monitor" as the active platform.
 
-Only one connector is active at a time. This add-on does nothing on its own —
+Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==

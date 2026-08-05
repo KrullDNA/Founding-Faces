@@ -3,7 +3,7 @@
  * Admin "view as a member" preview.
  *
  * For testing: an administrator can view the whole site as a member of The 35 or
- * The Circle, so they see exactly what that group sees — gated notes, polls,
+ * The Circle, so they see exactly what that group sees, gated notes, polls,
  * pages and menu items included, and are blocked from the other tier's content
  * just as a real member would be. It only ever affects the administrator who
  * turns it on, never a real member, and is set from the admin's own profile or

@@ -2,9 +2,9 @@
 /**
  * The Founding Faces Nav Menu widget.
  *
- * Renders a WordPress menu — the same one from Appearance → Menus, with all of
+ * Renders a WordPress menu, the same one from Appearance → Menus, with all of
  * its per-item Founding Faces settings intact (group visibility, the login /
- * logout swap, the unread count bubble) — but as a first-class Elementor
+ * logout swap, the unread count bubble), but as a first-class Elementor
  * widget, so the links *and* the count circle can be styled in the editor
  * instead of through a global settings page.
  *

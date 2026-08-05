@@ -45,7 +45,7 @@ class FF_Polls {
 	public static function register() {
 		// Register the poll post type now. This runs on 'init' (register() is
 		// called from the plugin's own init handler), so we register directly
-		// rather than nesting another 'init' hook — a nested same-priority hook
+		// rather than nesting another 'init' hook, a nested same-priority hook
 		// added mid-'init' isn't reliably run, which could hide the Polls menu.
 		self::register_cpt();
 		add_shortcode( 'ff_poll', array( __CLASS__, 'shortcode' ) );
@@ -458,7 +458,7 @@ class FF_Polls {
 	 *
 	 * Open polls lead because they are the ones that still want something from
 	 * a member. Closed polls follow while they are still inside their hide
-	 * window — a decision is worth reading after the voting has finished, but
+	 * window, a decision is worth reading after the voting has finished, but
 	 * only for as long as Nick said it should be on the site.
 	 *
 	 * @return int[] Poll ids in display order.
@@ -518,7 +518,7 @@ class FF_Polls {
 	 *
 	 * For a dedicated polls page: any open poll shows first (votable, or results
 	 * if the member has voted), followed by every past poll with its results and
-	 * outcome. All gated — a poll the member can't see never appears.
+	 * outcome. All gated, a poll the member can't see never appears.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string
@@ -736,7 +736,7 @@ class FF_Polls {
 		foreach ( $text as $key => $default ) {
 			if ( isset( $overrides[ $key ] ) ) {
 				// Every one of these lands in a heading, a capsule or a label,
-				// so inline markup only — bold a word, link a word, no more.
+				// so inline markup only, bold a word, link a word, no more.
 				$text[ $key ] = FF_Text::inline( $overrides[ $key ] );
 			}
 		}
@@ -785,8 +785,8 @@ class FF_Polls {
 		$inner = self::render_inner( $poll_id, $text );
 
 		// The wording travels with the markup so the results returned after a
-		// vote — rendered by an AJAX call that knows nothing about this widget
-		// — come back saying the same things this poll says now.
+		// vote, rendered by an AJAX call that knows nothing about this widget
+		//, come back saying the same things this poll says now.
 		$data = '';
 		foreach ( $text as $key => $value ) {
 			$data .= ' data-text-' . esc_attr( str_replace( '_', '-', $key ) ) . '="' . esc_attr( $value ) . '"';
@@ -825,9 +825,9 @@ class FF_Polls {
 	/**
 	 * A sample poll for the Elementor editor.
 	 *
-	 * Uses the live markup and classes so every part — the closed capsule, the
+	 * Uses the live markup and classes so every part, the closed capsule, the
 	 * question, the bars (default, winning, your-choice), the labels and the
-	 * vote count — can be styled before a real poll exists or is voted on.
+	 * vote count, can be styled before a real poll exists or is voted on.
 	 *
 	 * @param string $state 'results' or 'voting'.
 	 * @return string
@@ -1254,7 +1254,7 @@ class FF_Polls {
 		// Outcome.
 		update_post_meta( $post_id, self::META_OUTCOME, isset( $_POST['ff_poll_outcome'] ) ? wp_kses_post( wp_unslash( $_POST['ff_poll_outcome'] ) ) : '' );
 
-		// Active flag — only one poll may be active at a time.
+		// Active flag, only one poll may be active at a time.
 		$active = isset( $_POST['ff_poll_active'] ) ? 1 : 0;
 		update_post_meta( $post_id, self::META_ACTIVE, $active );
 		if ( $active ) {

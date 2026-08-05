@@ -101,7 +101,7 @@ class FF_Interactions {
 	 * The reference ids a member has already logged for a given type.
 	 *
 	 * One query instead of a has() call per item, for the places that need to
-	 * ask "which of these has this member seen?" — such as counting unread
+	 * ask "which of these has this member seen?", such as counting unread
 	 * notes for the menu bubble.
 	 *
 	 * @param int    $member_id The member's user id.
@@ -125,7 +125,7 @@ class FF_Interactions {
 	/**
 	 * Get a member's own interaction rows, newest first.
 	 *
-	 * Reads only the given member's rows — the caller passes the current
+	 * Reads only the given member's rows, the caller passes the current
 	 * member's id, so no one ever sees another member's history.
 	 *
 	 * @param int         $member_id The member's user id.

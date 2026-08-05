@@ -4,7 +4,7 @@
  *
  * Adds a "Founding Faces visibility" choice to each item in Appearance → Menus
  * (Everyone / Logged-out / All members / The 35 / The Circle), and hides items
- * on the front end that the current viewer isn't allowed to see — so a Circle
+ * on the front end that the current viewer isn't allowed to see, so a Circle
  * member never sees a menu item meant for The 35. Uses the same audience rules
  * as the Elementor "Show to" control.
  *
@@ -95,8 +95,8 @@ class FF_Menu_Visibility {
 	 * A hidden item takes its descendants with it.
 	 *
 	 * The rules apply to everyone on the front end, administrators included.
-	 * Exempting them looked harmless — an administrator can reach everything
-	 * anyway — but it made the rules invisible to the one person setting them:
+	 * Exempting them looked harmless, an administrator can reach everything
+	 * anyway, but it made the rules invisible to the one person setting them:
 	 * a "Logged-out visitors only" item sat in Nick's own header while he was
 	 * logged in, looking broken. An administrator who wants the unfiltered menu
 	 * has the admin area, where it is never filtered.

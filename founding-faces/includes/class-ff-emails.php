@@ -4,7 +4,7 @@
  *
  * On approval a member is sent a group-specific welcome email built from an
  * editable template. The email carries a one-time set-password link, valid for
- * seven days, so the member sets their own password — we never email a
+ * seven days, so the member sets their own password, we never email a
  * plain-text one. The set-password screen and a "resend my set-up link" option
  * both live on the standard WordPress login page, so they inherit its look and
  * need no page to be created.
@@ -43,7 +43,7 @@ class FF_Emails {
 	const OPT_RECEIVED_BODY    = 'ff_email_received_body';
 
 	// The email sent when an application is declined, so a decision is never
-	// silence — and so the status lookup's "check your inbox" is true for
+	// silence, and so the status lookup's "check your inbox" is true for
 	// everyone, not just the members who were approved.
 	const OPT_DECLINE_SUBJECT = 'ff_email_decline_subject';
 	const OPT_DECLINE_BODY    = 'ff_email_decline_body';
@@ -129,7 +129,7 @@ class FF_Emails {
 	 * The default body for the promotion email.
 	 *
 	 * The member already has a password (they set it as a Circle member), so this
-	 * email has no set-password link — just the news and a sign-in button.
+	 * email has no set-password link, just the news and a sign-in button.
 	 *
 	 * @return string
 	 */
@@ -173,7 +173,7 @@ class FF_Emails {
 	/**
 	 * The default body for the decline email.
 	 *
-	 * Warm and final, with no reason given and no invitation to appeal — the
+	 * Warm and final, with no reason given and no invitation to appeal, the
 	 * programme is a small, chosen group, and a kind close is better than an
 	 * unanswered silence.
 	 *
@@ -411,7 +411,7 @@ class FF_Emails {
 	/**
 	 * Send the decline email to an applicant.
 	 *
-	 * Sent to the address on the application, so no account is needed — a
+	 * Sent to the address on the application, so no account is needed, a
 	 * declined applicant never has a WordPress user. Silent by design if the
 	 * template body has been emptied on the Settings page: that is how Nick
 	 * turns decline emails off without code.

@@ -1,5 +1,5 @@
 /**
- * Founding Faces — application form enhancements.
+ * Founding Faces, application form enhancements.
  *
  * Progressive enhancement only. The server is the authority on validation;
  * this just makes the postcode field pleasant to fill in and gives instant

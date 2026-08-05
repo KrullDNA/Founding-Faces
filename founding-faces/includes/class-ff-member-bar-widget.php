@@ -2,7 +2,7 @@
 /**
  * The Founding Faces Member Bar widget.
  *
- * A header strip of member links — Messages, Notes, Polls and Log in / Log out —
+ * A header strip of member links, Messages, Notes, Polls and Log in / Log out ,
  * each with its own unread count circle. The same counts as the nav-menu bubble,
  * but as a first-class Elementor widget, so the circles can be styled directly
  * (size, colour, position, typography) instead of by hand-writing CSS against a

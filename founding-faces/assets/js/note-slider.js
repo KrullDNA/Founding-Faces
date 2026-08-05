@@ -1,5 +1,5 @@
 /**
- * Founding Faces — the note image slider.
+ * Founding Faces, the note image slider.
  *
  * Dependency-free, and it moves one way. Forward always slides left and back
  * always slides right, at every point in the gallery: reaching the last image
@@ -7,7 +7,7 @@
  * rather than rewinding the whole strip to get there.
  *
  * That is done by rotating the track rather than scrolling it. The strip never
- * has an end to rewind from — after each step the slide that has just left is
+ * has an end to rewind from, after each step the slide that has just left is
  * moved to the other end of the track while the transition is off, so the next
  * step starts from the same place the last one did. Nothing is cloned, which
  * keeps the lightbox gallery to the images the note actually has and asks the
@@ -139,7 +139,7 @@
 		}
 
 		// Back: put the last slide at the front and offset the track by one step
-		// with the transition off, then animate back to nothing — which slides
+		// with the transition off, then animate back to nothing, which slides
 		// right, from a slide that was already in place.
 		function back() {
 			if ( moving || still() ) {
@@ -233,7 +233,7 @@
 			var dx = e.changedTouches[ 0 ].clientX - startX;
 			var dy = e.changedTouches[ 0 ].clientY - startY;
 			startX = null;
-			// Sideways only — a vertical swipe is the member scrolling the page.
+			// Sideways only, a vertical swipe is the member scrolling the page.
 			if ( Math.abs( dx ) > 40 && Math.abs( dx ) > Math.abs( dy ) ) {
 				if ( dx < 0 ) {
 					forward();

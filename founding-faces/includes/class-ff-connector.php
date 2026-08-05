@@ -4,7 +4,7 @@
  *
  * The core plugin talks to exactly one email platform through a single, simple
  * contract. Campaign Monitor and (later) Klaviyo each implement that contract
- * as an add-on. The core doesn't care which one is active — it just asks the
+ * as an add-on. The core doesn't care which one is active, it just asks the
  * active connector to subscribe or unsubscribe a member.
  *
  * @package FoundingFaces
@@ -77,7 +77,7 @@ abstract class FF_Connector {
  * Class FF_Connectors
  *
  * The manager. Holds the registered connectors, knows which one is active, and
- * pushes a member to it on approval — but only when the member has consented.
+ * pushes a member to it on approval, but only when the member has consented.
  */
 class FF_Connectors {
 
@@ -97,7 +97,7 @@ class FF_Connectors {
 	 * The connectors are shipped as separate plugins now, so the core doesn't
 	 * reference them directly. Each add-on hooks 'ff_register_connectors' and
 	 * calls FF_Connectors::add(). Only one connector is active at a time (chosen
-	 * on the settings page); the core doesn't care which — or whether any are
+	 * on the settings page); the core doesn't care which, or whether any are
 	 * installed at all.
 	 *
 	 * Called once on plugin load.

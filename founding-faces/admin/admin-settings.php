@@ -58,31 +58,31 @@ class FF_Settings {
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_35_SUBJECT,
-			array( 'sanitize_callback' => 'sanitize_text_field' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) )
 		);
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_35_BODY,
-			array( 'sanitize_callback' => 'wp_kses_post' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) )
 		);
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_CIRCLE_SUBJECT,
-			array( 'sanitize_callback' => 'sanitize_text_field' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) )
 		);
 		register_setting(
 			self::GROUP,
 			FF_Emails::OPT_CIRCLE_BODY,
-			array( 'sanitize_callback' => 'wp_kses_post' )
+			array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) )
 		);
 
 		// Promotion (chosen for The 35) and application-received templates.
-		register_setting( self::GROUP, FF_Emails::OPT_PROMO_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_PROMO_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_SUBJECT, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_BODY, array( 'sanitize_callback' => 'wp_kses_post' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_PROMO_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_PROMO_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_RECEIVED_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
 
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
@@ -93,8 +93,8 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Email_Template::OPT_BUTTON_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_BG, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_TEXT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
-		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
 
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
 		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
@@ -346,6 +346,36 @@ class FF_Settings {
 		$hex = sanitize_hex_color( $value );
 
 		return ( null === $hex ) ? '' : $hex;
+	}
+
+	/**
+	 * A subject line or other single line of author copy.
+	 *
+	 * @param mixed $value The submitted text.
+	 * @return string
+	 */
+	public static function sanitize_line( $value ) {
+		return FF_Text::no_em_dash( sanitize_text_field( $value ) );
+	}
+
+	/**
+	 * An email body, which may carry light HTML.
+	 *
+	 * @param mixed $value The submitted text.
+	 * @return string
+	 */
+	public static function sanitize_copy( $value ) {
+		return FF_Text::no_em_dash( wp_kses_post( $value ) );
+	}
+
+	/**
+	 * The footer line and the small print, which are plain text.
+	 *
+	 * @param mixed $value The submitted text.
+	 * @return string
+	 */
+	public static function sanitize_small_print( $value ) {
+		return FF_Text::no_em_dash( sanitize_textarea_field( $value ) );
 	}
 
 	public static function sanitize_checkbox( $value ) {

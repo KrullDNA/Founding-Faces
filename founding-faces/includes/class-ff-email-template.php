@@ -2,8 +2,8 @@
 /**
  * The branded HTML email shell.
  *
- * Every programme email — welcome, promotion, password reset, application
- * received — is wrapped in one consistent, on-brand HTML layout: an optional
+ * Every programme email, welcome, promotion, password reset, application
+ * received, is wrapped in one consistent, on-brand HTML layout: an optional
  * logo, a heading, the message body, an optional call-to-action button, and a
  * footer. The colours, logo and footer text are editable in Settings, so the
  * whole look can be tuned without touching code.

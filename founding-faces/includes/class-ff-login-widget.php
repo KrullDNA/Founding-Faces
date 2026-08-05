@@ -2,7 +2,7 @@
 /**
  * The Founding Faces Login Elementor widget.
  *
- * A skin over WordPress's own login handler — authentication, cookies and
+ * A skin over WordPress's own login handler, authentication, cookies and
  * brute-force protection all stay core's job. Built for Elementor's Atomic
  * architecture, and it reuses the shared form Style tab so the login form
  * matches the application form without duplicating twenty controls.

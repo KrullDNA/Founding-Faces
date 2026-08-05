@@ -9,7 +9,7 @@
  *
  * This registers a set of JetEngine "callbacks" that appear in the Dynamic
  * Field widget's Callback dropdown and turn those raw values into friendly
- * output — a stage label or badge, the audience label, the product's name, or
+ * output, a stage label or badge, the audience label, the product's name, or
  * the image gallery. Everything is self-contained (inline styles) so it looks
  * right inside a JetEngine listing without any of the plugin's other assets.
  *

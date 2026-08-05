@@ -63,7 +63,7 @@ class FF_Activator {
 		$charset_collate = $wpdb->get_charset_collate();
 
 		/*
-		 * ff_applications — the sensitive tier.
+		 * ff_applications, the sensitive tier.
 		 * Holds the real name, email, postcode, skin concerns, Instagram handle,
 		 * consent flag and timestamp, the free-text research answers, the
 		 * application's status, and the Founding number once assigned. This data
@@ -93,7 +93,7 @@ class FF_Activator {
 		dbDelta( $sql_applications );
 
 		/*
-		 * ff_poll_votes — one row per vote.
+		 * ff_poll_votes, one row per vote.
 		 * Attributed in the database: which member, which poll, which option and
 		 * when. Admin can see exactly who voted for what; the frontend only ever
 		 * shows aggregates. The unique key stops a member voting twice on the
@@ -114,7 +114,7 @@ class FF_Activator {
 		dbDelta( $sql_poll_votes );
 
 		/*
-		 * ff_interactions — the spine.
+		 * ff_interactions, the spine.
 		 * Every meaningful action a member takes is written here as member ID,
 		 * interaction type, a reference ID (e.g. the note or poll it relates to)
 		 * and a timestamp. This powers the personal-history page now and the
@@ -134,7 +134,7 @@ class FF_Activator {
 		dbDelta( $sql_interactions );
 
 		/*
-		 * ff_messages — the private member<->admin concierge channel.
+		 * ff_messages, the private member<->admin concierge channel.
 		 * A member's feedback on a note, or a question to Nick, starts a thread;
 		 * Nick's reply (and any further member reply) are rows in the same thread.
 		 * Strictly private and admin-only: never member-to-member, never public.

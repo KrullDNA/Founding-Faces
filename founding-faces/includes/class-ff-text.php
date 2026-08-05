@@ -9,16 +9,16 @@
  * file so the answer is the same everywhere.
  *
  * Two levels, chosen by where the text lands:
- *  - inline(): headings, labels, buttons, badges — emphasis and links only,
+ *  - inline(): headings, labels, buttons, badges, emphasis and links only,
  *    because a paragraph or a list inside an <h3> or a <label> is markup
  *    nobody means to write.
- *  - rich():   messages and intros — whatever a post allows.
+ *  - rich():   messages and intros, whatever a post allows.
  *
  * Neither allows scripts, styles, iframes or event attributes. This is copy,
  * not a place to run code.
  *
  * NOTE: this is for text an administrator typed into a widget. Anything a
- * member typed — feedback, messages, their own name — stays escaped, and is
+ * member typed, feedback, messages, their own name, stays escaped, and is
  * not routed through here.
  *
  * @package FoundingFaces
@@ -92,5 +92,30 @@ class FF_Text {
 	 */
 	public static function filled( $value ) {
 		return '' !== trim( wp_strip_all_tags( (string) $value ) );
+	}
+
+	/**
+	 * Take the em dashes out.
+	 *
+	 * The Apotheca house style has no em dashes in it, anywhere, and a comma
+	 * does the job everywhere one would have been used. They arrive by the back
+	 * door, pasted in from a document or typed by a word processor that
+	 * helpfully converts two hyphens, so the rule is applied where copy is
+	 * saved rather than left to be caught by eye later.
+	 *
+	 * @param string $value The author's text.
+	 * @return string
+	 */
+	public static function no_em_dash( $value ) {
+		$value = (string) $value;
+
+		// Spaced, the dash was doing a comma's work. Unspaced, it was usually a
+		// list marker or a range, and a comma still reads better than a dash
+		// the house style doesn't use.
+		return str_replace(
+			array( ' — ', ' —', '— ', '—' ),
+			array( ', ', ',', ', ', ',' ),
+			$value
+		);
 	}
 }

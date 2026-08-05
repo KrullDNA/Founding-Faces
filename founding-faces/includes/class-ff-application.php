@@ -204,7 +204,7 @@ class FF_Application {
 	 *
 	 * A key that isn't supplied keeps its default. A key supplied empty is a
 	 * deliberate choice to say nothing: hints and placeholders disappear, and a
-	 * label stays in the markup for screen readers but is hidden on screen —
+	 * label stays in the markup for screen readers but is hidden on screen ,
 	 * a field nobody can name is a field nobody can fill in.
 	 *
 	 * 'button_label' and 'success_message' are the names the shortcode has
@@ -225,7 +225,7 @@ class FF_Application {
 
 		// Labels, hints and the button take inline markup; the thank-you notice
 		// is a message, so it takes what a post takes. The consent line is the
-		// reason this matters most — it usually needs to link a privacy policy.
+		// reason this matters most, it usually needs to link a privacy policy.
 		//
 		// Placeholders are the exception: they end up inside an attribute, where
 		// a tag can only ever arrive as visible angle brackets, so they are held
@@ -354,7 +354,7 @@ class FF_Application {
 
 		// In the Elementor editor the success notice never appears (it only
 		// exists after a real submission, and it replaces the form), so show it
-		// as a sample above the form — both are then styleable at once.
+		// as a sample above the form, both are then styleable at once.
 		if ( '' === $state && FF_History::is_editor() ) {
 			$output .= '<div class="ff-notice ff-notice--success">' . wpautop( $t['success'] ) . '</div>';
 		}
@@ -684,14 +684,14 @@ class FF_Application {
 			} else {
 				$status      = self::status_for_email( $email );
 				$result_html = self::status_message_for_status( $status, $email );
-				// "Found" means we matched an application — a wrong email keeps
+				// "Found" means we matched an application, a wrong email keeps
 				// the form up so it can be corrected straight away.
 				$found = ( null !== $status );
 			}
 		}
 
 		// In the Elementor editor there is no submission to respond to, so show
-		// the result notice and the "send it again" prompt as samples — they are
+		// the result notice and the "send it again" prompt as samples, they are
 		// otherwise invisible and impossible to style.
 		// The form is deliberately left in place alongside the sample, even with
 		// "hide the form" switched on, so every element stays styleable at once.
@@ -711,7 +711,7 @@ class FF_Application {
 		$out .= $result_html;
 
 		// With "hide the form" on, a matched lookup replaces the form with a
-		// link back — so the result stands alone, but is never a dead end.
+		// link back, so the result stands alone, but is never a dead end.
 		if ( $hide_on_found && $found ) {
 			$out .= '<p class="ff-status-again"><a class="ff-status-again-link" href="'
 				. esc_url( self::current_url() ) . '">' . FF_Text::inline( $again_label ) . '</a></p>';
@@ -760,7 +760,7 @@ class FF_Application {
 	 * The "send it again" form, shown under a decided application's message.
 	 *
 	 * The address is carried in a hidden field, so the email only ever goes to
-	 * the address that was just looked up — which is the address on the
+	 * the address that was just looked up, which is the address on the
 	 * application. Nothing about the decision is shown on screen.
 	 *
 	 * @param string $email The looked-up email.
@@ -782,7 +782,7 @@ class FF_Application {
 	 * An approved member gets a fresh welcome email with a brand-new
 	 * set-password link, which also solves an expired seven-day token. A
 	 * declined applicant gets the decline email again. The reply is identical
-	 * either way, so the lookup still never reveals the decision — and it is
+	 * either way, so the lookup still never reveals the decision, and it is
 	 * identical for an unknown address too, so this can't be used to test
 	 * whether someone applied.
 	 *
@@ -855,7 +855,7 @@ class FF_Application {
 	 * The message for a looked-up status.
 	 *
 	 * A decided application (approved either way, or declined) is reported as
-	 * "a decision has been made — check your email", so the lookup never
+	 * "a decision has been made, check your email", so the lookup never
 	 * delivers a cold rejection and never leaks the group. Because a decision
 	 * email is now always sent, that instruction is true for everyone, and the
 	 * "send it again" button covers the case where it never arrived.

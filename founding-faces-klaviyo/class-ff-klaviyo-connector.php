@@ -6,7 +6,7 @@
  * Klaviyo's REST API. Unlike Campaign Monitor, Klaviyo supports richer
  * segmentation, so the member's group is sent BOTH as a profile property and as
  * a tag (a "tags" array property Klaviyo can segment on), alongside their name,
- * email and number. Talks to the API with WordPress's own HTTP functions — no
+ * email and number. Talks to the API with WordPress's own HTTP functions, no
  * third-party SDK bundled.
  *
  * Only one connector is ever active at a time; the core plugin doesn't care
