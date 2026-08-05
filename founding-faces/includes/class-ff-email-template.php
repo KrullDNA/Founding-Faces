@@ -26,6 +26,7 @@ class FF_Email_Template {
 
 	// Editable design options.
 	const OPT_LOGO         = 'ff_email_logo';          // Logo image URL, above the card.
+	const OPT_LOGO_WIDTH   = 'ff_email_logo_width';    // How wide the logo is drawn, in pixels.
 	const OPT_ACCENT       = 'ff_email_accent';        // Link colour in the body.
 	const OPT_HEADING_BG   = 'ff_email_heading_bg';    // The heading band's fill.
 	const OPT_HEADING_TEXT = 'ff_email_heading_text';  // The heading's own colour.
@@ -43,6 +44,7 @@ class FF_Email_Template {
 	public static function defaults() {
 		return array(
 			self::OPT_LOGO         => '',
+			self::OPT_LOGO_WIDTH   => 240,
 			self::OPT_ACCENT       => '#2b2d33',
 			self::OPT_HEADING_BG   => '#2b2d33',
 			self::OPT_HEADING_TEXT => '#ffffff',
@@ -102,6 +104,7 @@ class FF_Email_Template {
 		$unsub     = isset( $args['unsubscribe'] ) ? $args['unsubscribe'] : '';
 
 		$logo      = self::option( self::OPT_LOGO );
+		$logo_w    = max( 40, (int) self::option( self::OPT_LOGO_WIDTH ) );
 		$accent    = self::option( self::OPT_ACCENT );
 		$head_bg   = self::option( self::OPT_HEADING_BG );
 		$head_text = self::option( self::OPT_HEADING_TEXT );
@@ -172,7 +175,12 @@ class FF_Email_Template {
 				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%;">
 					<tr>
 						<td align="center" style="padding:0 16px 26px;">
-							<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site ); ?>" style="max-height:70px; max-width:80%; height:auto; display:block;" />
+							<?php
+						// The width is given as an attribute as well as a style:
+						// Outlook ignores the style and would otherwise draw the
+						// logo at whatever size the file happens to be.
+						?>
+						<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site ); ?>" width="<?php echo esc_attr( $logo_w ); ?>" style="width:<?php echo esc_attr( $logo_w ); ?>px; max-width:80%; height:auto; display:block; border:0;" />
 						</td>
 					</tr>
 				</table>

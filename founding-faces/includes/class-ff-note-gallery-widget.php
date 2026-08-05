@@ -311,7 +311,14 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'label'      => __( 'Corner radius', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
 			'size_units' => array( 'px', '%' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-slide-img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			// The rounding goes on the image and on the link around it. A linked
+			// image paints its own box over the corners otherwise, so the radius
+			// is set and then covered up, which reads as a control doing
+			// nothing.
+			'selectors'  => array(
+				'{{WRAPPER}} .ff-slide-img'  => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				'{{WRAPPER}} .ff-slide-link' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
+			),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
 			'name'     => 'img_shadow',
