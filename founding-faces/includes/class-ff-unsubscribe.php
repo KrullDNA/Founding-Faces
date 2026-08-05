@@ -194,11 +194,6 @@ class FF_Unsubscribe {
 			'preheader' => $who,
 		) );
 
-		wp_mail(
-			get_option( 'admin_email' ),
-			$subject,
-			$html,
-			array( 'Content-Type: text/html; charset=UTF-8' )
-		);
+		wp_mail( get_option( 'admin_email' ), $subject, $html, FF_Emails::headers( true ) );
 	}
 }

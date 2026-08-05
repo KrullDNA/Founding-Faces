@@ -527,7 +527,7 @@ class FF_Members {
 			return true;
 		}
 
-		return wp_mail( $user->user_email, $subject, $body );
+		return wp_mail( $user->user_email, $subject, $body, FF_Emails::headers() );
 	}
 
 	/*

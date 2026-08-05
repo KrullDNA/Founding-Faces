@@ -84,6 +84,13 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
 		register_setting( self::GROUP, FF_Emails::OPT_DECLINE_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
 
+		// Who the emails come from, and where a reply goes.
+		register_setting( self::GROUP, FF_Emails::OPT_FROM_NAME, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_FROM_EMAIL, array( 'sanitize_callback' => 'sanitize_email' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_REPLY_NAME, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_REPLY_EMAIL, array( 'sanitize_callback' => 'sanitize_email' ) );
+		register_setting( self::GROUP, FF_Emails::OPT_BCC, array( 'sanitize_callback' => 'sanitize_email' ) );
+
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO_WIDTH, array( 'sanitize_callback' => 'absint' ) );
@@ -169,6 +176,8 @@ class FF_Settings {
 				<?php self::render_applications_section(); ?>
 
 				<?php self::render_email_platform_section(); ?>
+
+				<?php self::render_sending_section(); ?>
 
 				<?php self::render_email_design_section(); ?>
 
@@ -532,6 +541,77 @@ class FF_Settings {
 	/**
 	 * Render the branded-email design section (logo, colours, footer).
 	 */
+	/**
+	 * Render the "Who the emails come from" section.
+	 *
+	 * The from address is the one setting here that can quietly cost you the
+	 * whole programme's email, so the warning sits next to the field rather
+	 * than in a manual nobody reads.
+	 */
+	private static function render_sending_section() {
+		$host = wp_parse_url( home_url(), PHP_URL_HOST );
+		$host = $host ? preg_replace( '/^www\./', '', $host ) : 'yourdomain.com';
+		?>
+		<h2><?php esc_html_e( 'Who the emails come from', 'founding-faces' ); ?></h2>
+		<p class="description" style="max-width:46em;">
+			<?php esc_html_e( 'Applies to every email this plugin sends: the welcomes, the promotion, the application replies, the password links, the message notices and the tests. Other WordPress emails are left alone.', 'founding-faces' ); ?>
+		</p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_FROM_NAME ); ?>"><?php esc_html_e( 'Sender name', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Emails::OPT_FROM_NAME ); ?>" id="<?php echo esc_attr( FF_Emails::OPT_FROM_NAME ); ?>" type="text" class="regular-text"
+						value="<?php echo esc_attr( get_option( FF_Emails::OPT_FROM_NAME, '' ) ); ?>"
+						placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'The name in the inbox. A person\'s name is opened more often than a company\'s, and this programme is a person\'s.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_FROM_EMAIL ); ?>"><?php esc_html_e( 'Sender email', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Emails::OPT_FROM_EMAIL ); ?>" id="<?php echo esc_attr( FF_Emails::OPT_FROM_EMAIL ); ?>" type="email" class="regular-text"
+						value="<?php echo esc_attr( get_option( FF_Emails::OPT_FROM_EMAIL, '' ) ); ?>"
+						placeholder="<?php echo esc_attr( 'hello@' . $host ); ?>" />
+					<p class="description">
+						<strong><?php esc_html_e( 'Use an address on this site\'s own domain.', 'founding-faces' ); ?></strong>
+						<?php
+						printf(
+							/* translators: %s: the site's domain. */
+							esc_html__( 'A Gmail or Outlook address here will fail that provider\'s own checks and land your welcome emails in spam, however good everything else about them is. Something at %s is the safe choice.', 'founding-faces' ),
+							esc_html( $host )
+						);
+						?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_REPLY_NAME ); ?>"><?php esc_html_e( 'Replies go to', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Emails::OPT_REPLY_NAME ); ?>" id="<?php echo esc_attr( FF_Emails::OPT_REPLY_NAME ); ?>" type="text" class="regular-text"
+						value="<?php echo esc_attr( get_option( FF_Emails::OPT_REPLY_NAME, '' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Name (optional)', 'founding-faces' ); ?>" />
+					<input name="<?php echo esc_attr( FF_Emails::OPT_REPLY_EMAIL ); ?>" type="email" class="regular-text" style="margin-top:8px;"
+						value="<?php echo esc_attr( get_option( FF_Emails::OPT_REPLY_EMAIL, '' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Reply-to address', 'founding-faces' ); ?>" />
+					<p class="description">
+						<?php esc_html_e( 'Where a member\'s reply lands when they hit reply, which they will. Leave both empty and replies go to the sender address above. This one can be any address you actually read, including a Gmail: it is not what the email is sent from, so nothing is checking it.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_BCC ); ?>"><?php esc_html_e( 'Blind copy to', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Emails::OPT_BCC ); ?>" id="<?php echo esc_attr( FF_Emails::OPT_BCC ); ?>" type="email" class="regular-text"
+						value="<?php echo esc_attr( get_option( FF_Emails::OPT_BCC, '' ) ); ?>" />
+					<p class="description">
+						<?php esc_html_e( 'Optional. A copy of every email sent to a member, so you have a record of what went out and when. The member never sees this address. Emails to you are not copied, since you already have them.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
 	private static function render_email_design_section() {
 		$logo     = FF_Email_Template::option( FF_Email_Template::OPT_LOGO );
 		$logo_w   = FF_Email_Template::option( FF_Email_Template::OPT_LOGO_WIDTH );

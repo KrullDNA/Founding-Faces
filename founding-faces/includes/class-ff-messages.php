@@ -713,7 +713,7 @@ class FF_Messages {
 			get_option( 'admin_email' ),
 			sprintf( __( '[Founding Faces] New message from %s', 'founding-faces' ), $who ),
 			$html,
-			array( 'Content-Type: text/html; charset=UTF-8' )
+			FF_Emails::headers( true )
 		);
 	}
 
@@ -752,7 +752,7 @@ class FF_Messages {
 			$member->user_email,
 			__( 'You have a new message in Founding Faces', 'founding-faces' ),
 			$html,
-			array( 'Content-Type: text/html; charset=UTF-8' )
+			FF_Emails::headers()
 		);
 	}
 

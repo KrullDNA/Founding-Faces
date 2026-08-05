@@ -190,12 +190,7 @@ class FF_Admin_Emails {
 			exit;
 		}
 
-		$sent = wp_mail(
-			$to,
-			$message['subject'],
-			$message['html'],
-			array( 'Content-Type: text/html; charset=UTF-8' )
-		);
+		$sent = wp_mail( $to, $message['subject'], $message['html'], FF_Emails::headers( true ) );
 
 		wp_safe_redirect( add_query_arg( 'ff_sent', $sent ? 'yes' : 'no', $back ) );
 		exit;
@@ -303,6 +298,23 @@ class FF_Admin_Emails {
 					<?php esc_html_e( 'This email is switched off: its body has been cleared on the Settings page, so nothing is sent at all. Put some wording back to turn it on.', 'founding-faces' ); ?>
 				</p></div>
 			<?php else : ?>
+
+				<h2><?php esc_html_e( 'How it arrives', 'founding-faces' ); ?></h2>
+				<?php
+				$lines = array();
+				foreach ( FF_Emails::headers() as $header ) {
+					if ( 0 === stripos( $header, 'Content-Type' ) ) {
+						continue;
+					}
+					$lines[] = $header;
+				}
+				if ( empty( $lines ) ) {
+					$lines[] = __( 'No sender set, so WordPress uses its own default, which is usually wordpress@ your domain. Worth setting on the Settings page.', 'founding-faces' );
+				}
+				?>
+				<p style="font-size:14px;background:#fff;border:1px solid #dcdcde;border-radius:4px;padding:10px 12px;max-width:46em;">
+					<?php echo nl2br( esc_html( implode( "\n", $lines ) ) ); ?>
+				</p>
 
 				<h2><?php esc_html_e( 'The subject line', 'founding-faces' ); ?></h2>
 				<p style="font-size:15px;background:#fff;border:1px solid #dcdcde;border-radius:4px;padding:10px 12px;max-width:46em;">

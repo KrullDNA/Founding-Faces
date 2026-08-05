@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,19 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.3 =
+* Sending settings: sender name, sender email, a reply-to name and address, and
+  an optional blind copy of everything that goes to a member.
+* Applied to every email the plugin sends, including the tests, the message
+  notices and the password links, so a member never gets two emails from two
+  different names. Other WordPress emails are left alone.
+* The Emails screen shows how the message will arrive, above the subject line,
+  and says so plainly when no sender has been set.
+* The sender field carries the warning it needs: it has to be an address on
+  this site's domain. A Gmail or Outlook address there fails that provider's
+  own checks and lands the welcome emails in spam. The reply-to has no such
+  constraint, so that one can be any address actually read.
 
 = 1.1.2 =
 * The emails read properly on a phone. The card was a fixed 600px, so a phone

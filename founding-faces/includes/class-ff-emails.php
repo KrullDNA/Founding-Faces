@@ -55,6 +55,13 @@ class FF_Emails {
 	// How long a set-password link stays valid.
 	const TOKEN_LIFETIME = 7 * DAY_IN_SECONDS;
 
+	// Who the programme's emails come from, and where a reply goes.
+	const OPT_FROM_NAME   = 'ff_email_from_name';
+	const OPT_FROM_EMAIL  = 'ff_email_from_email';
+	const OPT_REPLY_NAME  = 'ff_email_reply_name';
+	const OPT_REPLY_EMAIL = 'ff_email_reply_email';
+	const OPT_BCC         = 'ff_email_bcc';
+
 	// The wp-login.php action names for our two custom screens.
 	const ACTION_SETPW  = 'ff_setpw';
 	const ACTION_RESEND = 'ff_resend';
@@ -345,6 +352,62 @@ class FF_Emails {
 	}
 
 	/**
+	 * The headers every programme email is sent with.
+	 *
+	 * Who it comes from, where a reply goes, and that it is HTML. One place,
+	 * because an email that arrives from a different name than the last one did
+	 * is an email that looks like it came from somebody else.
+	 *
+	 * A word of warning that belongs next to the setting as much as here: the
+	 * from address has to be one the site is allowed to send as. Borrowing a
+	 * Gmail or an Outlook address will fail that domain's own checks and land
+	 * the email in spam, whatever else is right about it.
+	 *
+	 * @param bool $to_admin Whether this one is going to Nick rather than a
+	 *                       member, in which case the blind copy is pointless.
+	 * @return array
+	 */
+	public static function headers( $to_admin = false ) {
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+		$from_email = trim( (string) get_option( self::OPT_FROM_EMAIL, '' ) );
+		$from_name  = trim( (string) get_option( self::OPT_FROM_NAME, '' ) );
+
+		if ( is_email( $from_email ) ) {
+			$headers[] = '' !== $from_name
+				? 'From: ' . self::quoted( $from_name ) . ' <' . $from_email . '>'
+				: 'From: ' . $from_email;
+		}
+
+		// A reply-to worth setting is one that goes somewhere a person reads.
+		$reply_email = trim( (string) get_option( self::OPT_REPLY_EMAIL, '' ) );
+		$reply_name  = trim( (string) get_option( self::OPT_REPLY_NAME, '' ) );
+
+		if ( is_email( $reply_email ) ) {
+			$headers[] = '' !== $reply_name
+				? 'Reply-To: ' . self::quoted( $reply_name ) . ' <' . $reply_email . '>'
+				: 'Reply-To: ' . $reply_email;
+		}
+
+		$bcc = trim( (string) get_option( self::OPT_BCC, '' ) );
+		if ( ! $to_admin && is_email( $bcc ) ) {
+			$headers[] = 'Bcc: ' . $bcc;
+		}
+
+		return apply_filters( 'ff_email_headers', $headers, $to_admin );
+	}
+
+	/**
+	 * Wrap a display name so a comma in it can't split the header.
+	 *
+	 * @param string $name The name as typed.
+	 * @return string
+	 */
+	private static function quoted( $name ) {
+		return '"' . str_replace( array( '"', "\r", "\n" ), '', $name ) . '"';
+	}
+
+	/**
 	 * Send a composed email as HTML, so its links are clickable.
 	 *
 	 * @param string $to      The recipient address.
@@ -355,12 +418,7 @@ class FF_Emails {
 		if ( ! $message || ! is_email( $to ) ) {
 			return false;
 		}
-		return wp_mail(
-			$to,
-			$message['subject'],
-			$message['html'],
-			array( 'Content-Type: text/html; charset=UTF-8' )
-		);
+		return wp_mail( $to, $message['subject'], $message['html'], self::headers() );
 	}
 
 	/**
