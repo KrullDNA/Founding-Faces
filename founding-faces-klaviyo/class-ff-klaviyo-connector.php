@@ -351,17 +351,14 @@ class FF_Klaviyo_Connector extends FF_Connector {
 			// 250-character text field, so nothing is ever dropped here.
 			'tags'               => array_values( (array) ( isset( $member['tags'] ) ? $member['tags'] : array() ) ),
 
-			// Counted rather than tagged, the same figures Campaign Monitor
-			// gets as their own fields.
+			// Counted rather than tagged, the same figure Campaign Monitor gets
+			// as its own field. Voting only: feedback is a private message and
+			// stays on the site, as does what a member reads.
 			'polls_voted'        => isset( $member['polls_voted'] ) ? (int) $member['polls_voted'] : 0,
-			'feedback_count'     => isset( $member['feedback_count'] ) ? (int) $member['feedback_count'] : 0,
-			'notes_read'         => isset( $member['notes_read'] ) ? (int) $member['notes_read'] : 0,
 		);
 
-		foreach ( array( 'last_voted', 'last_feedback' ) as $when ) {
-			if ( ! empty( $member[ $when ] ) ) {
-				$properties[ $when ] = $member[ $when ];
-			}
+		if ( ! empty( $member['last_voted'] ) ) {
+			$properties['last_voted'] = $member['last_voted'];
 		}
 
 		// An applicant has no number, and a property set to an empty string is

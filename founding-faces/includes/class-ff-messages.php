@@ -415,7 +415,6 @@ class FF_Messages {
 		// Log feedback on the spine for provenance (brief: "feedback submitted").
 		if ( 'feedback' === $context && class_exists( 'FF_Interactions' ) ) {
 			FF_Interactions::log( $member_id, 'feedback_submitted', $id );
-			FF_Members::add_tag( $member_id, 'gave-feedback' );
 		}
 
 		self::notify_admin( $id );

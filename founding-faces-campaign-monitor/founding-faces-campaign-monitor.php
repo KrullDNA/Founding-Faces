@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Founding Faces, Campaign Monitor
  * Description:        Campaign Monitor connector add-on for the Founding Faces membership plugin. Syncs approved, consented members (name, email, group and number) to a Campaign Monitor list. Requires the Founding Faces core plugin.
- * Version:           1.1.3
+ * Version:           1.1.4
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
  * Text Domain:       founding-faces
@@ -74,7 +74,7 @@ function ff_cm_render_settings() {
 					id="<?php echo esc_attr( FF_CM_Connector::OPT_LIST_ID ); ?>"
 					type="text" class="regular-text"
 					value="<?php echo esc_attr( $list_id ); ?>" />
-				<p class="description"><?php esc_html_e( 'Every custom field this plugin uses is created on this list automatically: Group, Number, Status, DisplayPreference, ApplicationDate, Postcode, Tags, and the engagement counts.', 'founding-faces' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Every custom field this plugin uses is created on this list automatically: Group, Number, Status, DisplayPreference, ApplicationDate, Postcode, Tags, PollsVoted and LastVoted.', 'founding-faces' ); ?></p>
 			</td>
 		</tr>
 	</table>
@@ -96,7 +96,7 @@ function ff_cm_render_settings() {
 				?>
 			</p>
 			<p>
-				<?php esc_html_e( 'Nothing is lost in WordPress, which holds the full list. If you are segmenting on how much someone takes part rather than on one particular poll, use the PollsVoted, LastVoted, FeedbackCount and NotesRead fields instead: they count without ever filling up. Shorter tags on your polls buy back a lot of room too.', 'founding-faces' ); ?>
+				<?php esc_html_e( 'Nothing is lost in WordPress, which holds the full list. If you are segmenting on how much someone takes part rather than on one particular poll, use the PollsVoted and LastVoted fields instead: they count without ever filling up. Shorter tags on your polls buy back a lot of room too.', 'founding-faces' ); ?>
 			</p>
 		</div>
 		<?php

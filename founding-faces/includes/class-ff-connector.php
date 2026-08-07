@@ -398,11 +398,16 @@ class FF_Connectors {
 	/**
 	 * How much a member has taken part, counted rather than tagged.
 	 *
-	 * This is the answer to a tag list that grows for ever. "Voted in eleven
-	 * polls" and "last voted in March" are two small fields that never grow,
-	 * and between them they cover most of what a segment actually wants to
-	 * know. Tags are then free to be what they are good at: this poll, that
-	 * campaign, the handful of people worth a particular email.
+	 * Voting only. A poll is a public act in the programme's own terms: a
+	 * member answers a question knowing the answer is counted, and the
+	 * aggregate is published back to everyone. Feedback is not that. It is a
+	 * private message to Nick, and the fact that somebody writes in is part of
+	 * what makes it private. Which notes a member reads is nobody's business
+	 * either. Neither leaves the site.
+	 *
+	 * Counting rather than tagging is also what stops a tag list growing for
+	 * ever: "voted in eleven polls" and "last voted in March" are two small
+	 * fields that never grow, and they answer most of what a segment wants.
 	 *
 	 * @param int $user_id The member's user id.
 	 * @return array
@@ -410,24 +415,15 @@ class FF_Connectors {
 	private static function engagement( $user_id ) {
 		global $wpdb;
 
-		$votes    = $wpdb->prefix . 'ff_poll_votes';
-		$spine    = $wpdb->prefix . 'ff_interactions';
-		$user_id  = (int) $user_id;
+		$votes   = $wpdb->prefix . 'ff_poll_votes';
+		$user_id = (int) $user_id;
 
 		$poll_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$votes} WHERE member_id = %d", $user_id ) ); // phpcs:ignore WordPress.DB
 		$poll_last  = (string) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(voted_at) FROM {$votes} WHERE member_id = %d", $user_id ) ); // phpcs:ignore WordPress.DB
 
-		$fb_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$spine} WHERE member_id = %d AND type = 'feedback_submitted'", $user_id ) ); // phpcs:ignore WordPress.DB
-		$fb_last  = (string) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(created_at) FROM {$spine} WHERE member_id = %d AND type = 'feedback_submitted'", $user_id ) ); // phpcs:ignore WordPress.DB
-
-		$notes_read = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$spine} WHERE member_id = %d AND type = 'note_viewed'", $user_id ) ); // phpcs:ignore WordPress.DB
-
 		return array(
-			'polls_voted'    => $poll_count,
-			'last_voted'     => $poll_last ? substr( $poll_last, 0, 10 ) : '',
-			'feedback_count' => $fb_count,
-			'last_feedback'  => $fb_last ? substr( $fb_last, 0, 10 ) : '',
-			'notes_read'     => $notes_read,
+			'polls_voted' => $poll_count,
+			'last_voted'  => $poll_last ? substr( $poll_last, 0, 10 ) : '',
 		);
 	}
 
@@ -459,9 +455,6 @@ class FF_Connectors {
 			'tags'               => array(),
 			'polls_voted'        => 0,
 			'last_voted'         => '',
-			'feedback_count'     => 0,
-			'last_feedback'      => '',
-			'notes_read'         => 0,
 		);
 	}
 

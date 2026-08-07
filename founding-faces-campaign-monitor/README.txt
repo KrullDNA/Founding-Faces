@@ -1,6 +1,6 @@
 === Founding Faces, Campaign Monitor ===
 Requires PHP: 7.4
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 
 Campaign Monitor connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,13 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.4 =
+* FeedbackCount, LastFeedback and NotesRead are no longer sent or created.
+  Feedback is a private channel and reading is nobody's business. PollsVoted
+  and LastVoted stay.
+* If those three fields were already created on your list by 1.1.3, they can be
+  deleted in Campaign Monitor; nothing writes to them now.
 
 = 1.1.3 =
 * Five engagement fields: PollsVoted, LastVoted, FeedbackCount, LastFeedback

@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.8
+ * Version:           1.1.9
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.8' );
+define( 'FF_VERSION', '1.1.9' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -325,7 +325,7 @@ add_action( 'admin_init', 'ff_sweep_em_dashes' );
 /**
  * Rename poll tags from the id to the poll's own words.
  *
- * Anyone tagged before 1.1.8 carries poll-14, which says nothing useful in a
+ * Anyone tagged before 1.1.9 carries poll-14, which says nothing useful in a
  * segment builder. The poll is still there, so the tag can be rewritten from
  * it rather than left as a number nobody can read.
  */
@@ -365,3 +365,31 @@ function ff_rename_poll_tags() {
 	update_option( 'ff_poll_tags_renamed', '1' );
 }
 add_action( 'admin_init', 'ff_rename_poll_tags' );
+
+/**
+ * Take the feedback tag off anyone who already carries it.
+ *
+ * Feedback used to add a gave-feedback tag, which meant the email platform was
+ * told who writes to Nick privately. That is the wrong thing to share, so the
+ * tag is no longer added and the ones already out there are withdrawn.
+ */
+function ff_remove_feedback_tags() {
+	if ( '1' === get_option( 'ff_feedback_tags_removed' ) ) {
+		return;
+	}
+
+	$users = get_users( array(
+		'meta_key'     => FF_Members::META_TAGS, // phpcs:ignore WordPress.DB.SlowDBQuery
+		'meta_compare' => 'EXISTS',
+		'number'       => 500,
+	) );
+
+	foreach ( $users as $user ) {
+		// remove_tag() re-syncs on its own, which is what pushes the removal
+		// out to the platform rather than only forgetting it here.
+		FF_Members::remove_tag( $user->ID, 'gave-feedback' );
+	}
+
+	update_option( 'ff_feedback_tags_removed', '1' );
+}
+add_action( 'admin_init', 'ff_remove_feedback_tags' );

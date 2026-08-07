@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.8
+Stable tag: 1.1.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.9 =
+* Only poll interaction is shared with the email platform. Feedback is a
+  private message to Nick, and the fact that somebody writes in is part of what
+  makes it private, so neither the count nor the tag leaves the site. What a
+  member reads stays here too.
+* The gave-feedback tag is withdrawn from anyone who already carries it, on the
+  platform as well as here.
+* PollsVoted and LastVoted remain, because a poll is a public act in the
+  programme's own terms: the answer is counted and the result is published back
+  to everyone.
 
 = 1.1.8 =
 * Engagement is counted rather than tagged: polls voted in, last voted,
