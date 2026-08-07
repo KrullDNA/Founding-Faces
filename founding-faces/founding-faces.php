@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.7
+ * Version:           1.1.8
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.7' );
+define( 'FF_VERSION', '1.1.8' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -325,7 +325,7 @@ add_action( 'admin_init', 'ff_sweep_em_dashes' );
 /**
  * Rename poll tags from the id to the poll's own words.
  *
- * Anyone tagged before 1.1.7 carries poll-14, which says nothing useful in a
+ * Anyone tagged before 1.1.8 carries poll-14, which says nothing useful in a
  * segment builder. The poll is still there, so the tag can be rewritten from
  * it rather than left as a number nobody can read.
  */

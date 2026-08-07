@@ -1,6 +1,6 @@
 === Founding Faces, Campaign Monitor ===
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 
 Campaign Monitor connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,16 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.3 =
+* Five engagement fields: PollsVoted, LastVoted, FeedbackCount, LastFeedback
+  and NotesRead. Counts and dates never grow, so segmenting on how much
+  somebody takes part no longer costs tag space.
+* When tags still will not fit, poll tags are dropped first and oldest first,
+  and anything typed by hand is kept until there is no other choice. It used to
+  drop purely by age, which could lose a label somebody had set deliberately.
+* The settings page says when tags have had to be dropped, rather than leaving
+  it to be discovered by a segment that quietly matches nobody.
 
 = 1.1.2 =
 * The tag string is kept inside Campaign Monitor's 250-character text field

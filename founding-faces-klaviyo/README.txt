@@ -1,6 +1,6 @@
 === Founding Faces, Klaviyo ===
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 
 Klaviyo connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,12 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.2 =
+* The same engagement figures as Campaign Monitor gets: polls_voted,
+  last_voted, feedback_count, last_feedback and notes_read.
+* Klaviyo has no equivalent of Campaign Monitor's 250-character text field, so
+  the tag list is never trimmed here.
 
 = 1.1.1 =
 * Reports unsubscribes back to the site. Klaviyo holds the answer on the

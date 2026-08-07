@@ -346,9 +346,23 @@ class FF_Klaviyo_Connector extends FF_Connector {
 			'display_preference' => isset( $member['display_preference'] ) ? $member['display_preference'] : '',
 			'postcode'           => isset( $member['postcode'] ) ? $member['postcode'] : '',
 
-			// A genuine list, not a string pretending to be one.
+			// A genuine list, not a string pretending to be one, and no ceiling
+			// on it either: Klaviyo has no equivalent of Campaign Monitor's
+			// 250-character text field, so nothing is ever dropped here.
 			'tags'               => array_values( (array) ( isset( $member['tags'] ) ? $member['tags'] : array() ) ),
+
+			// Counted rather than tagged, the same figures Campaign Monitor
+			// gets as their own fields.
+			'polls_voted'        => isset( $member['polls_voted'] ) ? (int) $member['polls_voted'] : 0,
+			'feedback_count'     => isset( $member['feedback_count'] ) ? (int) $member['feedback_count'] : 0,
+			'notes_read'         => isset( $member['notes_read'] ) ? (int) $member['notes_read'] : 0,
 		);
+
+		foreach ( array( 'last_voted', 'last_feedback' ) as $when ) {
+			if ( ! empty( $member[ $when ] ) ) {
+				$properties[ $when ] = $member[ $when ];
+			}
+		}
 
 		// An applicant has no number, and a property set to an empty string is
 		// not the same as one that was never set: an empty string would still

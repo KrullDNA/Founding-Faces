@@ -392,6 +392,42 @@ class FF_Connectors {
 			// in whatever shape its platform understands: a pipe-wrapped string
 			// for Campaign Monitor, a list property for Klaviyo.
 			'tags'               => FF_Members::tags( $user_id ),
+		) + self::engagement( $user_id );
+	}
+
+	/**
+	 * How much a member has taken part, counted rather than tagged.
+	 *
+	 * This is the answer to a tag list that grows for ever. "Voted in eleven
+	 * polls" and "last voted in March" are two small fields that never grow,
+	 * and between them they cover most of what a segment actually wants to
+	 * know. Tags are then free to be what they are good at: this poll, that
+	 * campaign, the handful of people worth a particular email.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return array
+	 */
+	private static function engagement( $user_id ) {
+		global $wpdb;
+
+		$votes    = $wpdb->prefix . 'ff_poll_votes';
+		$spine    = $wpdb->prefix . 'ff_interactions';
+		$user_id  = (int) $user_id;
+
+		$poll_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$votes} WHERE member_id = %d", $user_id ) ); // phpcs:ignore WordPress.DB
+		$poll_last  = (string) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(voted_at) FROM {$votes} WHERE member_id = %d", $user_id ) ); // phpcs:ignore WordPress.DB
+
+		$fb_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$spine} WHERE member_id = %d AND type = 'feedback_submitted'", $user_id ) ); // phpcs:ignore WordPress.DB
+		$fb_last  = (string) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(created_at) FROM {$spine} WHERE member_id = %d AND type = 'feedback_submitted'", $user_id ) ); // phpcs:ignore WordPress.DB
+
+		$notes_read = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$spine} WHERE member_id = %d AND type = 'note_viewed'", $user_id ) ); // phpcs:ignore WordPress.DB
+
+		return array(
+			'polls_voted'    => $poll_count,
+			'last_voted'     => $poll_last ? substr( $poll_last, 0, 10 ) : '',
+			'feedback_count' => $fb_count,
+			'last_feedback'  => $fb_last ? substr( $fb_last, 0, 10 ) : '',
+			'notes_read'     => $notes_read,
 		);
 	}
 
@@ -421,6 +457,11 @@ class FF_Connectors {
 			'application_date'   => isset( $app->created_at ) ? substr( (string) $app->created_at, 0, 10 ) : '',
 			'postcode'           => isset( $app->postcode ) ? (string) $app->postcode : '',
 			'tags'               => array(),
+			'polls_voted'        => 0,
+			'last_voted'         => '',
+			'feedback_count'     => 0,
+			'last_feedback'      => '',
+			'notes_read'         => 0,
 		);
 	}
 

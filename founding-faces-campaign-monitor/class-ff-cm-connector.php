@@ -31,10 +31,14 @@ class FF_CM_Connector extends FF_Connector {
 	// a version rather than a flag: adding a field to the list below has to make
 	// an install that already ran this go round again.
 	const OPT_FIELDS_READY = 'ff_cm_fields_ready';
-	const FIELDS_VERSION   = '2';
+	const FIELDS_VERSION   = '3';
 
 	// How much a Campaign Monitor text custom field holds.
 	const TAG_FIELD_LIMIT = 250;
+
+	// Records the last time tags had to be dropped to fit, so the settings page
+	// can say so.
+	const OPT_TAGS_TRIMMED = 'ff_cm_tags_trimmed';
 
 	// The Campaign Monitor API base.
 	const API_BASE = 'https://api.createsend.com/api/v3.2';
@@ -199,6 +203,16 @@ class FF_CM_Connector extends FF_Connector {
 			'ApplicationDate'   => 'Date',
 			'Postcode'          => 'Text',
 			'Tags'              => 'Text',
+
+			// Counted, not tagged. These are what stop the tag field filling up
+			// with a label per poll: "voted in eleven" and "last voted in
+			// March" are two fields that never grow, and they answer most of
+			// what a segment wants to know.
+			'PollsVoted'        => 'Number',
+			'LastVoted'         => 'Date',
+			'FeedbackCount'     => 'Number',
+			'LastFeedback'      => 'Date',
+			'NotesRead'         => 'Number',
 		);
 	}
 
@@ -217,6 +231,11 @@ class FF_CM_Connector extends FF_Connector {
 			'ApplicationDate'   => isset( $member['application_date'] ) ? $member['application_date'] : '',
 			'Postcode'          => isset( $member['postcode'] ) ? $member['postcode'] : '',
 			'Tags'              => self::tag_string( isset( $member['tags'] ) ? $member['tags'] : array() ),
+			'PollsVoted'        => isset( $member['polls_voted'] ) ? (string) (int) $member['polls_voted'] : '0',
+			'LastVoted'         => isset( $member['last_voted'] ) ? $member['last_voted'] : '',
+			'FeedbackCount'     => isset( $member['feedback_count'] ) ? (string) (int) $member['feedback_count'] : '0',
+			'LastFeedback'      => isset( $member['last_feedback'] ) ? $member['last_feedback'] : '',
+			'NotesRead'         => isset( $member['notes_read'] ) ? (string) (int) $member['notes_read'] : '0',
 		);
 	}
 
@@ -239,16 +258,51 @@ class FF_CM_Connector extends FF_Connector {
 			return '';
 		}
 
-		// Campaign Monitor's text fields hold 250 characters and every tag
-		// shares this one. Rather than let the platform truncate mid-tag, which
-		// would leave a half-written label that matches nothing and quietly
-		// breaks a segment, the oldest are dropped until it fits. Newest kept,
-		// because a segment is nearly always about something recent.
+		// Campaign Monitor's text fields hold 250 characters and every tag a
+		// member has shares this one. Letting the platform truncate would leave
+		// a half-written label matching nothing, which breaks a segment without
+		// saying so, and that is the worst way for this to fail.
 		$out = '|' . implode( '|', $tags ) . '|';
+		if ( strlen( $out ) <= self::TAG_FIELD_LIMIT ) {
+			return $out;
+		}
 
-		while ( strlen( $out ) > self::TAG_FIELD_LIMIT && count( $tags ) > 1 ) {
-			array_shift( $tags );
-			$out = '|' . implode( '|', $tags ) . '|';
+		// So something is dropped, and which one matters. A poll tag is the
+		// only kind that arrives on its own and keeps arriving, so poll tags go
+		// first, oldest before newest. Anything typed by hand is a deliberate
+		// label somebody meant, and is kept until there is no other choice.
+		$polls = array();
+		$rest  = array();
+
+		foreach ( $tags as $tag ) {
+			if ( 0 === strpos( $tag, 'poll-' ) ) {
+				$polls[] = $tag;
+			} else {
+				$rest[] = $tag;
+			}
+		}
+
+		$dropped = 0;
+
+		while ( strlen( $out ) > self::TAG_FIELD_LIMIT && ! empty( $polls ) ) {
+			array_shift( $polls );
+			$dropped++;
+			$out = '|' . implode( '|', array_merge( $rest, $polls ) ) . '|';
+		}
+
+		while ( strlen( $out ) > self::TAG_FIELD_LIMIT && count( $rest ) > 1 ) {
+			array_shift( $rest );
+			$dropped++;
+			$out = '|' . implode( '|', array_merge( $rest, $polls ) ) . '|';
+		}
+
+		// Said out loud on the settings page rather than discovered later, when
+		// a segment that should have matched somebody didn't.
+		if ( $dropped ) {
+			update_option( self::OPT_TAGS_TRIMMED, array(
+				'count' => $dropped,
+				'time'  => current_time( 'mysql' ),
+			) );
 		}
 
 		return ( strlen( $out ) > self::TAG_FIELD_LIMIT ) ? substr( $out, 0, self::TAG_FIELD_LIMIT ) : $out;

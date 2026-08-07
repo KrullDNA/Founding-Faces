@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.8 =
+* Engagement is counted rather than tagged: polls voted in, last voted,
+  feedback sent, last feedback, notes read. Five figures that never grow,
+  where a tag per poll grows for ever.
+* That is the answer to a tag field filling up. Most segments want "voted in
+  more than three polls" or "has not voted since March", and neither of those
+  needs a tag at all. Tags stay for the specific ones you actually target.
 
 = 1.1.7 =
 * Poll tags read as words rather than an id: poll-packaging-colour, not
