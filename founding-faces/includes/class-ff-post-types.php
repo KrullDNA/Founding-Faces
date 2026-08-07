@@ -56,6 +56,9 @@ class FF_Post_Types {
 	const META_NOTE_GALLERY = 'ff_note_gallery';
 	const META_NOTE_AUDIENCE = 'ff_note_audience';
 
+	// The label a member carries after giving feedback on this note.
+	const META_NOTE_TAG = 'ff_note_tag';
+
 	// Post meta keys for a product's own fields (used by the product header).
 	const META_PRODUCT_STAGE  = 'ff_product_stage';
 	const META_PRODUCT_STATUS = 'ff_product_status';
@@ -121,6 +124,56 @@ class FF_Post_Types {
 	 *
 	 * @return array
 	 */
+	/**
+	 * The tag a member carries after giving feedback on this note.
+	 *
+	 * A version is what feedback is actually about. "Everyone who fed back on
+	 * version 12" is a real email to write, and it cannot be written from a
+	 * single label saying somebody once said something.
+	 *
+	 * Short by default, because every tag a member has shares one
+	 * 250-character field on Campaign Monitor: feedback-v12 rather than the
+	 * whole note title. Where two products both reach version 12 the note's own
+	 * field is there to tell them apart.
+	 *
+	 * Returning an empty string from the filter switches the tagging off
+	 * entirely, for anyone who would rather the platform knew none of this.
+	 *
+	 * @param int $note_id The note the feedback was about.
+	 * @return string An empty string when there is nothing to tag.
+	 */
+	public static function note_tag( $note_id ) {
+		$note_id = (int) $note_id;
+		$custom  = trim( (string) get_post_meta( $note_id, self::META_NOTE_TAG, true ) );
+		$version = trim( (string) get_post_meta( $note_id, self::META_NOTE_TRIAL, true ) );
+
+		if ( '' !== $custom ) {
+			$slug = sanitize_title( $custom );
+		} elseif ( '' !== $version ) {
+			$slug = 'v' . sanitize_title( $version );
+		} else {
+			$post = get_post( $note_id );
+			$slug = ( $post && '' !== $post->post_name ) ? $post->post_name : '';
+		}
+
+		if ( strlen( $slug ) > 40 ) {
+			$cut  = substr( $slug, 0, 40 );
+			$last = strrpos( $cut, '-' );
+			$slug = ( false !== $last && $last > 20 ) ? substr( $cut, 0, $last ) : $cut;
+			$slug = trim( $slug, '-' ) . '-' . $note_id;
+		}
+
+		$tag = ( '' !== $slug ) ? 'feedback-' . $slug : '';
+
+		/**
+		 * Filter the tag a member carries after giving feedback on a note.
+		 *
+		 * @param string $tag     The tag, or an empty string for none.
+		 * @param int    $note_id The note.
+		 */
+		return (string) apply_filters( 'ff_feedback_tag', $tag, $note_id );
+	}
+
 	/**
 	 * A measured figure: a number as typed, or an empty string.
 	 *
@@ -414,6 +467,11 @@ class FF_Post_Types {
 			'single'       => true,
 			'show_in_rest' => false,
 		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_TAG, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
 		register_post_meta( self::NOTE_CPT, self::META_NOTE_STAGE, array(
 			'type'              => 'string',
 			'single'            => true,
@@ -641,6 +699,26 @@ class FF_Post_Types {
 				<td><input type="text" name="ff_note_trial" id="ff_note_trial" value="<?php echo esc_attr( $trial ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
+				<th scope="row"><label for="ff_note_tag"><?php esc_html_e( 'Email marketing tag', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" name="ff_note_tag" id="ff_note_tag" class="regular-text" value="<?php echo esc_attr( get_post_meta( $post->ID, self::META_NOTE_TAG, true ) ); ?>" />
+					<p class="description">
+						<?php
+						$note_tag = self::note_tag( $post->ID );
+						if ( '' !== $note_tag ) {
+							printf(
+								/* translators: %s: the tag as it will be sent. */
+								esc_html__( 'The label everyone who gives feedback on this note carries on your email platform, so you can write back to exactly the people who commented on this version. Left empty it comes from the version number. As it stands: %s', 'founding-faces' ),
+								'<code>' . esc_html( $note_tag ) . '</code>'
+							);
+						} else {
+							esc_html_e( 'The label everyone who gives feedback on this note carries on your email platform. Fill in a version number above, or type a tag here, and it appears.', 'founding-faces' );
+						}
+						?>
+					</p>
+				</td>
+			</tr>
+			<tr>
 				<th scope="row"><label for="ff_note_ph"><?php esc_html_e( 'Final pH', 'founding-faces' ); ?></label></th>
 				<td>
 					<input type="number" step="0.01" min="0" max="14" name="ff_note_ph" id="ff_note_ph" value="<?php echo esc_attr( $ph ); ?>" class="small-text" />
@@ -750,6 +828,7 @@ class FF_Post_Types {
 
 		// A blank stays blank rather than becoming zero: not measured and
 		// measured at zero are different answers.
+		update_post_meta( $post_id, self::META_NOTE_TAG, isset( $_POST['ff_note_tag'] ) ? sanitize_title( wp_unslash( $_POST['ff_note_tag'] ) ) : '' );
 		update_post_meta( $post_id, self::META_NOTE_PH, self::sanitize_measure( isset( $_POST['ff_note_ph'] ) ? wp_unslash( $_POST['ff_note_ph'] ) : '' ) );
 		update_post_meta( $post_id, self::META_NOTE_NATURAL, self::sanitize_measure( isset( $_POST['ff_note_natural'] ) ? wp_unslash( $_POST['ff_note_natural'] ) : '' ) );
 

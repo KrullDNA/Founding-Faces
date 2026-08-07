@@ -415,6 +415,18 @@ class FF_Messages {
 		// Log feedback on the spine for provenance (brief: "feedback submitted").
 		if ( 'feedback' === $context && class_exists( 'FF_Interactions' ) ) {
 			FF_Interactions::log( $member_id, 'feedback_submitted', $id );
+
+			// Tagged by the version it was about, not by the act of writing in.
+			// "Everyone who fed back on version 12" is an email worth sending;
+			// "everyone who ever writes to Nick" is a list nobody asked to be
+			// on. A note with neither a version nor a tag of its own produces
+			// nothing, and so does a question that is not about a note at all.
+			if ( $reference_id ) {
+				$tag = FF_Post_Types::note_tag( (int) $reference_id );
+				if ( '' !== $tag ) {
+					FF_Members::add_tag( $member_id, $tag );
+				}
+			}
 		}
 
 		self::notify_admin( $id );

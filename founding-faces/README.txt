@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.9
+Stable tag: 1.1.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,19 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.10 =
+* Feedback tags by version, not by the act of writing in. Giving feedback on a
+  note tags the member feedback-v12, so you can write back to exactly the
+  people who commented on that version and tell them what changed because of
+  them. "Everyone who ever writes to Nick" is a list nobody asked to be on;
+  "everyone who fed back on version 12" is an email worth sending.
+* Each note takes an "Email marketing tag" of its own, shown as it will be
+  sent, defaulting to the version number. Two products both reaching version 12
+  is what that field is for.
+* A question that is not about a note tags nothing, and neither does a note
+  with no version and no tag. The 'ff_feedback_tag' filter switches it off
+  entirely for anyone who would rather the platform knew none of it.
 
 = 1.1.9 =
 * Only poll interaction is shared with the email platform. Feedback is a
