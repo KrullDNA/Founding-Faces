@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.6
+ * Version:           1.1.7
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.6' );
+define( 'FF_VERSION', '1.1.7' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -321,3 +321,47 @@ function ff_sweep_em_dashes() {
 	update_option( 'ff_em_dash_swept', '1' );
 }
 add_action( 'admin_init', 'ff_sweep_em_dashes' );
+
+/**
+ * Rename poll tags from the id to the poll's own words.
+ *
+ * Anyone tagged before 1.1.7 carries poll-14, which says nothing useful in a
+ * segment builder. The poll is still there, so the tag can be rewritten from
+ * it rather than left as a number nobody can read.
+ */
+function ff_rename_poll_tags() {
+	if ( '1' === get_option( 'ff_poll_tags_renamed' ) ) {
+		return;
+	}
+
+	$users = get_users( array(
+		'meta_key'     => FF_Members::META_TAGS, // phpcs:ignore WordPress.DB.SlowDBQuery
+		'meta_compare' => 'EXISTS',
+		'number'       => 500,
+	) );
+
+	foreach ( $users as $user ) {
+		$tags    = FF_Members::tags( $user->ID );
+		$changed = false;
+
+		foreach ( $tags as $i => $tag ) {
+			if ( ! preg_match( '/^poll-(\d+)$/', $tag, $m ) ) {
+				continue;
+			}
+
+			$renamed = FF_Polls::poll_tag( (int) $m[1] );
+			if ( $renamed !== $tag ) {
+				$tags[ $i ] = $renamed;
+				$changed    = true;
+			}
+		}
+
+		if ( $changed ) {
+			FF_Members::set_tags( $user->ID, $tags );
+			FF_Connectors::sync_member( $user->ID );
+		}
+	}
+
+	update_option( 'ff_poll_tags_renamed', '1' );
+}
+add_action( 'admin_init', 'ff_rename_poll_tags' );

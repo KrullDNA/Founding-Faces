@@ -1,6 +1,6 @@
 === Founding Faces, Campaign Monitor ===
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 
 Campaign Monitor connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,12 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.2 =
+* The tag string is kept inside Campaign Monitor's 250-character text field
+  limit by dropping the oldest tags rather than letting the platform truncate
+  mid-tag, which would leave a half-written label matching nothing and quietly
+  break a segment.
 
 = 1.1.1 =
 * Reports unsubscribes back to the site. Both the unsubscribed list and the

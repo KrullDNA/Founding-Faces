@@ -33,6 +33,9 @@ class FF_CM_Connector extends FF_Connector {
 	const OPT_FIELDS_READY = 'ff_cm_fields_ready';
 	const FIELDS_VERSION   = '2';
 
+	// How much a Campaign Monitor text custom field holds.
+	const TAG_FIELD_LIMIT = 250;
+
 	// The Campaign Monitor API base.
 	const API_BASE = 'https://api.createsend.com/api/v3.2';
 
@@ -232,7 +235,23 @@ class FF_CM_Connector extends FF_Connector {
 	public static function tag_string( $tags ) {
 		$tags = array_filter( array_map( 'strval', (array) $tags ) );
 
-		return empty( $tags ) ? '' : '|' . implode( '|', $tags ) . '|';
+		if ( empty( $tags ) ) {
+			return '';
+		}
+
+		// Campaign Monitor's text fields hold 250 characters and every tag
+		// shares this one. Rather than let the platform truncate mid-tag, which
+		// would leave a half-written label that matches nothing and quietly
+		// breaks a segment, the oldest are dropped until it fits. Newest kept,
+		// because a segment is nearly always about something recent.
+		$out = '|' . implode( '|', $tags ) . '|';
+
+		while ( strlen( $out ) > self::TAG_FIELD_LIMIT && count( $tags ) > 1 ) {
+			array_shift( $tags );
+			$out = '|' . implode( '|', $tags ) . '|';
+		}
+
+		return ( strlen( $out ) > self::TAG_FIELD_LIMIT ) ? substr( $out, 0, self::TAG_FIELD_LIMIT ) : $out;
 	}
 
 	/**

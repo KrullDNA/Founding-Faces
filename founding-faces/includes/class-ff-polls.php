@@ -35,6 +35,7 @@ class FF_Polls {
 	const META_OUTCOME  = 'ff_poll_outcome';   // Nick's reasoning, shown on close.
 	const META_CLOSE_AT = 'ff_poll_close_at';  // GMT Unix time to auto-close (show results), or 0.
 	const META_HIDE_AT  = 'ff_poll_hide_at';   // GMT Unix time to auto-hide entirely, or 0.
+	const META_TAG      = 'ff_poll_tag';       // The label voters carry on the email platform.
 
 	// The AJAX action name for casting a vote.
 	const VOTE_ACTION = 'ff_vote';
@@ -114,6 +115,43 @@ class FF_Polls {
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_metaboxes' ) );
 		add_action( 'save_post_' . self::POLL_CPT, array( __CLASS__, 'save_poll' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin' ) );
+	}
+
+	/**
+	 * The tag a voter carries for this poll.
+	 *
+	 * Built from the poll's own words rather than its id, because "poll-14"
+	 * means nothing in a segment builder six months later and
+	 * "poll-packaging-colour" means exactly what it says. The wording can be
+	 * set on the poll itself; left empty it comes from the title.
+	 *
+	 * Capped at a sensible length, and not for tidiness: Campaign Monitor's
+	 * text fields hold 250 characters, all the tags share one of them, and a
+	 * question written out in full eats a fifth of that on its own.
+	 *
+	 * @param int $poll_id The poll.
+	 * @return string
+	 */
+	public static function poll_tag( $poll_id ) {
+		$custom = trim( (string) get_post_meta( $poll_id, self::META_TAG, true ) );
+
+		if ( '' !== $custom ) {
+			$slug = sanitize_title( $custom );
+		} else {
+			$post = get_post( $poll_id );
+			$slug = ( $post && '' !== $post->post_name ) ? $post->post_name : sanitize_title( get_the_title( $poll_id ) );
+		}
+
+		// Cut at a word rather than mid-syllable, and say which poll it was if
+		// the cut lost enough to make two polls look alike.
+		if ( strlen( $slug ) > 40 ) {
+			$cut  = substr( $slug, 0, 40 );
+			$last = strrpos( $cut, '-' );
+			$slug = ( false !== $last && $last > 20 ) ? substr( $cut, 0, $last ) : $cut;
+			$slug = trim( $slug, '-' ) . '-' . (int) $poll_id;
+		}
+
+		return 'poll-' . ( '' !== $slug ? $slug : (int) $poll_id );
 	}
 
 	/**
@@ -302,7 +340,7 @@ class FF_Polls {
 		// Two labels, because both questions get asked: who votes at all, and
 		// who voted in this particular poll.
 		FF_Members::add_tag( $member_id, 'voted' );
-		FF_Members::add_tag( $member_id, 'poll-' . (int) $poll_id );
+		FF_Members::add_tag( $member_id, self::poll_tag( $poll_id ) );
 
 		return true;
 	}
@@ -1127,6 +1165,24 @@ class FF_Polls {
 				</td>
 			</tr>
 			<tr>
+				<th scope="row"><label for="ff_poll_tag"><?php esc_html_e( 'Email marketing tag', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" name="ff_poll_tag" id="ff_poll_tag" class="regular-text" value="<?php echo esc_attr( get_post_meta( $post->ID, self::META_TAG, true ) ); ?>" />
+					<p class="description">
+						<?php
+						printf(
+							/* translators: %s: the tag as it will be sent. */
+							esc_html__( 'The label everyone who votes in this poll carries on your email platform. Leave it empty to use the poll title. As it stands: %s', 'founding-faces' ),
+							'<code>' . esc_html( self::poll_tag( $post->ID ) ) . '</code>'
+						);
+						?>
+					</p>
+					<p class="description">
+						<?php esc_html_e( 'Worth shortening on a long question. Campaign Monitor holds all of a member\'s tags in one 250-character field, so a question written out in full uses a fifth of it.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
 				<th scope="row"><label for="ff_poll_status"><?php esc_html_e( 'Status', 'founding-faces' ); ?></label></th>
 				<td>
 					<select name="ff_poll_status" id="ff_poll_status">
@@ -1261,6 +1317,7 @@ class FF_Polls {
 
 		// Active flag, only one poll may be active at a time.
 		$active = isset( $_POST['ff_poll_active'] ) ? 1 : 0;
+		update_post_meta( $post_id, self::META_TAG, isset( $_POST['ff_poll_tag'] ) ? sanitize_title( wp_unslash( $_POST['ff_poll_tag'] ) ) : '' );
 		update_post_meta( $post_id, self::META_ACTIVE, $active );
 		if ( $active ) {
 			self::clear_other_active_polls( $post_id );

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.6
+Stable tag: 1.1.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.7 =
+* Poll tags read as words rather than an id: poll-packaging-colour, not
+  poll-14. A number means nothing in a segment builder six months later.
+* Each poll takes an "Email marketing tag" of its own, shown on the poll with
+  the tag as it will actually be sent. Left empty it comes from the title.
+* Long titles are cut at a word and given the poll id, so two questions that
+  start the same way stay distinguishable. Worth setting a short tag by hand on
+  a long question: Campaign Monitor holds all of a member's tags in one
+  250-character field.
+* Existing poll-14 style tags are renamed once on update and re-synced.
 
 = 1.1.6 =
 * Unsubscribes now come back the other way. A member can also leave from the
