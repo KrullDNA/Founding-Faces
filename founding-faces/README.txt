@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,24 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.5 =
+* The data sent to the email platform is split in two: structural state, one
+  field each, and one bag of loose labels. Status, member number, display
+  preference, application date and postcode are each their own field, because
+  each is something a journey branches on. Tags are for everything else.
+* Tags are stored in WordPress as a real array and serialised by each connector
+  on the way out, so neither platform's idea of a list leaks into the other.
+* Status is worked out rather than stored: withdrawn is the deactivated flag,
+  The 35 is having a number. A stored copy would be one more thing to keep in
+  step and the first thing to go wrong.
+* Applicants sync too, as Applicant, so "thanks for applying" can be a journey
+  rather than a single email. Declining moves them to Declined and withdrawing
+  a member moves them to Withdrawn: neither deletes anybody, and neither is an
+  unsubscribe, which is the member's own decision.
+* Tags arrive on their own when a member votes (voted, poll-14) or sends
+  feedback (gave-feedback), and can be edited by hand on the member's user
+  screen. Saving there syncs immediately.
 
 = 1.1.4 =
 * Final pH and natural origin, entered on the note rather than the product,

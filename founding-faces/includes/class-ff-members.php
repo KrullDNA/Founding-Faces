@@ -61,6 +61,12 @@ class FF_Members {
 	// the postal address is a separate, admin-only field the map never touches.
 	const META_POSTCODE = 'ff_postcode';
 
+	// Loose behavioural labels: poll-07, feedback-r2, and whatever else is worth
+	// segmenting on later. Stored as a real array here and serialised by each
+	// connector on the way out, because the platforms disagree about how a list
+	// of labels is written and only one of them should have to care.
+	const META_TAGS = 'ff_tags';
+
 	// Option: the last Founding number issued. Next number is always this + 1.
 	const OPT_SEQUENCE = 'ff_number_sequence';
 
@@ -91,6 +97,74 @@ class FF_Members {
 
 		// Send members to the hub page when they log in.
 		add_filter( 'login_redirect', array( __CLASS__, 'member_login_redirect' ), 10, 3 );
+
+		// Tags, editable by hand on the member's own user screen.
+		add_action( 'edit_user_profile', array( __CLASS__, 'tags_field' ) );
+		add_action( 'show_user_profile', array( __CLASS__, 'tags_field' ) );
+		add_action( 'edit_user_profile_update', array( __CLASS__, 'save_tags_field' ) );
+		add_action( 'personal_options_update', array( __CLASS__, 'save_tags_field' ) );
+	}
+
+	/**
+	 * The tags box on a member's user screen.
+	 *
+	 * Most tags arrive on their own, from voting or leaving feedback. This is
+	 * for the ones that don't: the label you want to write to a handful of
+	 * people about, which no amount of automation is going to guess.
+	 *
+	 * @param WP_User $user The user being edited.
+	 */
+	public static function tags_field( $user ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( ! get_user_meta( $user->ID, self::META_GROUP, true ) ) {
+			return; // Not a programme member, so there is nothing to segment.
+		}
+
+		$tags   = self::tags( $user->ID );
+		$status = self::status_label( self::status( $user->ID ) );
+		?>
+		<h2><?php esc_html_e( 'Founding Faces', 'founding-faces' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Status', 'founding-faces' ); ?></th>
+				<td>
+					<p><strong><?php echo esc_html( $status ); ?></strong></p>
+					<p class="description"><?php esc_html_e( 'Worked out from the account rather than stored, so it cannot fall out of step. Change it by approving, promoting or withdrawing.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_tags"><?php esc_html_e( 'Tags', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" name="ff_tags" id="ff_tags" class="large-text" value="<?php echo esc_attr( implode( ', ', $tags ) ); ?>" />
+					<p class="description">
+						<?php esc_html_e( 'Comma separated. Lower case, hyphens, no spaces: voted, poll-14, gave-feedback. Some are added for you when a member votes or sends feedback. Saving here syncs them to your email platform straight away.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+		wp_nonce_field( 'ff_save_tags', 'ff_tags_nonce' );
+	}
+
+	/**
+	 * Save the tags box.
+	 *
+	 * @param int $user_id The user being saved.
+	 */
+	public static function save_tags_field( $user_id ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( ! isset( $_POST['ff_tags_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['ff_tags_nonce'] ) ), 'ff_save_tags' ) ) {
+			return;
+		}
+
+		$raw = isset( $_POST['ff_tags'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_tags'] ) ) : '';
+
+		self::set_tags( $user_id, explode( ',', $raw ) );
+		FF_Connectors::sync_member( $user_id );
 	}
 
 	/**
@@ -414,6 +488,10 @@ class FF_Members {
 		// automatically if the template body has been emptied in Settings.
 		if ( $app && ! empty( $app->email ) ) {
 			FF_Emails::send_decline( isset( $app->name ) ? $app->name : '', $app->email );
+
+			// Declined is a status, not a deletion. They stay on the list under
+			// it, so they can be written to again if places open up.
+			FF_Connectors::sync_applicant( $app, 'declined' );
 		}
 
 		return true;
@@ -457,6 +535,10 @@ class FF_Members {
 			array( '%s' ),
 			array( '%d' )
 		);
+
+		// Their status on the platform moves with them. Withdrawing is not
+		// unsubscribing: that is the member's own decision and this isn't it.
+		FF_Connectors::sync_member( (int) $app->user_id );
 
 		return true;
 	}
@@ -786,6 +868,160 @@ class FF_Members {
 	 * once. The members map never reads any of this, it stays anonymous.
 	 * -----------------------------------------------------------------------
 	 */
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Status, and the tags that hang off a member.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * The five states a person can be in, as the email platform sees them.
+	 *
+	 * @return array Map of slug => label.
+	 */
+	public static function statuses() {
+		return array(
+			'applicant'  => __( 'Applicant', 'founding-faces' ),
+			'the-35'     => __( 'The 35', 'founding-faces' ),
+			'the-circle' => __( 'The Circle', 'founding-faces' ),
+			'declined'   => __( 'Declined', 'founding-faces' ),
+			'withdrawn'  => __( 'Withdrawn', 'founding-faces' ),
+		);
+	}
+
+	/**
+	 * Where a member stands, worked out rather than stored.
+	 *
+	 * Nothing here is a second copy of anything: withdrawal is the deactivated
+	 * flag, The 35 is having a number. A stored status field would be one more
+	 * thing to keep in step, and the first thing to go wrong.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return string A statuses() key.
+	 */
+	public static function status( $user_id ) {
+		if ( get_user_meta( $user_id, self::META_DEACTIVATED, true ) ) {
+			return 'withdrawn';
+		}
+
+		$number = get_user_meta( $user_id, self::META_NUMBER, true );
+		if ( '' !== (string) $number ) {
+			return 'the-35';
+		}
+
+		return 'the-circle';
+	}
+
+	/**
+	 * A status label from its slug.
+	 *
+	 * @param string $slug A statuses() key.
+	 * @return string
+	 */
+	public static function status_label( $slug ) {
+		$all = self::statuses();
+		return isset( $all[ $slug ] ) ? $all[ $slug ] : $slug;
+	}
+
+	/**
+	 * A member's tags.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return array A list of slugs, in the order they were added.
+	 */
+	public static function tags( $user_id ) {
+		$tags = get_user_meta( $user_id, self::META_TAGS, true );
+		return is_array( $tags ) ? array_values( $tags ) : array();
+	}
+
+	/**
+	 * Replace a member's tags outright.
+	 *
+	 * @param int   $user_id The member's user id.
+	 * @param array $tags    The tags to keep.
+	 * @return array The tags as stored.
+	 */
+	public static function set_tags( $user_id, $tags ) {
+		$clean = array();
+
+		foreach ( (array) $tags as $tag ) {
+			$tag = self::clean_tag( $tag );
+			if ( '' !== $tag && ! in_array( $tag, $clean, true ) ) {
+				$clean[] = $tag;
+			}
+		}
+
+		update_user_meta( $user_id, self::META_TAGS, $clean );
+
+		return $clean;
+	}
+
+	/**
+	 * Add one tag, and push the change out to the email platform.
+	 *
+	 * Silent when the member already has it, so this can be called from
+	 * anywhere something happens without first checking whether it is news.
+	 *
+	 * @param int    $user_id The member's user id.
+	 * @param string $tag     The tag.
+	 * @return bool Whether anything changed.
+	 */
+	public static function add_tag( $user_id, $tag ) {
+		$tag = self::clean_tag( $tag );
+		if ( '' === $tag ) {
+			return false;
+		}
+
+		$tags = self::tags( $user_id );
+		if ( in_array( $tag, $tags, true ) ) {
+			return false;
+		}
+
+		$tags[] = $tag;
+		self::set_tags( $user_id, $tags );
+		FF_Connectors::sync_member( $user_id );
+
+		return true;
+	}
+
+	/**
+	 * Remove one tag, and push the change out.
+	 *
+	 * @param int    $user_id The member's user id.
+	 * @param string $tag     The tag.
+	 * @return bool Whether anything changed.
+	 */
+	public static function remove_tag( $user_id, $tag ) {
+		$tag  = self::clean_tag( $tag );
+		$tags = self::tags( $user_id );
+
+		if ( ! in_array( $tag, $tags, true ) ) {
+			return false;
+		}
+
+		self::set_tags( $user_id, array_diff( $tags, array( $tag ) ) );
+		FF_Connectors::sync_member( $user_id );
+
+		return true;
+	}
+
+	/**
+	 * A tag reduced to something safe to segment on.
+	 *
+	 * Lower case, hyphens, no pipes: the pipe is the separator Campaign Monitor
+	 * gets, and a tag containing one would split itself in two.
+	 *
+	 * @param string $tag The tag as given.
+	 * @return string
+	 */
+	private static function clean_tag( $tag ) {
+		$tag = strtolower( trim( (string) $tag ) );
+		$tag = preg_replace( '/[^a-z0-9\-_]+/', '-', $tag );
+		$tag = preg_replace( '/-+/', '-', $tag );
+
+		return trim( (string) $tag, '-' );
+	}
 
 	/**
 	 * The three display tiers for The 35, most private first.

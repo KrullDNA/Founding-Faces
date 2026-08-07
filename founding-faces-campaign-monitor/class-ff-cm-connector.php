@@ -27,8 +27,11 @@ class FF_CM_Connector extends FF_Connector {
 	const OPT_API_KEY = 'ff_cm_api_key';
 	const OPT_LIST_ID = 'ff_cm_list_id';
 
-	// Remembers that the two custom fields have been created on the list.
+	// Remembers which set of custom fields has been created on the list. Held as
+	// a version rather than a flag: adding a field to the list below has to make
+	// an install that already ran this go round again.
 	const OPT_FIELDS_READY = 'ff_cm_fields_ready';
+	const FIELDS_VERSION   = '2';
 
 	// The Campaign Monitor API base.
 	const API_BASE = 'https://api.createsend.com/api/v3.2';
@@ -81,19 +84,18 @@ class FF_CM_Connector extends FF_Connector {
 
 		$list_id = get_option( self::OPT_LIST_ID );
 
+		$fields = array();
+		foreach ( self::field_values( $member ) as $key => $value ) {
+			$fields[] = array(
+				'Key'   => $key,
+				'Value' => $value,
+			);
+		}
+
 		$body = array(
 			'EmailAddress'   => $member['email'],
 			'Name'           => $member['name'],
-			'CustomFields'   => array(
-				array(
-					'Key'   => 'Group',
-					'Value' => $member['group'],
-				),
-				array(
-					'Key'   => 'Number',
-					'Value' => ( '' === $member['number'] ) ? '' : (string) $member['number'],
-				),
-			),
+			'CustomFields'   => $fields,
 			// We only ever reach here when consent is stored, so record it.
 			'ConsentToTrack' => 'Yes',
 			'Resubscribe'    => true,
@@ -126,6 +128,65 @@ class FF_CM_Connector extends FF_Connector {
 	}
 
 	/**
+	 * The custom fields this connector keeps on the list.
+	 *
+	 * Every one of them is a plain field of its own rather than a multi-select.
+	 * A multi-select in Campaign Monitor carries a fixed list of options defined
+	 * on the field, so a new option means another API call that can fail
+	 * separately from the one that matters, on a subscriber save. Text, number
+	 * and date fields have no such list to keep in step.
+	 *
+	 * @return array Map of field name => Campaign Monitor data type.
+	 */
+	public static function fields() {
+		return array(
+			'Group'             => 'Text',
+			'Number'            => 'Number',
+			'Status'            => 'Text',
+			'DisplayPreference' => 'Text',
+			'ApplicationDate'   => 'Date',
+			'Postcode'          => 'Text',
+			'Tags'              => 'Text',
+		);
+	}
+
+	/**
+	 * The values for those fields, for one member or applicant.
+	 *
+	 * @param array $member The payload from FF_Connectors.
+	 * @return array Map of field name => value.
+	 */
+	public static function field_values( array $member ) {
+		return array(
+			'Group'             => isset( $member['group'] ) ? $member['group'] : '',
+			'Number'            => ( '' === $member['number'] ) ? '' : (string) $member['number'],
+			'Status'            => isset( $member['status'] ) ? $member['status'] : '',
+			'DisplayPreference' => isset( $member['display_preference'] ) ? $member['display_preference'] : '',
+			'ApplicationDate'   => isset( $member['application_date'] ) ? $member['application_date'] : '',
+			'Postcode'          => isset( $member['postcode'] ) ? $member['postcode'] : '',
+			'Tags'              => self::tag_string( isset( $member['tags'] ) ? $member['tags'] : array() ),
+		);
+	}
+
+	/**
+	 * The tags as one delimited string, each one wrapped in pipes.
+	 *
+	 * Campaign Monitor segments text with "contains", and the pipes are what
+	 * make that safe: segmenting on "founding" would otherwise also catch
+	 * "founding-circle" and the segment would be quietly wrong for months.
+	 * Written as |poll-01|feedback-r2| it is segmented on |poll-01| and matches
+	 * that tag and nothing else.
+	 *
+	 * @param array $tags The tags.
+	 * @return string An empty string when there are none, not a bare pipe.
+	 */
+	public static function tag_string( $tags ) {
+		$tags = array_filter( array_map( 'strval', (array) $tags ) );
+
+		return empty( $tags ) ? '' : '|' . implode( '|', $tags ) . '|';
+	}
+
+	/**
 	 * Ensure the Group and Number custom fields exist on the list.
 	 *
 	 * Runs once: Campaign Monitor rejects a subscriber whose custom field keys
@@ -136,27 +197,27 @@ class FF_CM_Connector extends FF_Connector {
 	 * @return void
 	 */
 	private function ensure_custom_fields() {
-		if ( get_option( self::OPT_FIELDS_READY ) ) {
+		if ( self::FIELDS_VERSION === (string) get_option( self::OPT_FIELDS_READY ) ) {
 			return;
 		}
 
 		$list_id = get_option( self::OPT_LIST_ID );
 
-		foreach ( array( 'Group', 'Number' ) as $field ) {
+		foreach ( self::fields() as $field => $type ) {
 			// A failure here (including "already exists") is intentionally not
 			// fatal; a genuine problem surfaces on the subscribe call.
 			$this->request(
 				'POST',
 				"/lists/{$list_id}/customfields.json",
 				array(
-					'FieldName'                => $field,
-					'DataType'                 => 'Text',
+					'FieldName'                 => $field,
+					'DataType'                  => $type,
 					'VisibleInPreferenceCenter' => false,
 				)
 			);
 		}
 
-		update_option( self::OPT_FIELDS_READY, 1 );
+		update_option( self::OPT_FIELDS_READY, self::FIELDS_VERSION );
 	}
 
 	/**

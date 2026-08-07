@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Founding Faces, Campaign Monitor
  * Description:        Campaign Monitor connector add-on for the Founding Faces membership plugin. Syncs approved, consented members (name, email, group and number) to a Campaign Monitor list. Requires the Founding Faces core plugin.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
  * Text Domain:       founding-faces

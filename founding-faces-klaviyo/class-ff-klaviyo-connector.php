@@ -91,21 +91,20 @@ class FF_Klaviyo_Connector extends FF_Connector {
 			return new WP_Error( 'ff_klaviyo_unconfigured', __( 'Klaviyo is not configured.', 'founding-faces' ) );
 		}
 
-		// First name for personalisation; group as both property and tag.
 		$first_name = self::first_name( $member['name'] );
-		$properties = array(
-			'group' => $member['group'],
-			'tags'  => array( $member['group'] ), // The group as a tag.
-		);
-		if ( '' !== $member['number'] ) {
-			$properties['number'] = (int) $member['number'];
-		}
+		$properties = self::properties( $member );
 
 		$attributes = array(
 			'email'      => $member['email'],
 			'first_name' => $first_name,
 			'properties' => $properties,
 		);
+
+		// Klaviyo keeps a postcode of its own, and that is the one its location
+		// segments read, so it goes there as well as into the properties.
+		if ( ! empty( $member['postcode'] ) ) {
+			$attributes['location'] = array( 'zip' => (string) $member['postcode'] );
+		}
 
 		// Try to create the profile.
 		$create = $this->api( 'POST', '/profiles/', array(
@@ -260,6 +259,45 @@ class FF_Klaviyo_Connector extends FF_Connector {
 			? $result['json']['errors'][0]['detail']
 			: sprintf( /* translators: %d is an HTTP status code. */ __( 'Klaviyo returned HTTP %d.', 'founding-faces' ), (int) $result['code'] );
 		return new WP_Error( 'ff_klaviyo_error', $message, array( 'status' => $result['code'] ) );
+	}
+
+	/**
+	 * The profile properties a member is written with.
+	 *
+	 * Klaviyo's own tags label campaigns, flows and segments rather than
+	 * people, so there is no profile tagging to reach for here. Nothing is lost
+	 * by that: a custom property can hold a list, and a list is what a set of
+	 * tags is. Campaign Monitor gets the same tags flattened into a delimited
+	 * string because a text field is all it has; this one gets them in the
+	 * shape WordPress holds them, which is why moving between the two is a
+	 * re-sync from the site rather than a CSV to unpick afterwards.
+	 *
+	 * @param array $member The payload from FF_Connectors.
+	 * @return array
+	 */
+	public static function properties( array $member ) {
+		$properties = array(
+			'group'              => isset( $member['group'] ) ? $member['group'] : '',
+			'status'             => isset( $member['status'] ) ? $member['status'] : '',
+			'display_preference' => isset( $member['display_preference'] ) ? $member['display_preference'] : '',
+			'postcode'           => isset( $member['postcode'] ) ? $member['postcode'] : '',
+
+			// A genuine list, not a string pretending to be one.
+			'tags'               => array_values( (array) ( isset( $member['tags'] ) ? $member['tags'] : array() ) ),
+		);
+
+		// An applicant has no number, and a property set to an empty string is
+		// not the same as one that was never set: an empty string would still
+		// satisfy "number is set" in a segment. So it is left out entirely.
+		if ( isset( $member['number'] ) && '' !== $member['number'] ) {
+			$properties['number'] = (int) $member['number'];
+		}
+
+		if ( ! empty( $member['application_date'] ) ) {
+			$properties['application_date'] = $member['application_date'];
+		}
+
+		return $properties;
 	}
 
 	/**

@@ -299,6 +299,11 @@ class FF_Polls {
 		// The spine: a vote cast, attributed to the member and the poll.
 		FF_Interactions::log( $member_id, 'vote_cast', $poll_id );
 
+		// Two labels, because both questions get asked: who votes at all, and
+		// who voted in this particular poll.
+		FF_Members::add_tag( $member_id, 'voted' );
+		FF_Members::add_tag( $member_id, 'poll-' . (int) $poll_id );
+
 		return true;
 	}
 

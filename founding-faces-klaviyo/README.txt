@@ -1,6 +1,6 @@
 === Founding Faces, Klaviyo ===
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Klaviyo connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,19 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.0 =
+* The same data as Campaign Monitor gets, in the shape Klaviyo wants: group,
+  status, display_preference, postcode, application_date and number as profile
+  properties, and tags as a genuine list property rather than a delimited
+  string.
+* Klaviyo's own tags label campaigns and flows, not people, so profile
+  properties are the right tool and nothing is lost by not using them.
+* The postcode is also written to Klaviyo's built-in location field, which is
+  what its location segments read.
+* Because both connectors serialise the same underlying array, moving from
+  Campaign Monitor to Klaviyo is a re-sync from WordPress rather than a CSV
+  export that would arrive as one lump of pipe-separated text.
 
 = 1.0.0 =
 * Klaviyo connector, shipped as a separate add-on plugin.

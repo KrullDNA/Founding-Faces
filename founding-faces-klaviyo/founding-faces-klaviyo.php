@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Founding Faces, Klaviyo
  * Description:        Klaviyo connector add-on for the Founding Faces membership plugin. Syncs approved, consented members (name, email, group and number) to Klaviyo, with the group as both a tag and a profile property. Requires the Founding Faces core plugin.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
  * Text Domain:       founding-faces

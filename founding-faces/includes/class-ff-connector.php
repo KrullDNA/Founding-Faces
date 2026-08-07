@@ -244,13 +244,116 @@ class FF_Connectors {
 			? __( 'The 35', 'founding-faces' )
 			: __( 'The Circle', 'founding-faces' );
 
+		$status   = FF_Members::status( $user_id );
+		$tier     = FF_Members::display_tier( $user_id );
+		$tiers    = FF_Members::display_tiers();
+		$app_date = self::application_date( $user_id );
+
 		return array(
-			'user_id'    => (int) $user_id,
-			'email'      => $user ? $user->user_email : '',
-			'name'       => get_user_meta( $user_id, FF_Members::META_REAL_NAME, true ),
-			'number'     => $number ? (int) $number : '',
-			'group'      => $group,
-			'group_slug' => $group_slug,
+			'user_id'            => (int) $user_id,
+			'email'              => $user ? $user->user_email : '',
+			'name'               => get_user_meta( $user_id, FF_Members::META_REAL_NAME, true ),
+			'number'             => $number ? (int) $number : '',
+			'group'              => $group,
+			'group_slug'         => $group_slug,
+
+			// The structural state. Each of these is its own field on the
+			// platform, because each one is something a journey branches on and
+			// a branch cannot be asked to read a label out of a list.
+			'status'             => FF_Members::status_label( $status ),
+			'status_slug'        => $status,
+			'display_preference' => isset( $tiers[ $tier ] ) ? $tiers[ $tier ] : $tier,
+			'application_date'   => $app_date,
+			'postcode'           => (string) get_user_meta( $user_id, FF_Members::META_POSTCODE, true ),
+
+			// The loose labels, as a real array. Each connector writes them out
+			// in whatever shape its platform understands: a pipe-wrapped string
+			// for Campaign Monitor, a list property for Klaviyo.
+			'tags'               => FF_Members::tags( $user_id ),
 		);
+	}
+
+	/**
+	 * The same shape again, for somebody who has applied and nothing more.
+	 *
+	 * An applicant has no WordPress account, only a row in ff_applications, but
+	 * they are exactly who a "thanks for applying" journey is for. So the
+	 * payload is built from the application instead, with the fields a member
+	 * would have and an applicant hasn't left empty rather than absent.
+	 *
+	 * @param object $app     An ff_applications row.
+	 * @param string $status  A FF_Members::statuses() key.
+	 * @return array
+	 */
+	public static function build_applicant_payload( $app, $status = 'applicant' ) {
+		return array(
+			'user_id'            => 0,
+			'email'              => isset( $app->email ) ? $app->email : '',
+			'name'               => isset( $app->name ) ? $app->name : '',
+			'number'             => '',
+			'group'              => '',
+			'group_slug'         => '',
+			'status'             => FF_Members::status_label( $status ),
+			'status_slug'        => $status,
+			'display_preference' => '',
+			'application_date'   => isset( $app->created_at ) ? substr( (string) $app->created_at, 0, 10 ) : '',
+			'postcode'           => isset( $app->postcode ) ? (string) $app->postcode : '',
+			'tags'               => array(),
+		);
+	}
+
+	/**
+	 * Push an applicant, or a declined applicant, to the platform.
+	 *
+	 * Consent is the same gate as everywhere else: the box on the application
+	 * form, and nothing goes anywhere without it. A test application never
+	 * reaches the live list.
+	 *
+	 * @param object $app    An ff_applications row.
+	 * @param string $status A FF_Members::statuses() key.
+	 * @return void
+	 */
+	public static function sync_applicant( $app, $status = 'applicant' ) {
+		$connector = self::get_active();
+		if ( ! $connector || ! $connector->is_configured() ) {
+			return;
+		}
+
+		if ( empty( $app ) || empty( $app->email ) || empty( $app->consent ) ) {
+			return;
+		}
+
+		$result = $connector->subscribe( self::build_applicant_payload( $app, $status ) );
+
+		if ( is_wp_error( $result ) ) {
+			update_option(
+				self::OPT_LAST_ERROR,
+				array(
+					'message' => $result->get_error_message(),
+					'email'   => $app->email,
+					'time'    => current_time( 'mysql' ),
+				)
+			);
+		}
+	}
+
+	/**
+	 * The date a member first applied, as Y-m-d.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return string An empty string when there is no application behind them.
+	 */
+	private static function application_date( $user_id ) {
+		global $wpdb;
+
+		$app_id = (int) get_user_meta( $user_id, FF_Members::META_APP_ID, true );
+		if ( ! $app_id ) {
+			return '';
+		}
+
+		$table = $wpdb->prefix . 'ff_applications';
+		$date  = $wpdb->get_var( $wpdb->prepare( "SELECT created_at FROM {$table} WHERE id = %d", $app_id ) ); // phpcs:ignore WordPress.DB
+
+		return $date ? substr( (string) $date, 0, 10 ) : '';
 	}
 }
