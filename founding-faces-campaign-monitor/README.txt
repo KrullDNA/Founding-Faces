@@ -1,6 +1,6 @@
 === Founding Faces, Campaign Monitor ===
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 
 Campaign Monitor connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,12 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.1 =
+* Reports unsubscribes back to the site. Both the unsubscribed list and the
+  spam complaints are read, because they are different acts with the same
+  meaning for us, and the results are paged so a long first run is not
+  truncated into leaving people quietly still subscribed.
 
 = 1.1.0 =
 * Seven custom fields on the list instead of two: Group, Number, Status,

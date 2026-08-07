@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.5
+Stable tag: 1.1.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,24 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.6 =
+* Unsubscribes now come back the other way. A member can also leave from the
+  platform's own link at the foot of a campaign, which happens entirely outside
+  WordPress, and until now the site carried on emailing somebody who had asked
+  it not to.
+* The platform is asked once an hour who has left, and their consent is
+  switched off here too. You are told each time, with the email saying it came
+  from the platform. There is a "Check now" button and a last-checked time on
+  the Settings page, under the email platform section.
+* The answer is never pushed back where it came from, so the two sides cannot
+  chase each other in a loop.
+* Which emails consent actually stops: the news and the announcements. A
+  set-password link, a password reset and a reply to a message they sent still
+  arrive, because an unsubscribe is not a request to be locked out of the
+  account. The line is filterable through 'ff_may_email_member'.
+* A connector that cannot answer the question returns nothing and the site
+  carries on trusting its own record, exactly as before.
 
 = 1.1.5 =
 * The data sent to the email platform is split in two: structural state, one

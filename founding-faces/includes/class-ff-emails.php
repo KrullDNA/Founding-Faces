@@ -352,6 +352,24 @@ class FF_Emails {
 	}
 
 	/**
+	 * Whether a member may be sent an email that isn't essential.
+	 *
+	 * The line is drawn at whether the email is needed to use the account. A
+	 * set-password link and a password reset are asked for and have to arrive,
+	 * or somebody who has unsubscribed is also locked out, which is not what
+	 * they asked for. A reply to a message they sent is a reply. Everything
+	 * else, the news and the announcements, waits on consent.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return bool
+	 */
+	public static function may_email( $user_id ) {
+		$consent = (bool) get_user_meta( $user_id, FF_Members::META_CONSENT, true );
+
+		return (bool) apply_filters( 'ff_may_email_member', $consent, $user_id );
+	}
+
+	/**
 	 * The headers every programme email is sent with.
 	 *
 	 * Who it comes from, where a reply goes, and that it is HTML. One place,
@@ -534,6 +552,12 @@ class FF_Emails {
 	public static function send_promotion( $user_id ) {
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
+			return false;
+		}
+
+		// News rather than necessity, so consent decides. Someone who has
+		// unsubscribed, here or at the platform, does not get told.
+		if ( ! self::may_email( $user_id ) ) {
 			return false;
 		}
 

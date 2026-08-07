@@ -102,7 +102,7 @@ class FF_Unsubscribe {
 		$valid    = ( '' !== $expected && '' !== $token && hash_equals( $expected, $token ) );
 
 		if ( $valid ) {
-			self::unsubscribe( $user_id );
+			self::apply( $user_id, 'link' );
 		}
 
 		login_header( __( 'Email preferences', 'founding-faces' ) );
@@ -122,27 +122,39 @@ class FF_Unsubscribe {
 	}
 
 	/**
-	 * Switch a member's consent off, everywhere it is held.
+	 * Switch a member's consent off, wherever the decision came from.
 	 *
-	 * @param int $user_id The member's user id.
-	 * @return void
+	 * There are two doors out and they have to lead to the same place. A member
+	 * who clicks the link in one of our emails, and a member who clicks
+	 * Campaign Monitor's own unsubscribe at the foot of a campaign, have both
+	 * said the same thing, and the site has to stop emailing either of them.
+	 *
+	 * @param int    $user_id The member's user id.
+	 * @param string $source  'link' for our own link, 'platform' when the email
+	 *                        platform is telling us it already happened.
+	 * @return bool Whether anything changed.
 	 */
-	private static function unsubscribe( $user_id ) {
-		// Already off: say so on screen, but don't log or notify twice. Mail
-		// clients pre-fetch links, so this runs more often than it is clicked.
+	public static function apply( $user_id, $source = 'link' ) {
+		// Already off: don't log or notify twice. Mail clients pre-fetch links,
+		// so this runs more often than it is clicked.
 		if ( ! get_user_meta( $user_id, FF_Members::META_CONSENT, true ) ) {
-			return;
+			return false;
 		}
 
 		update_user_meta( $user_id, FF_Members::META_CONSENT, 0 );
 
-		// The platform holds its own copy of the list, so tell it too. A member
-		// who has unsubscribed here and not there has not unsubscribed.
-		FF_Connectors::unsubscribe_member( $user_id );
+		// Push it back to the platform, unless the platform is where it came
+		// from. Telling Campaign Monitor about an unsubscribe Campaign Monitor
+		// told us about is at best a wasted call and at worst a loop.
+		if ( 'platform' !== $source ) {
+			FF_Connectors::unsubscribe_member( $user_id );
+		}
 
 		FF_Interactions::log( $user_id, 'unsubscribed' );
 
-		self::notify_admin( $user_id );
+		self::notify_admin( $user_id, $source );
+
+		return true;
 	}
 
 	/**
@@ -151,10 +163,11 @@ class FF_Unsubscribe {
 	 * The group is stated plainly, because one of The 35 leaving the list is a
 	 * conversation to have and a Circle member leaving usually isn't.
 	 *
-	 * @param int $user_id The member's user id.
+	 * @param int    $user_id The member's user id.
+	 * @param string $source  Where the decision was made.
 	 * @return void
 	 */
-	private static function notify_admin( $user_id ) {
+	private static function notify_admin( $user_id, $source = 'link' ) {
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			return;
@@ -180,7 +193,9 @@ class FF_Unsubscribe {
 			$who,
 			$user->user_email,
 			'',
-			__( 'They have been taken off the programme mailing list. Their account, number and history are untouched.', 'founding-faces' ),
+			'platform' === $source
+				? __( 'They unsubscribed from your email platform, and the site has been told, so it will not email them either. Their account, number and history are untouched.', 'founding-faces' )
+				: __( 'They have been taken off the programme mailing list. Their account, number and history are untouched.', 'founding-faces' ),
 		);
 
 		if ( $is_35 ) {

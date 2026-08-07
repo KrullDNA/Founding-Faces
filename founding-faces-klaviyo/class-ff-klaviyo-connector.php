@@ -262,6 +262,70 @@ class FF_Klaviyo_Connector extends FF_Connector {
 	}
 
 	/**
+	 * Who has unsubscribed at Klaviyo since a given moment.
+	 *
+	 * Klaviyo keeps the answer on the profile rather than in a list of events,
+	 * so the profiles touched since the last look are fetched and each one's
+	 * marketing consent is read. Anything that is not SUBSCRIBED counts:
+	 * unsubscribed, suppressed after a bounce, and a spam complaint all mean
+	 * the same thing here, which is stop emailing this person.
+	 *
+	 * @param string $since A MySQL datetime.
+	 * @return array|WP_Error A list of email addresses.
+	 */
+	public function fetch_unsubscribes( $since ) {
+		if ( ! $this->is_configured() ) {
+			return array();
+		}
+
+		$iso    = gmdate( 'Y-m-d\TH:i:s\Z', strtotime( $since . ' UTC' ) );
+		$path   = '/profiles/?filter=' . rawurlencode( 'greater-than(updated,' . $iso . ')' )
+			. '&fields[profile]=email,subscriptions&page[size]=100';
+		$emails = array();
+		$guard  = 0;
+
+		// Followed page by page. Klaviyo hands back the next page as a whole
+		// URL, so it is used as given rather than rebuilt from parts.
+		while ( $path && $guard < 20 ) {
+			$guard++;
+
+			$result = $this->api( 'GET', $path );
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+			if ( $result['code'] < 200 || $result['code'] >= 300 ) {
+				return $this->error_from( $result );
+			}
+
+			$rows = isset( $result['json']['data'] ) && is_array( $result['json']['data'] ) ? $result['json']['data'] : array();
+
+			foreach ( $rows as $row ) {
+				$email = isset( $row['attributes']['email'] ) ? $row['attributes']['email'] : '';
+				if ( '' === $email ) {
+					continue;
+				}
+
+				$consent = isset( $row['attributes']['subscriptions']['email']['marketing']['consent'] )
+					? $row['attributes']['subscriptions']['email']['marketing']['consent']
+					: '';
+
+				// An empty consent means Klaviyo has never been told either way,
+				// which is not the same as being told no. Only an explicit
+				// answer that isn't SUBSCRIBED counts as having left.
+				if ( '' !== $consent && 'SUBSCRIBED' !== strtoupper( $consent ) ) {
+					$emails[] = $email;
+				}
+			}
+
+			$next = isset( $result['json']['links']['next'] ) ? (string) $result['json']['links']['next'] : '';
+			$path = ( '' !== $next ) ? str_replace( self::API_BASE, '', $next ) : '';
+		}
+
+		return array_values( array_unique( $emails ) );
+	}
+
+	/**
 	 * The profile properties a member is written with.
 	 *
 	 * Klaviyo's own tags label campaigns, flows and segments rather than

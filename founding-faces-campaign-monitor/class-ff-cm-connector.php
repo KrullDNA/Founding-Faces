@@ -128,6 +128,55 @@ class FF_CM_Connector extends FF_Connector {
 	}
 
 	/**
+	 * Who has unsubscribed at Campaign Monitor since a given moment.
+	 *
+	 * Two lists are read, not one. An unsubscribe and a spam complaint are
+	 * different acts with the same meaning for us: stop emailing this person.
+	 * Campaign Monitor keeps them apart, so both are asked for and merged.
+	 *
+	 * @param string $since A MySQL datetime.
+	 * @return array|WP_Error A list of email addresses.
+	 */
+	public function fetch_unsubscribes( $since ) {
+		if ( ! $this->is_configured() ) {
+			return array();
+		}
+
+		$list_id = get_option( self::OPT_LIST_ID );
+		$emails  = array();
+
+		foreach ( array( 'unsubscribed', 'spam' ) as $which ) {
+			$page = 1;
+
+			// Paged, because a big list's first run could be more than one page
+			// and a truncated answer would leave people quietly still subscribed.
+			do {
+				$result = $this->fetch(
+					"/lists/{$list_id}/{$which}.json?date=" . rawurlencode( $since )
+					. '&page=' . (int) $page . '&pagesize=1000&orderfield=date&orderdirection=asc'
+				);
+
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+
+				$results = isset( $result['Results'] ) && is_array( $result['Results'] ) ? $result['Results'] : array();
+
+				foreach ( $results as $row ) {
+					if ( ! empty( $row['EmailAddress'] ) ) {
+						$emails[] = $row['EmailAddress'];
+					}
+				}
+
+				$pages = isset( $result['NumberOfPages'] ) ? (int) $result['NumberOfPages'] : 1;
+				$page++;
+			} while ( $page <= $pages && $page <= 20 );
+		}
+
+		return array_values( array_unique( $emails ) );
+	}
+
+	/**
 	 * The custom fields this connector keeps on the list.
 	 *
 	 * Every one of them is a plain field of its own rather than a multi-select.
@@ -218,6 +267,43 @@ class FF_CM_Connector extends FF_Connector {
 		}
 
 		update_option( self::OPT_FIELDS_READY, self::FIELDS_VERSION );
+	}
+
+	/**
+	 * A GET that hands back the decoded body.
+	 *
+	 * request() answers true or an error, which is everything a write needs and
+	 * nothing a read does.
+	 *
+	 * @param string $path The API path.
+	 * @return array|WP_Error
+	 */
+	private function fetch( $path ) {
+		$api_key = get_option( self::OPT_API_KEY );
+
+		$response = wp_remote_get( self::API_BASE . $path, array(
+			'timeout' => 20,
+			'headers' => array(
+				'Authorization' => 'Basic ' . base64_encode( $api_key . ':x' ),
+			),
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( $code < 200 || $code >= 300 ) {
+			$message = ( is_array( $data ) && isset( $data['Message'] ) )
+				? $data['Message']
+				: sprintf( /* translators: %d is an HTTP status code. */ __( 'Campaign Monitor returned HTTP %d.', 'founding-faces' ), $code );
+
+			return new WP_Error( 'ff_cm_error', $message, array( 'status' => $code ) );
+		}
+
+		return is_array( $data ) ? $data : array();
 	}
 
 	/**

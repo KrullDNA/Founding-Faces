@@ -62,6 +62,20 @@ abstract class FF_Connector {
 	abstract public function unsubscribe( $email );
 
 	/**
+	 * The addresses that have unsubscribed at the platform since a moment.
+	 *
+	 * Optional. A connector that cannot answer returns an empty array and the
+	 * site simply carries on trusting its own record, which is the behaviour
+	 * every connector had before this existed.
+	 *
+	 * @param string $since A MySQL datetime in the site's timezone.
+	 * @return array|WP_Error A list of email addresses.
+	 */
+	public function fetch_unsubscribes( $since ) {
+		return array();
+	}
+
+	/**
 	 * Whether the platform supports tags (Klaviyo does, Campaign Monitor doesn't).
 	 *
 	 * Defaults to false; a connector overrides this if it can use tags.
@@ -86,6 +100,11 @@ class FF_Connectors {
 
 	// Option storing the last sync error, for a hint on the settings screen.
 	const OPT_LAST_ERROR = 'ff_last_sync_error';
+
+	// When the platform was last asked who had unsubscribed, and the hook name
+	// of the schedule that asks.
+	const OPT_LAST_PULL = 'ff_last_unsub_pull';
+	const CRON_HOOK     = 'ff_pull_unsubscribes';
 
 	// The registered connector instances, keyed by id.
 	protected static $connectors = array();
@@ -113,6 +132,109 @@ class FF_Connectors {
 
 		// Sync a member to the active platform the moment they're approved.
 		add_action( 'ff_member_approved', array( __CLASS__, 'sync_member' ), 10, 1 );
+
+		// Ask the platform, hourly, who has unsubscribed over there.
+		add_action( self::CRON_HOOK, array( __CLASS__, 'pull_unsubscribes' ) );
+		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+			wp_schedule_event( time() + 300, 'hourly', self::CRON_HOOK );
+		}
+
+		// The "Check now" button on the settings page.
+		add_action( 'admin_post_ff_pull_unsubscribes', array( __CLASS__, 'handle_manual_pull' ) );
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Coming back the other way.
+	 *
+	 * A member can unsubscribe in two places: the link at the foot of one of
+	 * our own emails, and the platform's own link at the foot of a campaign.
+	 * The first is ours to handle and always was. The second happens entirely
+	 * outside WordPress, and until the site is told about it the site carries
+	 * on emailing somebody who has asked it not to. So the platform is asked,
+	 * on a schedule, who has left.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * Ask the active platform who has unsubscribed, and honour it here.
+	 *
+	 * @return int|WP_Error How many members were switched off, or the error.
+	 */
+	public static function pull_unsubscribes() {
+		$connector = self::get_active();
+		if ( ! $connector || ! $connector->is_configured() ) {
+			return 0;
+		}
+
+		// A generous overlap on the first run and on every run after it. Asking
+		// again about somebody already switched off costs nothing, and missing
+		// one because two clocks disagree costs a member an unwanted email.
+		$since = (string) get_option( self::OPT_LAST_PULL, '' );
+		if ( '' === $since ) {
+			$since = gmdate( 'Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS );
+		} else {
+			$since = gmdate( 'Y-m-d H:i:s', strtotime( $since ) - HOUR_IN_SECONDS );
+		}
+
+		$emails = $connector->fetch_unsubscribes( $since );
+
+		if ( is_wp_error( $emails ) ) {
+			update_option(
+				self::OPT_LAST_ERROR,
+				array(
+					'message' => $emails->get_error_message(),
+					'email'   => '',
+					'time'    => current_time( 'mysql' ),
+				)
+			);
+			return $emails;
+		}
+
+		$changed = 0;
+
+		foreach ( (array) $emails as $email ) {
+			if ( ! is_email( $email ) ) {
+				continue;
+			}
+
+			$user = get_user_by( 'email', $email );
+			if ( ! $user ) {
+				continue; // Somebody on the list who was never a member here.
+			}
+
+			if ( FF_Unsubscribe::apply( $user->ID, 'platform' ) ) {
+				$changed++;
+			}
+		}
+
+		// Stamped only on a clean run, so a failed one is retried in full.
+		update_option( self::OPT_LAST_PULL, current_time( 'mysql' ) );
+
+		return $changed;
+	}
+
+	/**
+	 * The "Check now" button on the settings page.
+	 */
+	public static function handle_manual_pull() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to do that.', 'founding-faces' ) );
+		}
+		check_admin_referer( 'ff_pull_unsubscribes' );
+
+		$result = self::pull_unsubscribes();
+
+		$back = add_query_arg(
+			array(
+				'page'      => 'founding-faces-settings',
+				'ff_pulled' => is_wp_error( $result ) ? 'error' : (int) $result,
+			),
+			admin_url( 'admin.php' )
+		);
+
+		wp_safe_redirect( $back );
+		exit;
 	}
 
 	/**

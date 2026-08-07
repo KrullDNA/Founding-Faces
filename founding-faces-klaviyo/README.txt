@@ -1,6 +1,6 @@
 === Founding Faces, Klaviyo ===
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 
 Klaviyo connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,15 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.1 =
+* Reports unsubscribes back to the site. Klaviyo holds the answer on the
+  profile rather than in a list of events, so the profiles touched since the
+  last look are read and each one's marketing consent is checked. Anything that
+  is not SUBSCRIBED counts: unsubscribed, suppressed and spam complaints all
+  mean stop emailing this person.
+* A profile Klaviyo has never been told either way about is left alone, since
+  no answer is not the same as being told no.
 
 = 1.1.0 =
 * The same data as Campaign Monitor gets, in the shape Klaviyo wants: group,

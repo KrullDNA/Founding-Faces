@@ -821,6 +821,51 @@ class FF_Settings {
 			 */
 			do_action( 'ff_settings_connectors' );
 			?>
+
+			<h3><?php esc_html_e( 'Unsubscribes coming back the other way', 'founding-faces' ); ?></h3>
+			<p class="description" style="max-width:46em;">
+				<?php esc_html_e( 'A member can also unsubscribe from your platform\'s own link at the foot of a campaign, which happens entirely outside WordPress. The site asks the platform once an hour who has left and switches their consent off here too, so it stops emailing them as well. You are told each time, the same as if they had used the link in one of your own emails.', 'founding-faces' ); ?>
+			</p>
+			<?php
+			$last_pull = get_option( FF_Connectors::OPT_LAST_PULL, '' );
+			// phpcs:ignore WordPress.Security.NonceVerification
+			$pulled = isset( $_GET['ff_pulled'] ) ? sanitize_text_field( wp_unslash( $_GET['ff_pulled'] ) ) : '';
+			?>
+			<?php if ( '' !== $pulled ) : ?>
+				<div class="notice notice-<?php echo ( 'error' === $pulled ) ? 'error' : 'success'; ?> inline"><p>
+					<?php
+					if ( 'error' === $pulled ) {
+						esc_html_e( 'The platform could not be reached. The message below says why.', 'founding-faces' );
+					} elseif ( '0' === $pulled ) {
+						esc_html_e( 'Checked. Nobody has unsubscribed over there since the last look.', 'founding-faces' );
+					} else {
+						printf(
+							/* translators: %d: how many members were switched off. */
+							esc_html( _n( 'Checked. %d member has been switched off here too.', 'Checked. %d members have been switched off here too.', (int) $pulled, 'founding-faces' ) ),
+							(int) $pulled
+						);
+					}
+					?>
+				</p></div>
+			<?php endif; ?>
+			<p>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ff_pull_unsubscribes' ), 'ff_pull_unsubscribes' ) ); ?>">
+					<?php esc_html_e( 'Check now', 'founding-faces' ); ?>
+				</a>
+				<span class="description" style="margin-left:0.6rem;">
+					<?php
+					if ( $last_pull ) {
+						printf(
+							/* translators: %s: a date and time. */
+							esc_html__( 'Last checked %s.', 'founding-faces' ),
+							esc_html( $last_pull )
+						);
+					} else {
+						esc_html_e( 'Not checked yet. The first check reaches back a month.', 'founding-faces' );
+					}
+					?>
+				</span>
+			</p>
 		<?php endif; ?>
 
 		<?php if ( is_array( $last_error ) && ! empty( $last_error['message'] ) ) : ?>
