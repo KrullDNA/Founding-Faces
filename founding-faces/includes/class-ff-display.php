@@ -110,6 +110,196 @@ class FF_Display {
 		FF_Interactions::log_once( $member_id, 'note_viewed', $note_id );
 	}
 
+	/*
+	 * -----------------------------------------------------------------------
+	 * The measured figures, and how far they have moved.
+	 *
+	 * pH and natural origin live on the note, not the product, because they
+	 * belong to a version of the formula rather than to the thing itself. That
+	 * is what makes the change free: it is this note's figure less the figure
+	 * on the last note that had one, so nothing has to be typed twice and
+	 * nothing has to be remembered when a value is revised.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * The notes for a product, newest first, that this viewer may read.
+	 *
+	 * Gated notes are left out on purpose. A change is a subtraction, so a
+	 * member could read the previous figure straight off it, and a figure from
+	 * a vault note is vault content. A Circle member's change therefore spans
+	 * whatever gap the vault left, which is the honest answer: it is the change
+	 * since the last version they were shown.
+	 *
+	 * @param int $product_id The product the notes belong to.
+	 * @return WP_Post[]
+	 */
+	private static function product_notes( $product_id ) {
+		static $cache = array();
+
+		$key = (int) $product_id . '|' . get_current_user_id();
+		if ( isset( $cache[ $key ] ) ) {
+			return $cache[ $key ];
+		}
+
+		$notes = $product_id ? get_posts( array(
+			'post_type'      => FF_Post_Types::NOTE_CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+				array(
+					'key'   => FF_Post_Types::META_NOTE_PRODUCT,
+					'value' => (int) $product_id,
+				),
+			),
+		) ) : array();
+
+		$notes = array_values( array_filter( $notes, function ( $note ) {
+			return FF_Gating::can_view_note( $note->ID );
+		} ) );
+
+		// Newest first, by the note's own date rather than the publish date,
+		// because that is the date the note is presented under.
+		usort( $notes, function ( $a, $b ) {
+			$da = (string) get_post_meta( $a->ID, FF_Post_Types::META_NOTE_DATE, true );
+			$db = (string) get_post_meta( $b->ID, FF_Post_Types::META_NOTE_DATE, true );
+			if ( $da === $db ) {
+				return $b->ID - $a->ID;
+			}
+			return strcmp( $db, $da );
+		} );
+
+		$cache[ $key ] = $notes;
+		return $notes;
+	}
+
+	/**
+	 * A product's current figure: the newest note that has one.
+	 *
+	 * The product never stores these itself. It has no formula of its own, only
+	 * the versions underneath it, so "the current pH" is a fact about the
+	 * latest note rather than a second field to keep in step with it.
+	 *
+	 * @param int    $product_id The product.
+	 * @param string $which      'ph' or 'natural'.
+	 * @return array{value:string,change:float|null,note:int}
+	 */
+	public static function product_measure( $product_id, $which ) {
+		foreach ( self::product_notes( $product_id ) as $note ) {
+			$value = self::measure( $note->ID, $which );
+			if ( '' !== $value ) {
+				return array(
+					'value'  => $value,
+					'change' => self::measure_change( $note->ID, $which ),
+					'note'   => (int) $note->ID,
+				);
+			}
+		}
+
+		return array( 'value' => '', 'change' => null, 'note' => 0 );
+	}
+
+	/**
+	 * A measured figure from a note, as stored.
+	 *
+	 * @param int    $note_id The note.
+	 * @param string $which   'ph' or 'natural'.
+	 * @return string An empty string when it was not measured.
+	 */
+	public static function measure( $note_id, $which ) {
+		$key = ( 'ph' === $which ) ? FF_Post_Types::META_NOTE_PH : FF_Post_Types::META_NOTE_NATURAL;
+		return (string) get_post_meta( $note_id, $key, true );
+	}
+
+	/**
+	 * How far a figure moved between this note and the one before it.
+	 *
+	 * @param int    $note_id The note.
+	 * @param string $which   'ph' or 'natural'.
+	 * @return float|null The difference, or null when there is nothing to
+	 *                    compare against or nothing changed.
+	 */
+	public static function measure_change( $note_id, $which ) {
+		$current = self::measure( $note_id, $which );
+		if ( '' === $current ) {
+			return null;
+		}
+
+		$product_id = (int) get_post_meta( $note_id, FF_Post_Types::META_NOTE_PRODUCT, true );
+		if ( ! $product_id ) {
+			return null;
+		}
+
+		$notes = self::product_notes( $product_id );
+		$found = false;
+
+		foreach ( $notes as $note ) {
+			// Walk back from this note. Everything before it in the list is
+			// newer, so nothing counts until this one has gone past.
+			if ( ! $found ) {
+				$found = ( (int) $note->ID === (int) $note_id );
+				continue;
+			}
+
+			$previous = self::measure( $note->ID, $which );
+			if ( '' === $previous ) {
+				continue; // Not measured on that version, so keep going back.
+			}
+
+			$delta = (float) $current - (float) $previous;
+
+			// No change is not news, so nothing is shown.
+			return ( abs( $delta ) < 0.0001 ) ? null : $delta;
+		}
+
+		return null;
+	}
+
+	/**
+	 * A measured figure and its change, as one chip.
+	 *
+	 * @param string     $which  'ph' or 'natural'.
+	 * @param string     $value  The figure.
+	 * @param float|null $change The change, or null for none.
+	 * @return string
+	 */
+	private static function measure_html( $which, $value, $change ) {
+		$unit  = ( 'natural' === $which ) ? '%' : '';
+		$class = ( 'natural' === $which ) ? 'ff-note-natural' : 'ff-note-ph';
+		$label = ( 'natural' === $which )
+			? __( 'Natural origin', 'founding-faces' )
+			: __( 'pH', 'founding-faces' );
+
+		$out = '<span class="' . $class . '">'
+			. '<span class="ff-measure-label">' . esc_html( $label ) . '</span> '
+			. '<span class="ff-measure-value">' . esc_html( $value . $unit ) . '</span>';
+
+		if ( null !== $change ) {
+			$out .= ' <span class="ff-note-delta ' . ( $change > 0 ? 'is-up' : 'is-down' ) . '">'
+				. esc_html( self::delta_label( $change, $unit ) ) . '</span>';
+		}
+
+		return $out . '</span>';
+	}
+
+	/**
+	 * A change, written the way it would be said: +0.4%, -1.2.
+	 *
+	 * Trailing zeros are trimmed, so a change of exactly a tenth reads 0.1 and
+	 * not 0.10, and the sign is always shown because a change with no sign on
+	 * it is just another number.
+	 *
+	 * @param float  $change The difference.
+	 * @param string $unit   The unit to append, if any.
+	 * @return string
+	 */
+	private static function delta_label( $change, $unit = '' ) {
+		$rounded = round( abs( $change ), 2 );
+		$text    = rtrim( rtrim( number_format( $rounded, 2, '.', '' ), '0' ), '.' );
+
+		return ( $change > 0 ? '+' : '-' ) . $text . $unit;
+	}
+
 	/**
 	 * Products as id => title, for a widget dropdown.
 	 *
@@ -488,6 +678,12 @@ class FF_Display {
 		if ( $status ) {
 			$meta[] = '<span class="ff-product-status">' . esc_html( $status ) . '</span>';
 		}
+		foreach ( array( 'ph', 'natural' ) as $which ) {
+			$figure = self::product_measure( $product->ID, $which );
+			if ( '' !== $figure['value'] ) {
+				$meta[] = self::measure_html( $which, $figure['value'], $figure['change'] );
+			}
+		}
 		if ( $meta ) {
 			$out .= '<div class="ff-product-meta">' . implode( ' ', $meta ) . '</div>';
 		}
@@ -622,6 +818,12 @@ class FF_Display {
 		if ( $date && self::shows( $a, 'date' ) ) {
 			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( $date ) . '</span>' );
 		}
+		foreach ( array( 'ph', 'natural' ) as $which ) {
+			$value = self::measure( $note->ID, $which );
+			if ( '' !== $value && self::shows( $a, $which ) ) {
+				$meta[] = array( 'text', self::measure_html( $which, $value, self::measure_change( $note->ID, $which ) ) );
+			}
+		}
 		if ( 'the-35-only' === $audience && self::shows( $a, 'vault' ) ) {
 			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
 		}
@@ -702,6 +904,14 @@ class FF_Display {
 		}
 		if ( self::shows( $a, 'date' ) ) {
 			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( date_i18n( get_option( 'date_format' ) ) ) . '</span>' );
+		}
+		// One figure that has gone up and one that has gone down, so both
+		// colours can be set without waiting for a formula to move.
+		if ( self::shows( $a, 'ph' ) ) {
+			$meta[] = array( 'text', self::measure_html( 'ph', '5.2', -0.3 ) );
+		}
+		if ( self::shows( $a, 'natural' ) ) {
+			$meta[] = array( 'text', self::measure_html( 'natural', '94.6', 0.4 ) );
 		}
 		if ( $vault && self::shows( $a, 'vault' ) ) {
 			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
@@ -792,7 +1002,10 @@ class FF_Display {
 		$out  = '<div class="ff-product-header">';
 		$out .= '<h2 class="ff-product-name">' . esc_html__( 'Sample product, Renewal Serum', 'founding-faces' ) . '</h2>';
 		$out .= '<div class="ff-product-meta">' . self::stage_badge( 'stability_testing' );
-		$out .= '<span class="ff-product-status">' . esc_html__( 'Currently in eight-week stability testing', 'founding-faces' ) . '</span></div>';
+		$out .= '<span class="ff-product-status">' . esc_html__( 'Currently in eight-week stability testing', 'founding-faces' ) . '</span>';
+		$out .= self::measure_html( 'ph', '5.2', -0.3 );
+		$out .= self::measure_html( 'natural', '94.6', 0.4 );
+		$out .= '</div>';
 		$out .= '<div class="ff-product-intro"><p>' . esc_html__( 'Sample introduction copy so the product header can be styled before a real product is chosen.', 'founding-faces' ) . '</p></div>';
 		$out .= '</div>';
 		return $out;

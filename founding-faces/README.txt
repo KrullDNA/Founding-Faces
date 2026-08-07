@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,22 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.4 =
+* Final pH and natural origin, entered on the note rather than the product,
+  because they belong to a version of the formula and not to the thing itself.
+* The change from the last version is worked out and shown beside each figure,
+  so nothing has to be typed twice or remembered when a value is revised.
+  Leave a field empty on a version where it was not measured and the comparison
+  reaches back to the last one that has a figure.
+* The change is computed only against notes the reader is allowed to see, so a
+  vault figure cannot be read off a subtraction. A Circle member's change spans
+  whatever the vault held back, which is the change since the version they saw.
+* The product header shows the current figures, taken from the newest note that
+  has them, so there is no second field to keep in step.
+* Style controls for both chips, and a "Change since last version" section with
+  separate colours for up and down: which direction is good news depends on the
+  figure, so that decision is not made for you.
 
 = 1.1.3 =
 * Sending settings: sender name, sender email, a reply-to name and address, and

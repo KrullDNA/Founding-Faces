@@ -47,6 +47,11 @@ class FF_Post_Types {
 	// called (Trial number, renamed in 1.0.78) because the stored key cannot
 	// change without orphaning the numbers already on published notes.
 	const META_NOTE_TRIAL   = 'ff_note_trial';
+	// The two measured figures. Kept as strings, because an empty string means
+	// "not measured on this version" and 0 does not: a natural origin of zero is
+	// a real answer, and it must not read as a blank.
+	const META_NOTE_PH      = 'ff_note_ph';
+	const META_NOTE_NATURAL = 'ff_note_natural';
 	const META_NOTE_STAGE   = 'ff_note_stage';
 	const META_NOTE_GALLERY = 'ff_note_gallery';
 	const META_NOTE_AUDIENCE = 'ff_note_audience';
@@ -116,6 +121,20 @@ class FF_Post_Types {
 	 *
 	 * @return array
 	 */
+	/**
+	 * A measured figure: a number as typed, or an empty string.
+	 *
+	 * @param mixed $value The submitted value.
+	 * @return string
+	 */
+	public static function sanitize_measure( $value ) {
+		$value = trim( (string) $value );
+		if ( '' === $value || ! is_numeric( $value ) ) {
+			return '';
+		}
+		return (string) ( 0 + $value );
+	}
+
 	public static function note_stages() {
 		return array(
 			'in_development'    => __( 'In development', 'founding-faces' ),
@@ -385,6 +404,16 @@ class FF_Post_Types {
 			'sanitize_callback' => 'sanitize_text_field',
 			'auth_callback'     => $edit,
 		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_PH, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_NATURAL, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
 		register_post_meta( self::NOTE_CPT, self::META_NOTE_STAGE, array(
 			'type'              => 'string',
 			'single'            => true,
@@ -566,6 +595,8 @@ class FF_Post_Types {
 		$product  = (int) get_post_meta( $post->ID, self::META_NOTE_PRODUCT, true );
 		$date     = get_post_meta( $post->ID, self::META_NOTE_DATE, true );
 		$trial    = get_post_meta( $post->ID, self::META_NOTE_TRIAL, true );
+		$ph       = get_post_meta( $post->ID, self::META_NOTE_PH, true );
+		$natural  = get_post_meta( $post->ID, self::META_NOTE_NATURAL, true );
 		$stage    = get_post_meta( $post->ID, self::META_NOTE_STAGE, true );
 		$gallery  = get_post_meta( $post->ID, self::META_NOTE_GALLERY, true );
 		$audience = get_post_meta( $post->ID, self::META_NOTE_AUDIENCE, true );
@@ -608,6 +639,20 @@ class FF_Post_Types {
 			<tr>
 				<th scope="row"><label for="ff_note_trial"><?php esc_html_e( 'Version number', 'founding-faces' ); ?></label></th>
 				<td><input type="text" name="ff_note_trial" id="ff_note_trial" value="<?php echo esc_attr( $trial ); ?>" class="regular-text" /></td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_note_ph"><?php esc_html_e( 'Final pH', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" step="0.01" min="0" max="14" name="ff_note_ph" id="ff_note_ph" value="<?php echo esc_attr( $ph ); ?>" class="small-text" />
+					<p class="description"><?php esc_html_e( 'Leave empty on a version where it was not measured. The change from the last version that has a figure is worked out and shown for you, so there is nothing to keep in step by hand.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_note_natural"><?php esc_html_e( 'Natural origin', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" step="0.1" min="0" max="100" name="ff_note_natural" id="ff_note_natural" value="<?php echo esc_attr( $natural ); ?>" class="small-text" /> %
+					<p class="description"><?php esc_html_e( 'As a percentage, ISO 16128 or however you are calculating it. Same again: leave it empty where it was not calculated.', 'founding-faces' ); ?></p>
+				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="ff_note_stage"><?php esc_html_e( 'Stage', 'founding-faces' ); ?></label></th>
@@ -702,6 +747,11 @@ class FF_Post_Types {
 		// ff_note_trial: the field was called Trial number until 1.0.78, and
 		// renaming the key would have detached every number already written.
 		update_post_meta( $post_id, self::META_NOTE_TRIAL, isset( $_POST['ff_note_trial'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_note_trial'] ) ) : '' );
+
+		// A blank stays blank rather than becoming zero: not measured and
+		// measured at zero are different answers.
+		update_post_meta( $post_id, self::META_NOTE_PH, self::sanitize_measure( isset( $_POST['ff_note_ph'] ) ? wp_unslash( $_POST['ff_note_ph'] ) : '' ) );
+		update_post_meta( $post_id, self::META_NOTE_NATURAL, self::sanitize_measure( isset( $_POST['ff_note_natural'] ) ? wp_unslash( $_POST['ff_note_natural'] ) : '' ) );
 
 		// Stage, only if it's one of the known keys.
 		$stage = isset( $_POST['ff_note_stage'] ) ? sanitize_key( wp_unslash( $_POST['ff_note_stage'] ) ) : '';
