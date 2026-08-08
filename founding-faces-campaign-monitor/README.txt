@@ -1,6 +1,6 @@
 === Founding Faces, Campaign Monitor ===
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.4
 License: GPLv2 or later
 
 Campaign Monitor connector add-on for the Founding Faces membership plugin.
@@ -20,6 +20,48 @@ Only one connector is active at a time. This add-on does nothing on its own ,
 it needs the Founding Faces core plugin to be active.
 
 == Changelog ==
+
+= 1.1.4 =
+* FeedbackCount, LastFeedback and NotesRead are no longer sent or created.
+  Feedback is a private channel and reading is nobody's business. PollsVoted
+  and LastVoted stay.
+* If those three fields were already created on your list by 1.1.3, they can be
+  deleted in Campaign Monitor; nothing writes to them now.
+
+= 1.1.3 =
+* Five engagement fields: PollsVoted, LastVoted, FeedbackCount, LastFeedback
+  and NotesRead. Counts and dates never grow, so segmenting on how much
+  somebody takes part no longer costs tag space.
+* When tags still will not fit, poll tags are dropped first and oldest first,
+  and anything typed by hand is kept until there is no other choice. It used to
+  drop purely by age, which could lose a label somebody had set deliberately.
+* The settings page says when tags have had to be dropped, rather than leaving
+  it to be discovered by a segment that quietly matches nobody.
+
+= 1.1.2 =
+* The tag string is kept inside Campaign Monitor's 250-character text field
+  limit by dropping the oldest tags rather than letting the platform truncate
+  mid-tag, which would leave a half-written label matching nothing and quietly
+  break a segment.
+
+= 1.1.1 =
+* Reports unsubscribes back to the site. Both the unsubscribed list and the
+  spam complaints are read, because they are different acts with the same
+  meaning for us, and the results are paged so a long first run is not
+  truncated into leaving people quietly still subscribed.
+
+= 1.1.0 =
+* Seven custom fields on the list instead of two: Group, Number, Status,
+  DisplayPreference, ApplicationDate, Postcode and Tags, with Number as a
+  number and ApplicationDate as a date so both can be segmented properly.
+* Every one is a plain field rather than a multi-select. A multi-select carries
+  a fixed option list defined on the field, so a new option means another API
+  call that can fail separately from the one that matters.
+* Tags are written as one delimited string with each value wrapped in pipes,
+  |poll-01|feedback-r2|, and segmented with contains |poll-01|. Without the
+  pipes, "founding" would also match "founding-circle" and the segment would be
+  quietly wrong.
+* Existing installs create the new fields automatically on the next sync.
 
 = 1.0.0 =
 * Campaign Monitor connector, split out of the core plugin as a separate add-on.

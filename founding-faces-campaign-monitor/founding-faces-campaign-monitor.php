@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Founding Faces, Campaign Monitor
  * Description:        Campaign Monitor connector add-on for the Founding Faces membership plugin. Syncs approved, consented members (name, email, group and number) to a Campaign Monitor list. Requires the Founding Faces core plugin.
- * Version:           1.0.0
+ * Version:           1.1.4
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
  * Text Domain:       founding-faces
@@ -74,11 +74,33 @@ function ff_cm_render_settings() {
 					id="<?php echo esc_attr( FF_CM_Connector::OPT_LIST_ID ); ?>"
 					type="text" class="regular-text"
 					value="<?php echo esc_attr( $list_id ); ?>" />
-				<p class="description"><?php esc_html_e( 'The Group and Number custom fields are created on this list automatically.', 'founding-faces' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Every custom field this plugin uses is created on this list automatically: Group, Number, Status, DisplayPreference, ApplicationDate, Postcode, Tags, PollsVoted and LastVoted.', 'founding-faces' ); ?></p>
 			</td>
 		</tr>
 	</table>
+
 	<?php
+	$trimmed = get_option( FF_CM_Connector::OPT_TAGS_TRIMMED, array() );
+	if ( is_array( $trimmed ) && ! empty( $trimmed['count'] ) ) :
+		?>
+		<div class="notice notice-warning inline">
+			<p>
+				<strong><?php esc_html_e( 'A member has more tags than Campaign Monitor can hold.', 'founding-faces' ); ?></strong>
+				<?php
+				printf(
+					/* translators: 1: how many tags were dropped, 2: a date and time. */
+					esc_html__( 'Campaign Monitor keeps all of a member\'s tags in one 250-character field, and %1$d had to be left out on the sync at %2$s. The oldest poll tags go first and anything typed by hand is kept.', 'founding-faces' ),
+					(int) $trimmed['count'],
+					esc_html( isset( $trimmed['time'] ) ? $trimmed['time'] : '' )
+				);
+				?>
+			</p>
+			<p>
+				<?php esc_html_e( 'Nothing is lost in WordPress, which holds the full list. If you are segmenting on how much someone takes part rather than on one particular poll, use the PollsVoted and LastVoted fields instead: they count without ever filling up. Shorter tags on your polls buy back a lot of room too.', 'founding-faces' ); ?>
+			</p>
+		</div>
+		<?php
+	endif;
 }
 
 /**

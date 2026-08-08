@@ -27,8 +27,18 @@ class FF_CM_Connector extends FF_Connector {
 	const OPT_API_KEY = 'ff_cm_api_key';
 	const OPT_LIST_ID = 'ff_cm_list_id';
 
-	// Remembers that the two custom fields have been created on the list.
+	// Remembers which set of custom fields has been created on the list. Held as
+	// a version rather than a flag: adding a field to the list below has to make
+	// an install that already ran this go round again.
 	const OPT_FIELDS_READY = 'ff_cm_fields_ready';
+	const FIELDS_VERSION   = '4';
+
+	// How much a Campaign Monitor text custom field holds.
+	const TAG_FIELD_LIMIT = 250;
+
+	// Records the last time tags had to be dropped to fit, so the settings page
+	// can say so.
+	const OPT_TAGS_TRIMMED = 'ff_cm_tags_trimmed';
 
 	// The Campaign Monitor API base.
 	const API_BASE = 'https://api.createsend.com/api/v3.2';
@@ -81,19 +91,18 @@ class FF_CM_Connector extends FF_Connector {
 
 		$list_id = get_option( self::OPT_LIST_ID );
 
+		$fields = array();
+		foreach ( self::field_values( $member ) as $key => $value ) {
+			$fields[] = array(
+				'Key'   => $key,
+				'Value' => $value,
+			);
+		}
+
 		$body = array(
 			'EmailAddress'   => $member['email'],
 			'Name'           => $member['name'],
-			'CustomFields'   => array(
-				array(
-					'Key'   => 'Group',
-					'Value' => $member['group'],
-				),
-				array(
-					'Key'   => 'Number',
-					'Value' => ( '' === $member['number'] ) ? '' : (string) $member['number'],
-				),
-			),
+			'CustomFields'   => $fields,
 			// We only ever reach here when consent is stored, so record it.
 			'ConsentToTrack' => 'Yes',
 			'Resubscribe'    => true,
@@ -126,6 +135,177 @@ class FF_CM_Connector extends FF_Connector {
 	}
 
 	/**
+	 * Who has unsubscribed at Campaign Monitor since a given moment.
+	 *
+	 * Two lists are read, not one. An unsubscribe and a spam complaint are
+	 * different acts with the same meaning for us: stop emailing this person.
+	 * Campaign Monitor keeps them apart, so both are asked for and merged.
+	 *
+	 * @param string $since A MySQL datetime.
+	 * @return array|WP_Error A list of email addresses.
+	 */
+	public function fetch_unsubscribes( $since ) {
+		if ( ! $this->is_configured() ) {
+			return array();
+		}
+
+		$list_id = get_option( self::OPT_LIST_ID );
+		$emails  = array();
+
+		foreach ( array( 'unsubscribed', 'spam' ) as $which ) {
+			$page = 1;
+
+			// Paged, because a big list's first run could be more than one page
+			// and a truncated answer would leave people quietly still subscribed.
+			do {
+				$result = $this->fetch(
+					"/lists/{$list_id}/{$which}.json?date=" . rawurlencode( $since )
+					. '&page=' . (int) $page . '&pagesize=1000&orderfield=date&orderdirection=asc'
+				);
+
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+
+				$results = isset( $result['Results'] ) && is_array( $result['Results'] ) ? $result['Results'] : array();
+
+				foreach ( $results as $row ) {
+					if ( ! empty( $row['EmailAddress'] ) ) {
+						$emails[] = $row['EmailAddress'];
+					}
+				}
+
+				$pages = isset( $result['NumberOfPages'] ) ? (int) $result['NumberOfPages'] : 1;
+				$page++;
+			} while ( $page <= $pages && $page <= 20 );
+		}
+
+		return array_values( array_unique( $emails ) );
+	}
+
+	/**
+	 * The custom fields this connector keeps on the list.
+	 *
+	 * Every one of them is a plain field of its own rather than a multi-select.
+	 * A multi-select in Campaign Monitor carries a fixed list of options defined
+	 * on the field, so a new option means another API call that can fail
+	 * separately from the one that matters, on a subscriber save. Text, number
+	 * and date fields have no such list to keep in step.
+	 *
+	 * @return array Map of field name => Campaign Monitor data type.
+	 */
+	public static function fields() {
+		return array(
+			'Group'             => 'Text',
+			'Number'            => 'Number',
+			'Status'            => 'Text',
+			'DisplayPreference' => 'Text',
+			'ApplicationDate'   => 'Date',
+			'Postcode'          => 'Text',
+			'Tags'              => 'Text',
+
+			// Counted, not tagged. These are what stop the tag field filling up
+			// with a label per poll: "voted in eleven" and "last voted in
+			// March" are two fields that never grow, and they answer most of
+			// what a segment wants to know.
+			//
+			// Voting only. Feedback is a private message to Nick and the fact
+			// that somebody sends it stays on the site, as does what they read.
+			'PollsVoted'        => 'Number',
+			'LastVoted'         => 'Date',
+		);
+	}
+
+	/**
+	 * The values for those fields, for one member or applicant.
+	 *
+	 * @param array $member The payload from FF_Connectors.
+	 * @return array Map of field name => value.
+	 */
+	public static function field_values( array $member ) {
+		return array(
+			'Group'             => isset( $member['group'] ) ? $member['group'] : '',
+			'Number'            => ( '' === $member['number'] ) ? '' : (string) $member['number'],
+			'Status'            => isset( $member['status'] ) ? $member['status'] : '',
+			'DisplayPreference' => isset( $member['display_preference'] ) ? $member['display_preference'] : '',
+			'ApplicationDate'   => isset( $member['application_date'] ) ? $member['application_date'] : '',
+			'Postcode'          => isset( $member['postcode'] ) ? $member['postcode'] : '',
+			'Tags'              => self::tag_string( isset( $member['tags'] ) ? $member['tags'] : array() ),
+			'PollsVoted'        => isset( $member['polls_voted'] ) ? (string) (int) $member['polls_voted'] : '0',
+			'LastVoted'         => isset( $member['last_voted'] ) ? $member['last_voted'] : '',
+		);
+	}
+
+	/**
+	 * The tags as one delimited string, each one wrapped in pipes.
+	 *
+	 * Campaign Monitor segments text with "contains", and the pipes are what
+	 * make that safe: segmenting on "founding" would otherwise also catch
+	 * "founding-circle" and the segment would be quietly wrong for months.
+	 * Written as |poll-01|feedback-r2| it is segmented on |poll-01| and matches
+	 * that tag and nothing else.
+	 *
+	 * @param array $tags The tags.
+	 * @return string An empty string when there are none, not a bare pipe.
+	 */
+	public static function tag_string( $tags ) {
+		$tags = array_filter( array_map( 'strval', (array) $tags ) );
+
+		if ( empty( $tags ) ) {
+			return '';
+		}
+
+		// Campaign Monitor's text fields hold 250 characters and every tag a
+		// member has shares this one. Letting the platform truncate would leave
+		// a half-written label matching nothing, which breaks a segment without
+		// saying so, and that is the worst way for this to fail.
+		$out = '|' . implode( '|', $tags ) . '|';
+		if ( strlen( $out ) <= self::TAG_FIELD_LIMIT ) {
+			return $out;
+		}
+
+		// So something is dropped, and which one matters. A poll tag is the
+		// only kind that arrives on its own and keeps arriving, so poll tags go
+		// first, oldest before newest. Anything typed by hand is a deliberate
+		// label somebody meant, and is kept until there is no other choice.
+		$polls = array();
+		$rest  = array();
+
+		foreach ( $tags as $tag ) {
+			if ( 0 === strpos( $tag, 'poll-' ) ) {
+				$polls[] = $tag;
+			} else {
+				$rest[] = $tag;
+			}
+		}
+
+		$dropped = 0;
+
+		while ( strlen( $out ) > self::TAG_FIELD_LIMIT && ! empty( $polls ) ) {
+			array_shift( $polls );
+			$dropped++;
+			$out = '|' . implode( '|', array_merge( $rest, $polls ) ) . '|';
+		}
+
+		while ( strlen( $out ) > self::TAG_FIELD_LIMIT && count( $rest ) > 1 ) {
+			array_shift( $rest );
+			$dropped++;
+			$out = '|' . implode( '|', array_merge( $rest, $polls ) ) . '|';
+		}
+
+		// Said out loud on the settings page rather than discovered later, when
+		// a segment that should have matched somebody didn't.
+		if ( $dropped ) {
+			update_option( self::OPT_TAGS_TRIMMED, array(
+				'count' => $dropped,
+				'time'  => current_time( 'mysql' ),
+			) );
+		}
+
+		return ( strlen( $out ) > self::TAG_FIELD_LIMIT ) ? substr( $out, 0, self::TAG_FIELD_LIMIT ) : $out;
+	}
+
+	/**
 	 * Ensure the Group and Number custom fields exist on the list.
 	 *
 	 * Runs once: Campaign Monitor rejects a subscriber whose custom field keys
@@ -136,27 +316,64 @@ class FF_CM_Connector extends FF_Connector {
 	 * @return void
 	 */
 	private function ensure_custom_fields() {
-		if ( get_option( self::OPT_FIELDS_READY ) ) {
+		if ( self::FIELDS_VERSION === (string) get_option( self::OPT_FIELDS_READY ) ) {
 			return;
 		}
 
 		$list_id = get_option( self::OPT_LIST_ID );
 
-		foreach ( array( 'Group', 'Number' ) as $field ) {
+		foreach ( self::fields() as $field => $type ) {
 			// A failure here (including "already exists") is intentionally not
 			// fatal; a genuine problem surfaces on the subscribe call.
 			$this->request(
 				'POST',
 				"/lists/{$list_id}/customfields.json",
 				array(
-					'FieldName'                => $field,
-					'DataType'                 => 'Text',
+					'FieldName'                 => $field,
+					'DataType'                  => $type,
 					'VisibleInPreferenceCenter' => false,
 				)
 			);
 		}
 
-		update_option( self::OPT_FIELDS_READY, 1 );
+		update_option( self::OPT_FIELDS_READY, self::FIELDS_VERSION );
+	}
+
+	/**
+	 * A GET that hands back the decoded body.
+	 *
+	 * request() answers true or an error, which is everything a write needs and
+	 * nothing a read does.
+	 *
+	 * @param string $path The API path.
+	 * @return array|WP_Error
+	 */
+	private function fetch( $path ) {
+		$api_key = get_option( self::OPT_API_KEY );
+
+		$response = wp_remote_get( self::API_BASE . $path, array(
+			'timeout' => 20,
+			'headers' => array(
+				'Authorization' => 'Basic ' . base64_encode( $api_key . ':x' ),
+			),
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( $code < 200 || $code >= 300 ) {
+			$message = ( is_array( $data ) && isset( $data['Message'] ) )
+				? $data['Message']
+				: sprintf( /* translators: %d is an HTTP status code. */ __( 'Campaign Monitor returned HTTP %d.', 'founding-faces' ), $code );
+
+			return new WP_Error( 'ff_cm_error', $message, array( 'status' => $code ) );
+		}
+
+		return is_array( $data ) ? $data : array();
 	}
 
 	/**

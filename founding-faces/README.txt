@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.1.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,114 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.10 =
+* Feedback tags by version, not by the act of writing in. Giving feedback on a
+  note tags the member feedback-v12, so you can write back to exactly the
+  people who commented on that version and tell them what changed because of
+  them. "Everyone who ever writes to Nick" is a list nobody asked to be on;
+  "everyone who fed back on version 12" is an email worth sending.
+* Each note takes an "Email marketing tag" of its own, shown as it will be
+  sent, defaulting to the version number. Two products both reaching version 12
+  is what that field is for.
+* A question that is not about a note tags nothing, and neither does a note
+  with no version and no tag. The 'ff_feedback_tag' filter switches it off
+  entirely for anyone who would rather the platform knew none of it.
+
+= 1.1.9 =
+* Only poll interaction is shared with the email platform. Feedback is a
+  private message to Nick, and the fact that somebody writes in is part of what
+  makes it private, so neither the count nor the tag leaves the site. What a
+  member reads stays here too.
+* The gave-feedback tag is withdrawn from anyone who already carries it, on the
+  platform as well as here.
+* PollsVoted and LastVoted remain, because a poll is a public act in the
+  programme's own terms: the answer is counted and the result is published back
+  to everyone.
+
+= 1.1.8 =
+* Engagement is counted rather than tagged: polls voted in, last voted,
+  feedback sent, last feedback, notes read. Five figures that never grow,
+  where a tag per poll grows for ever.
+* That is the answer to a tag field filling up. Most segments want "voted in
+  more than three polls" or "has not voted since March", and neither of those
+  needs a tag at all. Tags stay for the specific ones you actually target.
+
+= 1.1.7 =
+* Poll tags read as words rather than an id: poll-packaging-colour, not
+  poll-14. A number means nothing in a segment builder six months later.
+* Each poll takes an "Email marketing tag" of its own, shown on the poll with
+  the tag as it will actually be sent. Left empty it comes from the title.
+* Long titles are cut at a word and given the poll id, so two questions that
+  start the same way stay distinguishable. Worth setting a short tag by hand on
+  a long question: Campaign Monitor holds all of a member's tags in one
+  250-character field.
+* Existing poll-14 style tags are renamed once on update and re-synced.
+
+= 1.1.6 =
+* Unsubscribes now come back the other way. A member can also leave from the
+  platform's own link at the foot of a campaign, which happens entirely outside
+  WordPress, and until now the site carried on emailing somebody who had asked
+  it not to.
+* The platform is asked once an hour who has left, and their consent is
+  switched off here too. You are told each time, with the email saying it came
+  from the platform. There is a "Check now" button and a last-checked time on
+  the Settings page, under the email platform section.
+* The answer is never pushed back where it came from, so the two sides cannot
+  chase each other in a loop.
+* Which emails consent actually stops: the news and the announcements. A
+  set-password link, a password reset and a reply to a message they sent still
+  arrive, because an unsubscribe is not a request to be locked out of the
+  account. The line is filterable through 'ff_may_email_member'.
+* A connector that cannot answer the question returns nothing and the site
+  carries on trusting its own record, exactly as before.
+
+= 1.1.5 =
+* The data sent to the email platform is split in two: structural state, one
+  field each, and one bag of loose labels. Status, member number, display
+  preference, application date and postcode are each their own field, because
+  each is something a journey branches on. Tags are for everything else.
+* Tags are stored in WordPress as a real array and serialised by each connector
+  on the way out, so neither platform's idea of a list leaks into the other.
+* Status is worked out rather than stored: withdrawn is the deactivated flag,
+  The 35 is having a number. A stored copy would be one more thing to keep in
+  step and the first thing to go wrong.
+* Applicants sync too, as Applicant, so "thanks for applying" can be a journey
+  rather than a single email. Declining moves them to Declined and withdrawing
+  a member moves them to Withdrawn: neither deletes anybody, and neither is an
+  unsubscribe, which is the member's own decision.
+* Tags arrive on their own when a member votes (voted, poll-14) or sends
+  feedback (gave-feedback), and can be edited by hand on the member's user
+  screen. Saving there syncs immediately.
+
+= 1.1.4 =
+* Final pH and natural origin, entered on the note rather than the product,
+  because they belong to a version of the formula and not to the thing itself.
+* The change from the last version is worked out and shown beside each figure,
+  so nothing has to be typed twice or remembered when a value is revised.
+  Leave a field empty on a version where it was not measured and the comparison
+  reaches back to the last one that has a figure.
+* The change is computed only against notes the reader is allowed to see, so a
+  vault figure cannot be read off a subtraction. A Circle member's change spans
+  whatever the vault held back, which is the change since the version they saw.
+* The product header shows the current figures, taken from the newest note that
+  has them, so there is no second field to keep in step.
+* Style controls for both chips, and a "Change since last version" section with
+  separate colours for up and down: which direction is good news depends on the
+  figure, so that decision is not made for you.
+
+= 1.1.3 =
+* Sending settings: sender name, sender email, a reply-to name and address, and
+  an optional blind copy of everything that goes to a member.
+* Applied to every email the plugin sends, including the tests, the message
+  notices and the password links, so a member never gets two emails from two
+  different names. Other WordPress emails are left alone.
+* The Emails screen shows how the message will arrive, above the subject line,
+  and says so plainly when no sender has been set.
+* The sender field carries the warning it needs: it has to be an address on
+  this site's domain. A Gmail or Outlook address there fails that provider's
+  own checks and lands the welcome emails in spam. The reply-to has no such
+  constraint, so that one can be any address actually read.
 
 = 1.1.2 =
 * The emails read properly on a phone. The card was a fixed 600px, so a phone

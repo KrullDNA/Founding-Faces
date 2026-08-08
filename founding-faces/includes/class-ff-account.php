@@ -447,7 +447,7 @@ class FF_Account {
 		) ) );
 
 		// Send to the NEW address so the change is confirmed by the owner.
-		wp_mail( $new_email, $subject, $body, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		wp_mail( $new_email, $subject, $body, FF_Emails::headers() );
 	}
 
 	/**

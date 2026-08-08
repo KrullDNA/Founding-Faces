@@ -553,6 +553,14 @@ class FF_Application {
 			FF_Members::approve( $app_id, 'the-circle' );
 		} else {
 			FF_Emails::send_application_received( $name, $email );
+
+			// Held for review, so they are an applicant rather than a member.
+			// They still belong on the list from today: "thanks for applying"
+			// is a journey, and it can only start from a record that exists.
+			$app = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ff_applications WHERE id = %d", $app_id ) ); // phpcs:ignore WordPress.DB
+			if ( $app ) {
+				FF_Connectors::sync_applicant( $app, 'applicant' );
+			}
 		}
 
 		// Send the applicant back to a clean success state.

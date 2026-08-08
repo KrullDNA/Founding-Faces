@@ -143,6 +143,8 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'stage'   => __( 'Stage badge', 'founding-faces' ),
 			'version' => __( 'Version number', 'founding-faces' ),
 			'date'    => __( 'Date', 'founding-faces' ),
+			'ph'      => __( 'Final pH', 'founding-faces' ),
+			'natural' => __( 'Natural origin', 'founding-faces' ),
 			'vault'   => __( 'The 35 vault chip', 'founding-faces' ),
 			'body'    => __( 'Body copy', 'founding-faces' ),
 			'gallery' => __( 'Images', 'founding-faces' ),
@@ -284,6 +286,109 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 		$this->ffds_chip_section( 'ver', '.ff-note-trial', __( 'Version number', 'founding-faces' ) );
 		$this->ffds_chip_section( 'date', '.ff-note-date', __( 'Date', 'founding-faces' ) );
 		$this->ffds_chip_section( 'vault', '.ff-note-vault', __( 'The 35 vault chip', 'founding-faces' ) );
+		$this->ffds_chip_section( 'ph', '.ff-note-ph', __( 'Final pH', 'founding-faces' ) );
+		$this->ffds_chip_section( 'nat', '.ff-note-natural', __( 'Natural origin', 'founding-faces' ) );
+		$this->ffds_change_section();
+	}
+
+	/**
+	 * The figure beside a measurement saying how far it moved.
+	 *
+	 * Up and down are coloured separately, because which direction is the good
+	 * news depends entirely on the figure: natural origin climbing is progress,
+	 * pH climbing may be the opposite.
+	 */
+	protected function ffds_change_section() {
+		$this->start_controls_section( 'ff_change_style', array(
+			'label' => __( 'Change since last version', 'founding-faces' ),
+			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+		) );
+
+		$sel = '{{WRAPPER}} .ff-note-delta';
+
+		$this->add_control( 'change_note', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => __( 'The small figure beside a pH or a natural origin, showing the move from the last version that had one. It appears only when there is something to report: no earlier figure, or no change, and nothing is drawn.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'change_typo',
+			'selector' => $sel,
+		) );
+
+		$this->add_control( 'change_up_color', array(
+			'label'     => __( 'When it has gone up', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-delta.is-up' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'change_down_color', array(
+			'label'     => __( 'When it has gone down', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-delta.is-down' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'change_up_bg', array(
+			'label'     => __( 'Background when up', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-delta.is-up' => 'background-color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'change_down_bg', array(
+			'label'     => __( 'Background when down', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-delta.is-down' => 'background-color: {{VALUE}};' ),
+		) );
+
+		$this->add_responsive_control( 'change_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( $sel => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'change_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( $sel => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'change_gap', array(
+			'label'      => __( 'Space before it', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
+			'selectors'  => array( $sel => 'margin-left: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'change_nudge', array(
+			'label'      => __( 'Nudge up or down', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => -10, 'max' => 10 ) ),
+			'selectors'  => array( $sel => 'display: inline-block; transform: translateY({{SIZE}}px);' ),
+		) );
+
+		$this->add_control( 'measure_label_heading', array(
+			'label'     => __( 'The word before the figure', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'measure_label_typo',
+			'selector' => '{{WRAPPER}} .ff-measure-label',
+		) );
+
+		$this->add_control( 'measure_label_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-measure-label' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->end_controls_section();
 	}
 
 	/**

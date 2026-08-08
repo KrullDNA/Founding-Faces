@@ -47,9 +47,17 @@ class FF_Post_Types {
 	// called (Trial number, renamed in 1.0.78) because the stored key cannot
 	// change without orphaning the numbers already on published notes.
 	const META_NOTE_TRIAL   = 'ff_note_trial';
+	// The two measured figures. Kept as strings, because an empty string means
+	// "not measured on this version" and 0 does not: a natural origin of zero is
+	// a real answer, and it must not read as a blank.
+	const META_NOTE_PH      = 'ff_note_ph';
+	const META_NOTE_NATURAL = 'ff_note_natural';
 	const META_NOTE_STAGE   = 'ff_note_stage';
 	const META_NOTE_GALLERY = 'ff_note_gallery';
 	const META_NOTE_AUDIENCE = 'ff_note_audience';
+
+	// The label a member carries after giving feedback on this note.
+	const META_NOTE_TAG = 'ff_note_tag';
 
 	// Post meta keys for a product's own fields (used by the product header).
 	const META_PRODUCT_STAGE  = 'ff_product_stage';
@@ -116,6 +124,70 @@ class FF_Post_Types {
 	 *
 	 * @return array
 	 */
+	/**
+	 * The tag a member carries after giving feedback on this note.
+	 *
+	 * A version is what feedback is actually about. "Everyone who fed back on
+	 * version 12" is a real email to write, and it cannot be written from a
+	 * single label saying somebody once said something.
+	 *
+	 * Short by default, because every tag a member has shares one
+	 * 250-character field on Campaign Monitor: feedback-v12 rather than the
+	 * whole note title. Where two products both reach version 12 the note's own
+	 * field is there to tell them apart.
+	 *
+	 * Returning an empty string from the filter switches the tagging off
+	 * entirely, for anyone who would rather the platform knew none of this.
+	 *
+	 * @param int $note_id The note the feedback was about.
+	 * @return string An empty string when there is nothing to tag.
+	 */
+	public static function note_tag( $note_id ) {
+		$note_id = (int) $note_id;
+		$custom  = trim( (string) get_post_meta( $note_id, self::META_NOTE_TAG, true ) );
+		$version = trim( (string) get_post_meta( $note_id, self::META_NOTE_TRIAL, true ) );
+
+		if ( '' !== $custom ) {
+			$slug = sanitize_title( $custom );
+		} elseif ( '' !== $version ) {
+			$slug = 'v' . sanitize_title( $version );
+		} else {
+			$post = get_post( $note_id );
+			$slug = ( $post && '' !== $post->post_name ) ? $post->post_name : '';
+		}
+
+		if ( strlen( $slug ) > 40 ) {
+			$cut  = substr( $slug, 0, 40 );
+			$last = strrpos( $cut, '-' );
+			$slug = ( false !== $last && $last > 20 ) ? substr( $cut, 0, $last ) : $cut;
+			$slug = trim( $slug, '-' ) . '-' . $note_id;
+		}
+
+		$tag = ( '' !== $slug ) ? 'feedback-' . $slug : '';
+
+		/**
+		 * Filter the tag a member carries after giving feedback on a note.
+		 *
+		 * @param string $tag     The tag, or an empty string for none.
+		 * @param int    $note_id The note.
+		 */
+		return (string) apply_filters( 'ff_feedback_tag', $tag, $note_id );
+	}
+
+	/**
+	 * A measured figure: a number as typed, or an empty string.
+	 *
+	 * @param mixed $value The submitted value.
+	 * @return string
+	 */
+	public static function sanitize_measure( $value ) {
+		$value = trim( (string) $value );
+		if ( '' === $value || ! is_numeric( $value ) ) {
+			return '';
+		}
+		return (string) ( 0 + $value );
+	}
+
 	public static function note_stages() {
 		return array(
 			'in_development'    => __( 'In development', 'founding-faces' ),
@@ -385,6 +457,21 @@ class FF_Post_Types {
 			'sanitize_callback' => 'sanitize_text_field',
 			'auth_callback'     => $edit,
 		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_PH, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_NATURAL, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_TAG, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
 		register_post_meta( self::NOTE_CPT, self::META_NOTE_STAGE, array(
 			'type'              => 'string',
 			'single'            => true,
@@ -566,6 +653,8 @@ class FF_Post_Types {
 		$product  = (int) get_post_meta( $post->ID, self::META_NOTE_PRODUCT, true );
 		$date     = get_post_meta( $post->ID, self::META_NOTE_DATE, true );
 		$trial    = get_post_meta( $post->ID, self::META_NOTE_TRIAL, true );
+		$ph       = get_post_meta( $post->ID, self::META_NOTE_PH, true );
+		$natural  = get_post_meta( $post->ID, self::META_NOTE_NATURAL, true );
 		$stage    = get_post_meta( $post->ID, self::META_NOTE_STAGE, true );
 		$gallery  = get_post_meta( $post->ID, self::META_NOTE_GALLERY, true );
 		$audience = get_post_meta( $post->ID, self::META_NOTE_AUDIENCE, true );
@@ -608,6 +697,40 @@ class FF_Post_Types {
 			<tr>
 				<th scope="row"><label for="ff_note_trial"><?php esc_html_e( 'Version number', 'founding-faces' ); ?></label></th>
 				<td><input type="text" name="ff_note_trial" id="ff_note_trial" value="<?php echo esc_attr( $trial ); ?>" class="regular-text" /></td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_note_tag"><?php esc_html_e( 'Email marketing tag', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="text" name="ff_note_tag" id="ff_note_tag" class="regular-text" value="<?php echo esc_attr( get_post_meta( $post->ID, self::META_NOTE_TAG, true ) ); ?>" />
+					<p class="description">
+						<?php
+						$note_tag = self::note_tag( $post->ID );
+						if ( '' !== $note_tag ) {
+							printf(
+								/* translators: %s: the tag as it will be sent. */
+								esc_html__( 'The label everyone who gives feedback on this note carries on your email platform, so you can write back to exactly the people who commented on this version. Left empty it comes from the version number. As it stands: %s', 'founding-faces' ),
+								'<code>' . esc_html( $note_tag ) . '</code>'
+							);
+						} else {
+							esc_html_e( 'The label everyone who gives feedback on this note carries on your email platform. Fill in a version number above, or type a tag here, and it appears.', 'founding-faces' );
+						}
+						?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_note_ph"><?php esc_html_e( 'Final pH', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" step="0.01" min="0" max="14" name="ff_note_ph" id="ff_note_ph" value="<?php echo esc_attr( $ph ); ?>" class="small-text" />
+					<p class="description"><?php esc_html_e( 'Leave empty on a version where it was not measured. The change from the last version that has a figure is worked out and shown for you, so there is nothing to keep in step by hand.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="ff_note_natural"><?php esc_html_e( 'Natural origin', 'founding-faces' ); ?></label></th>
+				<td>
+					<input type="number" step="0.1" min="0" max="100" name="ff_note_natural" id="ff_note_natural" value="<?php echo esc_attr( $natural ); ?>" class="small-text" /> %
+					<p class="description"><?php esc_html_e( 'As a percentage, ISO 16128 or however you are calculating it. Same again: leave it empty where it was not calculated.', 'founding-faces' ); ?></p>
+				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="ff_note_stage"><?php esc_html_e( 'Stage', 'founding-faces' ); ?></label></th>
@@ -702,6 +825,12 @@ class FF_Post_Types {
 		// ff_note_trial: the field was called Trial number until 1.0.78, and
 		// renaming the key would have detached every number already written.
 		update_post_meta( $post_id, self::META_NOTE_TRIAL, isset( $_POST['ff_note_trial'] ) ? sanitize_text_field( wp_unslash( $_POST['ff_note_trial'] ) ) : '' );
+
+		// A blank stays blank rather than becoming zero: not measured and
+		// measured at zero are different answers.
+		update_post_meta( $post_id, self::META_NOTE_TAG, isset( $_POST['ff_note_tag'] ) ? sanitize_title( wp_unslash( $_POST['ff_note_tag'] ) ) : '' );
+		update_post_meta( $post_id, self::META_NOTE_PH, self::sanitize_measure( isset( $_POST['ff_note_ph'] ) ? wp_unslash( $_POST['ff_note_ph'] ) : '' ) );
+		update_post_meta( $post_id, self::META_NOTE_NATURAL, self::sanitize_measure( isset( $_POST['ff_note_natural'] ) ? wp_unslash( $_POST['ff_note_natural'] ) : '' ) );
 
 		// Stage, only if it's one of the known keys.
 		$stage = isset( $_POST['ff_note_stage'] ) ? sanitize_key( wp_unslash( $_POST['ff_note_stage'] ) ) : '';

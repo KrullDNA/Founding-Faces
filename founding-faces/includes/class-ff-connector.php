@@ -62,6 +62,20 @@ abstract class FF_Connector {
 	abstract public function unsubscribe( $email );
 
 	/**
+	 * The addresses that have unsubscribed at the platform since a moment.
+	 *
+	 * Optional. A connector that cannot answer returns an empty array and the
+	 * site simply carries on trusting its own record, which is the behaviour
+	 * every connector had before this existed.
+	 *
+	 * @param string $since A MySQL datetime in the site's timezone.
+	 * @return array|WP_Error A list of email addresses.
+	 */
+	public function fetch_unsubscribes( $since ) {
+		return array();
+	}
+
+	/**
 	 * Whether the platform supports tags (Klaviyo does, Campaign Monitor doesn't).
 	 *
 	 * Defaults to false; a connector overrides this if it can use tags.
@@ -86,6 +100,11 @@ class FF_Connectors {
 
 	// Option storing the last sync error, for a hint on the settings screen.
 	const OPT_LAST_ERROR = 'ff_last_sync_error';
+
+	// When the platform was last asked who had unsubscribed, and the hook name
+	// of the schedule that asks.
+	const OPT_LAST_PULL = 'ff_last_unsub_pull';
+	const CRON_HOOK     = 'ff_pull_unsubscribes';
 
 	// The registered connector instances, keyed by id.
 	protected static $connectors = array();
@@ -113,6 +132,109 @@ class FF_Connectors {
 
 		// Sync a member to the active platform the moment they're approved.
 		add_action( 'ff_member_approved', array( __CLASS__, 'sync_member' ), 10, 1 );
+
+		// Ask the platform, hourly, who has unsubscribed over there.
+		add_action( self::CRON_HOOK, array( __CLASS__, 'pull_unsubscribes' ) );
+		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+			wp_schedule_event( time() + 300, 'hourly', self::CRON_HOOK );
+		}
+
+		// The "Check now" button on the settings page.
+		add_action( 'admin_post_ff_pull_unsubscribes', array( __CLASS__, 'handle_manual_pull' ) );
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Coming back the other way.
+	 *
+	 * A member can unsubscribe in two places: the link at the foot of one of
+	 * our own emails, and the platform's own link at the foot of a campaign.
+	 * The first is ours to handle and always was. The second happens entirely
+	 * outside WordPress, and until the site is told about it the site carries
+	 * on emailing somebody who has asked it not to. So the platform is asked,
+	 * on a schedule, who has left.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * Ask the active platform who has unsubscribed, and honour it here.
+	 *
+	 * @return int|WP_Error How many members were switched off, or the error.
+	 */
+	public static function pull_unsubscribes() {
+		$connector = self::get_active();
+		if ( ! $connector || ! $connector->is_configured() ) {
+			return 0;
+		}
+
+		// A generous overlap on the first run and on every run after it. Asking
+		// again about somebody already switched off costs nothing, and missing
+		// one because two clocks disagree costs a member an unwanted email.
+		$since = (string) get_option( self::OPT_LAST_PULL, '' );
+		if ( '' === $since ) {
+			$since = gmdate( 'Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS );
+		} else {
+			$since = gmdate( 'Y-m-d H:i:s', strtotime( $since ) - HOUR_IN_SECONDS );
+		}
+
+		$emails = $connector->fetch_unsubscribes( $since );
+
+		if ( is_wp_error( $emails ) ) {
+			update_option(
+				self::OPT_LAST_ERROR,
+				array(
+					'message' => $emails->get_error_message(),
+					'email'   => '',
+					'time'    => current_time( 'mysql' ),
+				)
+			);
+			return $emails;
+		}
+
+		$changed = 0;
+
+		foreach ( (array) $emails as $email ) {
+			if ( ! is_email( $email ) ) {
+				continue;
+			}
+
+			$user = get_user_by( 'email', $email );
+			if ( ! $user ) {
+				continue; // Somebody on the list who was never a member here.
+			}
+
+			if ( FF_Unsubscribe::apply( $user->ID, 'platform' ) ) {
+				$changed++;
+			}
+		}
+
+		// Stamped only on a clean run, so a failed one is retried in full.
+		update_option( self::OPT_LAST_PULL, current_time( 'mysql' ) );
+
+		return $changed;
+	}
+
+	/**
+	 * The "Check now" button on the settings page.
+	 */
+	public static function handle_manual_pull() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to do that.', 'founding-faces' ) );
+		}
+		check_admin_referer( 'ff_pull_unsubscribes' );
+
+		$result = self::pull_unsubscribes();
+
+		$back = add_query_arg(
+			array(
+				'page'      => 'founding-faces-settings',
+				'ff_pulled' => is_wp_error( $result ) ? 'error' : (int) $result,
+			),
+			admin_url( 'admin.php' )
+		);
+
+		wp_safe_redirect( $back );
+		exit;
 	}
 
 	/**
@@ -244,13 +366,150 @@ class FF_Connectors {
 			? __( 'The 35', 'founding-faces' )
 			: __( 'The Circle', 'founding-faces' );
 
+		$status   = FF_Members::status( $user_id );
+		$tier     = FF_Members::display_tier( $user_id );
+		$tiers    = FF_Members::display_tiers();
+		$app_date = self::application_date( $user_id );
+
 		return array(
-			'user_id'    => (int) $user_id,
-			'email'      => $user ? $user->user_email : '',
-			'name'       => get_user_meta( $user_id, FF_Members::META_REAL_NAME, true ),
-			'number'     => $number ? (int) $number : '',
-			'group'      => $group,
-			'group_slug' => $group_slug,
+			'user_id'            => (int) $user_id,
+			'email'              => $user ? $user->user_email : '',
+			'name'               => get_user_meta( $user_id, FF_Members::META_REAL_NAME, true ),
+			'number'             => $number ? (int) $number : '',
+			'group'              => $group,
+			'group_slug'         => $group_slug,
+
+			// The structural state. Each of these is its own field on the
+			// platform, because each one is something a journey branches on and
+			// a branch cannot be asked to read a label out of a list.
+			'status'             => FF_Members::status_label( $status ),
+			'status_slug'        => $status,
+			'display_preference' => isset( $tiers[ $tier ] ) ? $tiers[ $tier ] : $tier,
+			'application_date'   => $app_date,
+			'postcode'           => (string) get_user_meta( $user_id, FF_Members::META_POSTCODE, true ),
+
+			// The loose labels, as a real array. Each connector writes them out
+			// in whatever shape its platform understands: a pipe-wrapped string
+			// for Campaign Monitor, a list property for Klaviyo.
+			'tags'               => FF_Members::tags( $user_id ),
+		) + self::engagement( $user_id );
+	}
+
+	/**
+	 * How much a member has taken part, counted rather than tagged.
+	 *
+	 * Voting only. A poll is a public act in the programme's own terms: a
+	 * member answers a question knowing the answer is counted, and the
+	 * aggregate is published back to everyone. Feedback is not that. It is a
+	 * private message to Nick, and the fact that somebody writes in is part of
+	 * what makes it private. Which notes a member reads is nobody's business
+	 * either. Neither leaves the site.
+	 *
+	 * Counting rather than tagging is also what stops a tag list growing for
+	 * ever: "voted in eleven polls" and "last voted in March" are two small
+	 * fields that never grow, and they answer most of what a segment wants.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return array
+	 */
+	private static function engagement( $user_id ) {
+		global $wpdb;
+
+		$votes   = $wpdb->prefix . 'ff_poll_votes';
+		$user_id = (int) $user_id;
+
+		$poll_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$votes} WHERE member_id = %d", $user_id ) ); // phpcs:ignore WordPress.DB
+		$poll_last  = (string) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(voted_at) FROM {$votes} WHERE member_id = %d", $user_id ) ); // phpcs:ignore WordPress.DB
+
+		return array(
+			'polls_voted' => $poll_count,
+			'last_voted'  => $poll_last ? substr( $poll_last, 0, 10 ) : '',
 		);
+	}
+
+	/**
+	 * The same shape again, for somebody who has applied and nothing more.
+	 *
+	 * An applicant has no WordPress account, only a row in ff_applications, but
+	 * they are exactly who a "thanks for applying" journey is for. So the
+	 * payload is built from the application instead, with the fields a member
+	 * would have and an applicant hasn't left empty rather than absent.
+	 *
+	 * @param object $app     An ff_applications row.
+	 * @param string $status  A FF_Members::statuses() key.
+	 * @return array
+	 */
+	public static function build_applicant_payload( $app, $status = 'applicant' ) {
+		return array(
+			'user_id'            => 0,
+			'email'              => isset( $app->email ) ? $app->email : '',
+			'name'               => isset( $app->name ) ? $app->name : '',
+			'number'             => '',
+			'group'              => '',
+			'group_slug'         => '',
+			'status'             => FF_Members::status_label( $status ),
+			'status_slug'        => $status,
+			'display_preference' => '',
+			'application_date'   => isset( $app->created_at ) ? substr( (string) $app->created_at, 0, 10 ) : '',
+			'postcode'           => isset( $app->postcode ) ? (string) $app->postcode : '',
+			'tags'               => array(),
+			'polls_voted'        => 0,
+			'last_voted'         => '',
+		);
+	}
+
+	/**
+	 * Push an applicant, or a declined applicant, to the platform.
+	 *
+	 * Consent is the same gate as everywhere else: the box on the application
+	 * form, and nothing goes anywhere without it. A test application never
+	 * reaches the live list.
+	 *
+	 * @param object $app    An ff_applications row.
+	 * @param string $status A FF_Members::statuses() key.
+	 * @return void
+	 */
+	public static function sync_applicant( $app, $status = 'applicant' ) {
+		$connector = self::get_active();
+		if ( ! $connector || ! $connector->is_configured() ) {
+			return;
+		}
+
+		if ( empty( $app ) || empty( $app->email ) || empty( $app->consent ) ) {
+			return;
+		}
+
+		$result = $connector->subscribe( self::build_applicant_payload( $app, $status ) );
+
+		if ( is_wp_error( $result ) ) {
+			update_option(
+				self::OPT_LAST_ERROR,
+				array(
+					'message' => $result->get_error_message(),
+					'email'   => $app->email,
+					'time'    => current_time( 'mysql' ),
+				)
+			);
+		}
+	}
+
+	/**
+	 * The date a member first applied, as Y-m-d.
+	 *
+	 * @param int $user_id The member's user id.
+	 * @return string An empty string when there is no application behind them.
+	 */
+	private static function application_date( $user_id ) {
+		global $wpdb;
+
+		$app_id = (int) get_user_meta( $user_id, FF_Members::META_APP_ID, true );
+		if ( ! $app_id ) {
+			return '';
+		}
+
+		$table = $wpdb->prefix . 'ff_applications';
+		$date  = $wpdb->get_var( $wpdb->prepare( "SELECT created_at FROM {$table} WHERE id = %d", $app_id ) ); // phpcs:ignore WordPress.DB
+
+		return $date ? substr( (string) $date, 0, 10 ) : '';
 	}
 }
