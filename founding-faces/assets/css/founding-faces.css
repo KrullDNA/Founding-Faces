@@ -1603,13 +1603,13 @@
 .ff-slide-img {
 	display: block;
 	width: 100%;
-	/* The three the widget sets, each with its own default here rather than in
-	 * the widget alone. A height on its own then still crops from the centre,
-	 * which is what anybody setting a height meant, instead of stretching the
-	 * whole picture into the box. */
-	height: var(--ff-img-h, auto);
-	object-fit: var(--ff-img-fit, cover);
-	object-position: var(--ff-img-pos, center center);
+	height: auto;
+	/* Both harmless while the height is auto, since there is nothing to crop
+	 * against. They matter the moment a height is set: without them an image
+	 * given a height and nothing else stretches to fill it instead of being
+	 * cropped, which is never what setting a height meant. */
+	object-fit: cover;
+	object-position: center center;
 }
 
 /* The arrows start with no chrome at all: no background, no border, no size

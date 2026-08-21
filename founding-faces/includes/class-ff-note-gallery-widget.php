@@ -265,21 +265,19 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
 
-		// All three go out as custom properties on the slider rather than as
-		// declarations on the image, for two reasons. The stylesheet can then
-		// hold the sensible default for each one, so cropping still happens
-		// when only a height has been set. And neither of the two that follow
-		// needs a condition on the height any more: a condition is evaluated
-		// again when the front end's CSS is written, and one that answers
-		// differently there than it did in the editor produces exactly this,
-		// a crop that looks right while designing and is missing on the page.
+		// None of these three carries a condition. A condition is evaluated
+		// again when the front end's stylesheet is written, separately from the
+		// editor's, and one that answers differently in the two places gives a
+		// crop that looks right while designing and is absent on the page.
+		// The defaults for fit and position live in the stylesheet too, so a
+		// height set on its own crops rather than stretching.
 		$this->add_responsive_control( 'img_height', array(
 			'label'       => __( 'Image height', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SLIDER,
 			'size_units'  => array( 'px', 'vh' ),
 			'range'       => array( 'px' => array( 'min' => 80, 'max' => 900 ) ),
 			'description' => __( 'Left empty, each image keeps its own proportions and the two settings below do nothing.', 'founding-faces' ),
-			'selectors'   => array( '{{WRAPPER}} .ff-note-slider' => '--ff-img-h: {{SIZE}}{{UNIT}};' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-slide-img' => 'height: {{SIZE}}{{UNIT}};' ),
 		) );
 
 		$this->add_responsive_control( 'img_fit', array(
@@ -292,7 +290,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 				'fill'    => __( 'Stretch', 'founding-faces' ),
 				'none'    => __( 'Original size', 'founding-faces' ),
 			),
-			'selectors' => array( '{{WRAPPER}} .ff-note-slider' => '--ff-img-fit: {{VALUE}};' ),
+			'selectors' => array( '{{WRAPPER}} .ff-slide-img' => 'object-fit: {{VALUE}};' ),
 		) );
 
 		$this->add_responsive_control( 'img_position', array(
@@ -307,7 +305,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 				'right center'  => __( 'Right', 'founding-faces' ),
 			),
 			'description' => __( 'Which part of the picture survives the crop. Only has anything to do when a height is set above.', 'founding-faces' ),
-			'selectors'   => array( '{{WRAPPER}} .ff-note-slider' => '--ff-img-pos: {{VALUE}};' ),
+			'selectors'   => array( '{{WRAPPER}} .ff-slide-img' => 'object-position: {{VALUE}};' ),
 		) );
 
 		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
