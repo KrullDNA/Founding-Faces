@@ -41,6 +41,7 @@ class FF_Display {
 		add_shortcode( 'ff_product_header', array( __CLASS__, 'sc_product_header' ) );
 		add_shortcode( 'ff_home', array( __CLASS__, 'sc_home' ) );
 		add_shortcode( 'ff_note_gallery', array( __CLASS__, 'sc_note_gallery' ) );
+		add_shortcode( 'ff_note_nav', array( __CLASS__, 'sc_note_nav' ) );
 
 		// A note is read when its own page is opened, whatever drew that page:
 		// the Single Note widget, an Elementor template of dynamic tags, or a
@@ -73,6 +74,9 @@ class FF_Display {
 
 		require_once FF_PATH . 'includes/class-ff-note-gallery-widget.php';
 		$widgets_manager->register( new FF_Note_Gallery_Widget() );
+
+		require_once FF_PATH . 'includes/class-ff-note-nav-widget.php';
+		$widgets_manager->register( new FF_Note_Nav_Widget() );
 	}
 
 	/**
@@ -134,7 +138,7 @@ class FF_Display {
 	 * @param int $product_id The product the notes belong to.
 	 * @return WP_Post[]
 	 */
-	private static function product_notes( $product_id ) {
+	public static function product_notes( $product_id ) {
 		static $cache = array();
 
 		$key = (int) $product_id . '|' . get_current_user_id();
@@ -171,6 +175,262 @@ class FF_Display {
 
 		$cache[ $key ] = $notes;
 		return $notes;
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * Moving between the versions of one product.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * The note before or after this one, within the same product.
+	 *
+	 * The list of notes is one long stream across every product, but a member
+	 * reading version 12 of a serum wants version 11 of that serum, not
+	 * whatever happened to be published in between for something else. So the
+	 * neighbours are found among the product's own notes and nothing else.
+	 *
+	 * Gated notes are already absent from that list, so the step skips over a
+	 * vault version rather than landing a Circle member on a locked page.
+	 *
+	 * @param int    $note_id   The note being read.
+	 * @param string $direction 'prev' for the version before, 'next' for after.
+	 * @return WP_Post|null
+	 */
+	public static function adjacent_note( $note_id, $direction = 'prev' ) {
+		$note_id    = (int) $note_id;
+		$product_id = (int) get_post_meta( $note_id, FF_Post_Types::META_NOTE_PRODUCT, true );
+
+		if ( ! $product_id ) {
+			return null;
+		}
+
+		// Newest first, so the note before this one in reading order sits after
+		// it in the list.
+		$notes = array_values( self::product_notes( $product_id ) );
+		$here  = null;
+
+		foreach ( $notes as $i => $note ) {
+			if ( (int) $note->ID === $note_id ) {
+				$here = $i;
+				break;
+			}
+		}
+
+		if ( null === $here ) {
+			return null;
+		}
+
+		$want = ( 'next' === $direction ) ? $here - 1 : $here + 1;
+
+		return isset( $notes[ $want ] ) ? $notes[ $want ] : null;
+	}
+
+	/**
+	 * [ff_note_nav]: the previous and next version of this product.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function sc_note_nav( $atts ) {
+		self::enqueue();
+
+		$atts = shortcode_atts( array(
+			'note'      => 0,
+			'show'      => 'both',
+			'prev_text' => '',
+			'next_text' => '',
+			'detail'    => 'version',
+			'missing'   => 'hide',
+		), $atts, 'ff_note_nav' );
+
+		if ( ! FF_Gating::can_view_members_area() ) {
+			return '';
+		}
+
+		return self::note_nav_html( self::note_context_id( $atts['note'] ), $atts );
+	}
+
+	/**
+	 * The navigation markup for one note.
+	 *
+	 * @param int   $note_id The note being read.
+	 * @param array $args    Labels, icons and what to do with a missing end.
+	 * @return string
+	 */
+	public static function note_nav_html( $note_id, $args = array() ) {
+		$note_id = (int) $note_id;
+		if ( ! $note_id ) {
+			return '';
+		}
+
+		$a = wp_parse_args( $args, array(
+			'show'      => 'both',
+			'prev_text' => '',
+			'next_text' => '',
+			'prev_icon' => '',
+			'next_icon' => '',
+			'detail'    => 'version',
+			'missing'   => 'hide',
+		) );
+
+		$links = array();
+
+		foreach ( array( 'prev', 'next' ) as $dir ) {
+			if ( 'both' !== $a['show'] && $dir !== $a['show'] ) {
+				continue;
+			}
+
+			$target = self::adjacent_note( $note_id, $dir );
+
+			if ( ! $target && 'hide' === $a['missing'] ) {
+				continue;
+			}
+
+			$links[] = self::note_nav_link( $dir, $target, $a );
+		}
+
+		if ( empty( $links ) ) {
+			return '';
+		}
+
+		return '<nav class="ff-note-nav">' . implode( '', $links ) . '</nav>';
+	}
+
+	/**
+	 * One link in the navigation, live or spent.
+	 *
+	 * A spent one is still drawn when the widget is set to keep it, because a
+	 * row that loses half its contents on the oldest note is a layout that
+	 * moves about. It is a span rather than a link, so nothing is clickable
+	 * that goes nowhere.
+	 *
+	 * @param string       $dir    'prev' or 'next'.
+	 * @param WP_Post|null $target The note it leads to, if there is one.
+	 * @param array        $a      The resolved arguments.
+	 * @return string
+	 */
+	private static function note_nav_link( $dir, $target, $a ) {
+		$default = ( 'prev' === $dir )
+			? __( 'Previous version', 'founding-faces' )
+			: __( 'Next version', 'founding-faces' );
+
+		$label = trim( (string) $a[ $dir . '_text' ] );
+		$label = ( '' !== $label ) ? FF_Text::inline( $label ) : esc_html( $default );
+
+		$icon = (string) $a[ $dir . '_icon' ];
+		$inner = '';
+
+		if ( '' !== $icon && 'next' !== $dir ) {
+			$inner .= '<span class="ff-note-nav-icon">' . $icon . '</span>';
+		}
+
+		$inner .= '<span class="ff-note-nav-text"><span class="ff-note-nav-label">' . $label . '</span>';
+
+		if ( $target && 'none' !== $a['detail'] ) {
+			$detail = ( 'title' === $a['detail'] )
+				? get_the_title( $target )
+				: self::note_nav_version( $target );
+
+			if ( '' !== $detail ) {
+				$inner .= '<span class="ff-note-nav-detail">' . esc_html( $detail ) . '</span>';
+			}
+		}
+
+		$inner .= '</span>';
+
+		if ( '' !== $icon && 'next' === $dir ) {
+			$inner .= '<span class="ff-note-nav-icon">' . $icon . '</span>';
+		}
+
+		$classes = 'ff-note-nav-link ff-note-nav-' . $dir;
+
+		if ( ! $target ) {
+			return '<span class="' . $classes . ' is-spent" aria-hidden="true">' . $inner . '</span>';
+		}
+
+		return '<a class="' . $classes . '" href="' . esc_url( get_permalink( $target ) ) . '">' . $inner . '</a>';
+	}
+
+	/**
+	 * "Version 11", or the title when there is no version number.
+	 *
+	 * @param WP_Post $note The note.
+	 * @return string
+	 */
+	private static function note_nav_version( $note ) {
+		$version = trim( (string) get_post_meta( $note->ID, FF_Post_Types::META_NOTE_TRIAL, true ) );
+
+		if ( '' === $version ) {
+			return get_the_title( $note );
+		}
+
+		/* translators: %s is a version number. */
+		return sprintf( __( 'Version %s', 'founding-faces' ), $version );
+	}
+
+	/**
+	 * The navigation as a sample, for the editor.
+	 *
+	 * Both ends live, because a design has to cover the row with two links in
+	 * it even if the note open in the preview happens to be the newest.
+	 *
+	 * @param array $args The resolved arguments.
+	 * @return string
+	 */
+	public static function sample_note_nav( $args = array() ) {
+		$a = wp_parse_args( $args, array(
+			'show'      => 'both',
+			'prev_text' => '',
+			'next_text' => '',
+			'prev_icon' => '',
+			'next_icon' => '',
+			'detail'    => 'version',
+		) );
+
+		$out = '<nav class="ff-note-nav">';
+
+		foreach ( array( 'prev' => '11', 'next' => '13' ) as $dir => $version ) {
+			if ( 'both' !== $a['show'] && $dir !== $a['show'] ) {
+				continue;
+			}
+
+			$default = ( 'prev' === $dir )
+				? __( 'Previous version', 'founding-faces' )
+				: __( 'Next version', 'founding-faces' );
+
+			$label = trim( (string) $a[ $dir . '_text' ] );
+			$label = ( '' !== $label ) ? FF_Text::inline( $label ) : esc_html( $default );
+
+			$icon  = (string) $a[ $dir . '_icon' ];
+			$inner = '';
+
+			if ( '' !== $icon && 'next' !== $dir ) {
+				$inner .= '<span class="ff-note-nav-icon">' . $icon . '</span>';
+			}
+
+			$inner .= '<span class="ff-note-nav-text"><span class="ff-note-nav-label">' . $label . '</span>';
+
+			if ( 'none' !== $a['detail'] ) {
+				$detail = ( 'title' === $a['detail'] )
+					? __( 'Sample note, texture test', 'founding-faces' )
+					/* translators: %s is a version number. */
+					: sprintf( __( 'Version %s', 'founding-faces' ), $version );
+
+				$inner .= '<span class="ff-note-nav-detail">' . esc_html( $detail ) . '</span>';
+			}
+
+			$inner .= '</span>';
+
+			if ( '' !== $icon && 'next' === $dir ) {
+				$inner .= '<span class="ff-note-nav-icon">' . $icon . '</span>';
+			}
+
+			$out .= '<a class="ff-note-nav-link ff-note-nav-' . $dir . '" href="#">' . $inner . '</a>';
+		}
+
+		return $out . '</nav>';
 	}
 
 	/**

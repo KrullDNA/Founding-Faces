@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.12
+Stable tag: 1.1.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.13 =
+* A Note Navigation widget for the single note page, stepping to the version
+  before and after within the same product. Notes published for other products
+  in between are passed over, which is the whole point of it.
+* A version the reader is not allowed to see is skipped rather than linked to,
+  so a Circle member never lands on a locked page. Their step reaches back to
+  the last version they were shown.
+* Each link can carry the version it goes to, or the note title, or just the
+  label. At the first and last version the link can either disappear or stay in
+  place as plain text, which keeps the row from shifting about.
+* Icons, wording, layout and every colour are controls. Also [ff_note_nav].
 
 = 1.1.12 =
 * A Version column on the notes list, beside the product. Sorted as a number,

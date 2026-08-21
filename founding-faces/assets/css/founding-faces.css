@@ -261,6 +261,42 @@
 	color: var(--ff-muted);
 }
 
+/* Stepping between the versions of one product. Structure only: the row is a
+ * flex row so the two ends can be pushed apart, and the link is a flex row so
+ * an icon can sit beside the wording. Every colour, border, space and size is
+ * an Elementor control. */
+.ff-note-nav {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	gap: 1rem;
+	justify-content: space-between;
+}
+
+.ff-note-nav-link {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	text-decoration: none;
+	color: inherit;
+}
+
+.ff-note-nav-icon {
+	display: inline-flex;
+	align-items: center;
+	line-height: 0;
+	flex: 0 0 auto;
+}
+
+.ff-note-nav-text {
+	display: block;
+}
+
+.ff-note-nav-label,
+.ff-note-nav-detail {
+	display: block;
+}
+
 /* The change beside a figure. No colour of its own: which direction counts as
  * good news depends on the figure, so both are Elementor's to decide. */
 .ff-note-delta {
