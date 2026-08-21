@@ -571,6 +571,7 @@ class FF_Post_Types {
 			// scan for.
 			if ( 'title' === $key ) {
 				$out['ff_product'] = __( 'Product', 'founding-faces' );
+				$out['ff_version'] = __( 'Version', 'founding-faces' );
 			}
 		}
 
@@ -587,6 +588,19 @@ class FF_Post_Types {
 	 * @param int    $post_id The note.
 	 */
 	public static function note_column( $column, $post_id ) {
+		if ( 'ff_version' === $column ) {
+			$version = trim( (string) get_post_meta( $post_id, self::META_NOTE_TRIAL, true ) );
+
+			if ( '' === $version ) {
+				echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">'
+					. esc_html__( 'No version number', 'founding-faces' ) . '</span>';
+				return;
+			}
+
+			echo esc_html( $version );
+			return;
+		}
+
 		if ( 'ff_product' !== $column ) {
 			return;
 		}
@@ -621,6 +635,7 @@ class FF_Post_Types {
 	 */
 	public static function note_sortable_columns( $columns ) {
 		$columns['ff_product'] = 'ff_product';
+		$columns['ff_version'] = 'ff_version';
 		return $columns;
 	}
 
@@ -686,8 +701,19 @@ class FF_Post_Types {
 			) );
 		}
 
-		if ( 'ff_product' === $query->get( 'orderby' ) ) {
+		$orderby = $query->get( 'orderby' );
+
+		if ( 'ff_product' === $orderby ) {
 			$query->set( 'meta_key', self::META_NOTE_PRODUCT ); // phpcs:ignore WordPress.DB.SlowDBQuery
+			$query->set( 'orderby', 'meta_value_num' );
+		}
+
+		if ( 'ff_version' === $orderby ) {
+			// Sorted as a number, so 10 comes after 9 rather than after 1. The
+			// field is free text because a version can be 2.1 or 4b, and MySQL
+			// reads the leading number out of those and ignores the rest, which
+			// is the right order in every case that matters.
+			$query->set( 'meta_key', self::META_NOTE_TRIAL ); // phpcs:ignore WordPress.DB.SlowDBQuery
 			$query->set( 'orderby', 'meta_value_num' );
 		}
 	}
