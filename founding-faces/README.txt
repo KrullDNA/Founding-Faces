@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.10
+Stable tag: 1.1.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,13 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.11 =
+* A Product column on the notes list, right after the title, and a product
+  dropdown above it to filter the list down to one product's notes.
+* The product name in the column is itself the filter link, since seeing one
+  note for a product is usually the moment you want the rest of them.
+* The column sorts too, which groups each product's notes together.
 
 = 1.1.10 =
 * Feedback tags by version, not by the act of writing in. Giving feedback on a
