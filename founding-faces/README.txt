@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.12
+Stable tag: 1.1.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,33 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.14 =
+* The Notes widget takes a JetEngine listing template for its cards, which the
+  single Note and Home widgets already had and this one did not. So the notes
+  under a product can be designed either with the built-in card controls or in
+  a listing template, whichever suits.
+* Each note is rendered through the listing one at a time rather than handing
+  JetEngine the query. That matters: the notes have already been narrowed to
+  this product and put past the vault gate, and a query built in JetEngine
+  would know about neither, which is how a Circle member ends up seeing a
+  35-only note.
+* A deleted listing falls back to the built-in card rather than an empty grid.
+* The widget defaults to following the product on the page, and the option that
+  means "no filter" is now labelled Every product rather than Select a product,
+  which said nothing about what it did.
+
+= 1.1.13 =
+* A Note Navigation widget for the single note page, stepping to the version
+  before and after within the same product. Notes published for other products
+  in between are passed over, which is the whole point of it.
+* A version the reader is not allowed to see is skipped rather than linked to,
+  so a Circle member never lands on a locked page. Their step reaches back to
+  the last version they were shown.
+* Each link can carry the version it goes to, or the note title, or just the
+  label. At the first and last version the link can either disappear or stay in
+  place as plain text, which keeps the row from shifting about.
+* Icons, wording, layout and every colour are controls. Also [ff_note_nav].
 
 = 1.1.12 =
 * A Version column on the notes list, beside the product. Sorted as a number,
