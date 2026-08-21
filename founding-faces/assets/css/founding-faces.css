@@ -1600,16 +1600,28 @@
 	line-height: 0;
 }
 
-.ff-slide-img {
+/* Two selectors, and scoped through .ff-slide for the weight.
+ *
+ * An image optimiser serving WebP wraps the img in a <picture> and carries our
+ * class up onto the wrapper, so on a site running one of those .ff-slide-img is
+ * the <picture> and the <img> inside it has no class at all. A height on a
+ * wrapper does nothing useful and object-fit on a wrapper does nothing
+ * whatsoever, so naming only the class leaves the actual picture unstyled.
+ *
+ * The .ff-slide prefix is there to outweigh Elementor's own
+ * ".elementor img { height: auto; border-radius: 0 }", which is one class and
+ * one element and would otherwise win on a straight class selector. */
+.ff-slide .ff-slide-img,
+.ff-slide .ff-slide-img img {
 	display: block;
 	width: 100%;
-	/* The three the widget sets, each with its own default here rather than in
-	 * the widget alone. A height on its own then still crops from the centre,
-	 * which is what anybody setting a height meant, instead of stretching the
-	 * whole picture into the box. */
-	height: var(--ff-img-h, auto);
-	object-fit: var(--ff-img-fit, cover);
-	object-position: var(--ff-img-pos, center center);
+	height: auto;
+	/* Both harmless while the height is auto, since there is nothing to crop
+	 * against. They matter the moment a height is set: without them an image
+	 * given a height and nothing else stretches to fill it instead of being
+	 * cropped, which is never what setting a height meant. */
+	object-fit: cover;
+	object-position: center center;
 }
 
 /* The arrows start with no chrome at all: no background, no border, no size
