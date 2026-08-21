@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.17
+Stable tag: 1.1.18
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,15 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.18 =
+* The same <picture> wrapper fault, in the three other places the plugin draws
+  an attachment: the note card's own image grid, the poll option images, and
+  the JetEngine gallery callback. All three were styling a wrapper on any site
+  running a WebP optimiser.
+* The JetEngine one used an inline style attribute, which moves to the wrapper
+  with nothing left behind and cannot be written against twice. It uses a class
+  now, like everything else.
 
 = 1.1.17 =
 * Fixed the gallery crop for real, with the cause rather than a guess at it.

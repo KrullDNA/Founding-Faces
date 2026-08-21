@@ -227,7 +227,7 @@ class FF_JetEngine {
 
 		$out = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">';
 		foreach ( $ids as $id ) {
-			$img = wp_get_attachment_image( $id, 'medium', false, array( 'style' => 'width:100%;height:120px;object-fit:cover;border-radius:6px;display:block;', 'loading' => 'lazy' ) );
+			$img = wp_get_attachment_image( $id, 'medium', false, array( 'class' => 'ff-je-gallery-img', 'loading' => 'lazy' ) );
 			if ( $img ) {
 				$full = wp_get_attachment_image_url( $id, 'full' );
 				$out .= '<a href="' . esc_url( $full ) . '" target="_blank" rel="noopener">' . $img . '</a>';
