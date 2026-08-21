@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.14
+Stable tag: 1.1.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.15 =
+* Fixed: the gallery's crop settings applied in the editor and not on the front
+  end, so an image given a height was stretched to fill it rather than cropped.
+  Both settings were hidden behind a condition on the height, and a condition
+  is worked out again when the front end's stylesheet is written. One that
+  answers differently there than it did in the editor produces exactly this.
+* Height, fit and crop position now travel as custom properties, with their
+  defaults held in the stylesheet, so a height set on its own crops from the
+  centre rather than stretching, whatever else does or does not reach the page.
+* Crop position is per device now, like the other two.
 
 = 1.1.14 =
 * The Notes widget takes a JetEngine listing template for its cards, which the
