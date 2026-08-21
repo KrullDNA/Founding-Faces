@@ -539,6 +539,157 @@ class FF_Post_Types {
 		add_action( 'save_post_' . self::NOTE_CPT, array( __CLASS__, 'save_note_meta' ), 10, 2 );
 		add_action( 'save_post_' . self::PRODUCT_CPT, array( __CLASS__, 'save_product_meta' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_note_admin' ) );
+
+		// The notes list, which is the screen this plugin is worked from.
+		add_filter( 'manage_' . self::NOTE_CPT . '_posts_columns', array( __CLASS__, 'note_columns' ) );
+		add_action( 'manage_' . self::NOTE_CPT . '_posts_custom_column', array( __CLASS__, 'note_column' ), 10, 2 );
+		add_filter( 'manage_edit-' . self::NOTE_CPT . '_sortable_columns', array( __CLASS__, 'note_sortable_columns' ) );
+		add_action( 'restrict_manage_posts', array( __CLASS__, 'note_filters' ) );
+		add_action( 'pre_get_posts', array( __CLASS__, 'filter_notes_by_product' ) );
+	}
+
+	/*
+	 * -----------------------------------------------------------------------
+	 * The notes list table.
+	 * -----------------------------------------------------------------------
+	 */
+
+	/**
+	 * Add a Product column, next to the title where it is read.
+	 *
+	 * @param array $columns The existing columns.
+	 * @return array
+	 */
+	public static function note_columns( $columns ) {
+		$out = array();
+
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+
+			// Straight after the title, because "which product" is the second
+			// thing anybody wants to know about a note and the first thing they
+			// scan for.
+			if ( 'title' === $key ) {
+				$out['ff_product'] = __( 'Product', 'founding-faces' );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Fill the Product column.
+	 *
+	 * The product name is a link that filters the list to that product, since
+	 * seeing one note for a product is usually the moment you want the rest.
+	 *
+	 * @param string $column  The column key.
+	 * @param int    $post_id The note.
+	 */
+	public static function note_column( $column, $post_id ) {
+		if ( 'ff_product' !== $column ) {
+			return;
+		}
+
+		$product_id = (int) get_post_meta( $post_id, self::META_NOTE_PRODUCT, true );
+		if ( ! $product_id ) {
+			echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">'
+				. esc_html__( 'No product', 'founding-faces' ) . '</span>';
+			return;
+		}
+
+		$title = get_the_title( $product_id );
+		$url   = add_query_arg(
+			array(
+				'post_type'      => self::NOTE_CPT,
+				'ff_product_id'  => $product_id,
+			),
+			admin_url( 'edit.php' )
+		);
+
+		echo '<a href="' . esc_url( $url ) . '">' . esc_html( $title ? $title : __( '(untitled product)', 'founding-faces' ) ) . '</a>';
+	}
+
+	/**
+	 * Make the Product column sortable.
+	 *
+	 * Sorted by the stored product id rather than the name, which groups a
+	 * product's notes together, which is the point of sorting it.
+	 *
+	 * @param array $columns The sortable columns.
+	 * @return array
+	 */
+	public static function note_sortable_columns( $columns ) {
+		$columns['ff_product'] = 'ff_product';
+		return $columns;
+	}
+
+	/**
+	 * The product dropdown above the notes list.
+	 *
+	 * @param string $post_type The post type being listed.
+	 */
+	public static function note_filters( $post_type ) {
+		if ( self::NOTE_CPT !== $post_type ) {
+			return;
+		}
+
+		$products = get_posts( array(
+			'post_type'      => self::PRODUCT_CPT,
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+		) );
+
+		if ( empty( $products ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification
+		$current = isset( $_GET['ff_product_id'] ) ? (int) $_GET['ff_product_id'] : 0;
+		?>
+		<label class="screen-reader-text" for="ff_product_id"><?php esc_html_e( 'Filter by product', 'founding-faces' ); ?></label>
+		<select name="ff_product_id" id="ff_product_id">
+			<option value="0"><?php esc_html_e( 'All products', 'founding-faces' ); ?></option>
+			<?php foreach ( $products as $product ) : ?>
+				<option value="<?php echo esc_attr( $product->ID ); ?>" <?php selected( $current, $product->ID ); ?>>
+					<?php echo esc_html( $product->post_title ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Apply the product filter, and the product sort.
+	 *
+	 * @param WP_Query $query The query about to run.
+	 */
+	public static function filter_notes_by_product( $query ) {
+		if ( ! is_admin() || ! $query->is_main_query() ) {
+			return;
+		}
+		if ( self::NOTE_CPT !== $query->get( 'post_type' ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification
+		$product_id = isset( $_GET['ff_product_id'] ) ? (int) $_GET['ff_product_id'] : 0;
+
+		if ( $product_id ) {
+			$query->set( 'meta_query', array( // phpcs:ignore WordPress.DB.SlowDBQuery
+				array(
+					'key'   => self::META_NOTE_PRODUCT,
+					'value' => $product_id,
+				),
+			) );
+		}
+
+		if ( 'ff_product' === $query->get( 'orderby' ) ) {
+			$query->set( 'meta_key', self::META_NOTE_PRODUCT ); // phpcs:ignore WordPress.DB.SlowDBQuery
+			$query->set( 'orderby', 'meta_value_num' );
+		}
 	}
 
 	/**
