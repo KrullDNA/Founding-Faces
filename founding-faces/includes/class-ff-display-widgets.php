@@ -659,8 +659,11 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 		$this->add_control( 'product', array(
 			'label'       => __( 'Product', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SELECT,
-			'default'     => 0,
-			'options'     => array( 'auto' => __( 'The product on this page (automatic)', 'founding-faces' ) ) + FF_Display::product_choices(),
+			'default'     => 'auto',
+			'options'     => array(
+				'auto' => __( 'The product on this page (automatic)', 'founding-faces' ),
+				0      => __( 'Every product', 'founding-faces' ),
+			) + FF_Display::product_choices( false ),
 			'description' => __( 'Automatic follows whichever product is being viewed, so one Single Product template serves them all. On a note\'s page it means that note\'s product.', 'founding-faces' ),
 		) );
 		$this->add_control( 'stage', array(
@@ -669,6 +672,7 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 			'default' => '',
 			'options' => FF_Display::stage_choices(),
 		) );
+		$this->ffds_layout_controls( 'listing', __( 'Card layout', 'founding-faces' ) );
 		$this->add_control( 'filters', array(
 			'label'        => __( 'Show stage filter chips', 'founding-faces' ),
 			'type'         => \Elementor\Controls_Manager::SWITCHER,
@@ -756,7 +760,8 @@ class FF_Notes_Widget extends FF_Display_Widget_Base {
 		}
 
 		$html = FF_Display::sc_notes( array(
-			'product'       => isset( $s['product'] ) ? $s['product'] : 0,
+			'product'       => isset( $s['product'] ) ? $s['product'] : 'auto',
+			'listing'       => $this->ffds_listing_id( $s, 'listing' ),
 			'stage'         => isset( $s['stage'] ) ? $s['stage'] : '',
 			'filters'       => ( isset( $s['filters'] ) && 'yes' === $s['filters'] ) ? 'yes' : 'no',
 			'limit'         => isset( $s['limit'] ) ? absint( $s['limit'] ) : 50,

@@ -701,6 +701,7 @@ class FF_Display {
 				'product'        => 0,
 				'stage'          => '',
 				'limit'          => 50,
+				'listing'        => 0,
 				'filters'        => 'yes',
 				'view_all_text'  => '',
 				'view_all_url'   => '',
@@ -749,9 +750,20 @@ class FF_Display {
 		if ( empty( $notes ) ) {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'No notes to show here yet.', 'founding-faces' ) . '</p>';
 		} else {
+			// A JetEngine listing template can take the card over. Each note is
+			// rendered through it one at a time rather than handing JetEngine
+			// the query, which matters: these notes have already been narrowed
+			// to this product and put past the vault gate, and a query built in
+			// JetEngine would know about neither.
+			$listing = absint( $atts['listing'] );
+
 			$out .= '<div class="ff-notes-cards">';
 			foreach ( $notes as $note ) {
-				$out .= self::render_note_card( $note, $card );
+				$item = $listing ? FF_JetEngine::render_single( $listing, $note ) : '';
+
+				// A listing that has been deleted falls back to the built-in
+				// card rather than leaving an empty grid.
+				$out .= ( '' !== $item ) ? $item : self::render_note_card( $note, $card );
 			}
 			$out .= '</div>';
 			// Optional "view all" link, e.g. on a hub page's latest-notes block.
