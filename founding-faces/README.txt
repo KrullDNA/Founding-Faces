@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.16
+Stable tag: 1.1.17
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.17 =
+* Fixed the gallery crop for real, with the cause rather than a guess at it.
+  An image optimiser serving WebP wraps each image in a <picture> tag and
+  carries our class up onto that wrapper, so every image rule was landing on
+  the wrapper while the actual <img> inside was left to Elementor's own
+  ".elementor img { height: auto }". The editor never showed it because its
+  sample images are plain img tags that never get wrapped.
+* Every image rule now names both the element and any img inside it, and is
+  weighted to outrank ".elementor img", which also fixes the corner radius that
+  would not apply on the front end.
 
 = 1.1.16 =
 * Fixed 1.1.15, which sent the image height out as a custom property and broke

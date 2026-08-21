@@ -265,19 +265,30 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
 
-		// None of these three carries a condition. A condition is evaluated
+		// Every image rule is written against two selectors, not one.
+		//
+		// An image optimiser that serves WebP wraps the img in a <picture> and
+		// carries our class up onto the wrapper, so on a site running one of
+		// those .ff-slide-img is the <picture> and the <img> inside it is
+		// untouched. A height on a wrapper does nothing, and object-fit on a
+		// wrapper does nothing at all, which is how a crop set in the editor
+		// goes missing on the page: the editor's sample images are plain <img>
+		// tags and never get wrapped, so it only ever shows up live.
+		//
+		// Naming both covers the site with an optimiser and the site without.
+		$sel = '{{WRAPPER}} .ff-slide-img, {{WRAPPER}} .ff-slide-img img';
+
+		// None of these carries a condition either. A condition is evaluated
 		// again when the front end's stylesheet is written, separately from the
 		// editor's, and one that answers differently in the two places gives a
-		// crop that looks right while designing and is absent on the page.
-		// The defaults for fit and position live in the stylesheet too, so a
-		// height set on its own crops rather than stretching.
+		// setting that looks applied while designing and is absent on the page.
 		$this->add_responsive_control( 'img_height', array(
 			'label'       => __( 'Image height', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SLIDER,
 			'size_units'  => array( 'px', 'vh' ),
 			'range'       => array( 'px' => array( 'min' => 80, 'max' => 900 ) ),
 			'description' => __( 'Left empty, each image keeps its own proportions and the two settings below do nothing.', 'founding-faces' ),
-			'selectors'   => array( '{{WRAPPER}} .ff-slide-img' => 'height: {{SIZE}}{{UNIT}};' ),
+			'selectors'   => array( $sel => 'height: {{SIZE}}{{UNIT}};' ),
 		) );
 
 		$this->add_responsive_control( 'img_fit', array(
@@ -290,7 +301,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 				'fill'    => __( 'Stretch', 'founding-faces' ),
 				'none'    => __( 'Original size', 'founding-faces' ),
 			),
-			'selectors' => array( '{{WRAPPER}} .ff-slide-img' => 'object-fit: {{VALUE}};' ),
+			'selectors' => array( $sel => 'object-fit: {{VALUE}};' ),
 		) );
 
 		$this->add_responsive_control( 'img_position', array(
@@ -305,12 +316,12 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 				'right center'  => __( 'Right', 'founding-faces' ),
 			),
 			'description' => __( 'Which part of the picture survives the crop. Only has anything to do when a height is set above.', 'founding-faces' ),
-			'selectors'   => array( '{{WRAPPER}} .ff-slide-img' => 'object-position: {{VALUE}};' ),
+			'selectors'   => array( $sel => 'object-position: {{VALUE}};' ),
 		) );
 
 		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
 			'name'     => 'img_border',
-			'selector' => '{{WRAPPER}} .ff-slide-img',
+			'selector' => $sel,
 		) );
 		$this->add_responsive_control( 'img_radius', array(
 			'label'      => __( 'Corner radius', 'founding-faces' ),
@@ -321,13 +332,13 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			// is set and then covered up, which reads as a control doing
 			// nothing.
 			'selectors'  => array(
-				'{{WRAPPER}} .ff-slide-img'  => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				$sel                         => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				'{{WRAPPER}} .ff-slide-link' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
 			),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
 			'name'     => 'img_shadow',
-			'selector' => '{{WRAPPER}} .ff-slide-img',
+			'selector' => $sel,
 		) );
 
 		$this->end_controls_section();

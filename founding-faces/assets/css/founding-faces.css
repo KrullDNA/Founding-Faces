@@ -1600,7 +1600,19 @@
 	line-height: 0;
 }
 
-.ff-slide-img {
+/* Two selectors, and scoped through .ff-slide for the weight.
+ *
+ * An image optimiser serving WebP wraps the img in a <picture> and carries our
+ * class up onto the wrapper, so on a site running one of those .ff-slide-img is
+ * the <picture> and the <img> inside it has no class at all. A height on a
+ * wrapper does nothing useful and object-fit on a wrapper does nothing
+ * whatsoever, so naming only the class leaves the actual picture unstyled.
+ *
+ * The .ff-slide prefix is there to outweigh Elementor's own
+ * ".elementor img { height: auto; border-radius: 0 }", which is one class and
+ * one element and would otherwise win on a straight class selector. */
+.ff-slide .ff-slide-img,
+.ff-slide .ff-slide-img img {
 	display: block;
 	width: 100%;
 	height: auto;
