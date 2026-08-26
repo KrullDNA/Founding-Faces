@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.22
+Stable tag: 1.1.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,15 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.23 =
+* Natural origin sits on a line of its own, under the version, date and pH,
+  the way the stage badge already does. Its label and figure together are as
+  wide as the other three combined, so it was wrapping out of the middle of
+  them.
+* That also takes away the separator left hanging after the pH. Separators join
+  items within a line and never trail off the end of one, and the stray bar was
+  the join to an item that had wrapped away.
 
 = 1.1.22 =
 * The pH can be a range. A second, optional box on the note turns 5.0 into
