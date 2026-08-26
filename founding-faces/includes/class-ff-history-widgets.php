@@ -956,6 +956,26 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'size_units' => array( 'px', 'em', 'rem' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-note-excerpt' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
+
+		$this->add_control( 'ns_h', array(
+			'label'     => __( 'Spacing', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_responsive_control( 'ns_stack', array(
+			'label'       => __( 'Between the product, title and date', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SLIDER,
+			'size_units'  => array( 'px', 'em' ),
+			'range'       => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'   => array( '{{WRAPPER}} .ff-note-row .ff-history-item-body' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'ns_row', array(
+			'label'      => __( 'Above the blurb', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-row' => 'row-gap: {{SIZE}}{{UNIT}};' ),
+		) );
 		$this->end_controls_section();
 
 		/* ========================== UNREAD BADGE =========================== */
@@ -1074,6 +1094,12 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-item-main' => 'color: {{VALUE}};' ),
 		) );
+		$this->add_responsive_control( 'main_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-item-main' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
 
 		$this->add_control( 'detail_h', array(
 			'label'     => __( 'Sub text (e.g. "You chose…")', 'founding-faces' ),
@@ -1147,6 +1173,12 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'label'     => __( 'Colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'selectors' => array( '{{WRAPPER}} .ff-history-item-date' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'date_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-history-item-date' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 
 		$this->add_control( 'fbtext_h', array(

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.25
+Stable tag: 1.1.26
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.26 =
+* With a picture or a blurb switched on, the date now sits under the title
+  rather than off at the right-hand end of the line, where the wrap was
+  dropping it beneath the picture.
+* Three new spacing controls: a margin for the title, a margin for the date,
+  and, in the "Note picture and blurb" section, the gap between the product,
+  the title and the date, and the gap above the blurb.
 
 = 1.1.25 =
 * The blurb now runs the full width of the row, under the picture, the title

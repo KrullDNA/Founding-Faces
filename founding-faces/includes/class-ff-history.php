@@ -268,9 +268,11 @@ class FF_History {
 
 		$sample_blurb = __( 'A line or two from the note itself, so the archive says what happened as well as when. It runs on far enough that a word count set above has something to bite on and the shortened length can be judged here rather than guessed at.', 'founding-faces' );
 
+		$rich = ( ! empty( $extra['image'] ) || absint( $extra['excerpt'] ) ) ? ' ff-note-row--rich' : '';
+
 		foreach ( $rows as $i => $row ) {
 			$main = $link ? '<a href="#"' . $tab_attr . '>' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
-			$out .= '<li class="ff-history-item ff-note-row' . ( $row[1] ? ' is-unread' : '' ) . '">';
+			$out .= '<li class="ff-history-item ff-note-row' . $rich . ( $row[1] ? ' is-unread' : '' ) . '">';
 
 			// A placeholder rather than a real attachment: the canvas has to
 			// show the shape of a row with a picture in it whether or not this
@@ -290,8 +292,11 @@ class FF_History {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
-			$out .= '</div>';
-			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
+
+			$stamp = '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
+			$out  .= $rich ? $stamp : '';
+			$out  .= '</div>';
+			$out  .= $rich ? '' : $stamp;
 
 			// Outside the title column, so it runs the width of the row rather
 			// than the narrow gap the picture and the date leave behind.
@@ -962,6 +967,11 @@ class FF_History {
 		$out      = '';
 		$products = array();
 
+		// One shape for the whole list, taken from the settings rather than
+		// from whether a given note happens to have a picture, so the rows line
+		// up with each other.
+		$rich = ( ! empty( $extra['image'] ) || absint( $extra['excerpt'] ) ) ? ' ff-note-row--rich' : '';
+
 		// Load the products named in this slice in one query, rather than one
 		// per row. Only the rows actually being rendered are looked up.
 		if ( $show_product ) {
@@ -993,7 +1003,7 @@ class FF_History {
 				}
 			}
 
-			$out .= '<li class="ff-history-item ff-note-row' . ( $is_unread ? ' is-unread' : '' ) . '">';
+			$out .= '<li class="ff-history-item ff-note-row' . $rich . ( $is_unread ? ' is-unread' : '' ) . '">';
 			$out .= self::note_thumb( $note_id, $extra, $link, $new_tab );
 			$out .= '<div class="ff-history-item-body">';
 
@@ -1012,8 +1022,14 @@ class FF_History {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
-			$out .= '</div>';
-			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $date ) ) . '</span>';
+
+			// With a picture or a blurb the row is a card, so the date belongs
+			// under the title it dates rather than off on the far right where
+			// the wrap would drop it below the picture.
+			$stamp = '<span class="ff-history-item-date">' . esc_html( self::format_date( $date ) ) . '</span>';
+			$out  .= $rich ? $stamp : '';
+			$out  .= '</div>';
+			$out  .= $rich ? '' : $stamp;
 
 			// Outside the title column, so it runs the width of the row rather
 			// than the narrow gap the picture and the date leave behind.

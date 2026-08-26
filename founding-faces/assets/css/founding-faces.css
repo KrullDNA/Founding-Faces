@@ -954,6 +954,12 @@
 	align-items: flex-start;
 }
 
+/* In a card row the date sits inside the title column, under the title. It
+ * stops being the right-hand end of a line, so it stops being pushed there. */
+.ff-note-row--rich .ff-history-item-body .ff-history-item-date {
+	margin-left: 0;
+}
+
 .ff-history-item-main {
 	font-weight: 600;
 }
