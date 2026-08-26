@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.21
+Stable tag: 1.1.22
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,16 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.22 =
+* The pH can be a range. A second, optional box on the note turns 5.0 into
+  5.0 - 5.5, and the page reads it back the same way. A formula that lands
+  between two figures has not been measured badly, it has been specified.
+* The change beside it is measured from the first number, so a range still
+  reports how far the formula moved.
+* A second figure that is not above the first is ignored rather than printed
+  backwards, since "5.5 - 5.2" read back to a member is worse than showing the
+  one number that is certainly right.
 
 = 1.1.21 =
 * A measured figure now reaches the page exactly as it was typed. Both pH and

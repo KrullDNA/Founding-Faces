@@ -51,6 +51,10 @@ class FF_Post_Types {
 	// "not measured on this version" and 0 does not: a natural origin of zero is
 	// a real answer, and it must not read as a blank.
 	const META_NOTE_PH      = 'ff_note_ph';
+
+	// The top of a pH range, when the answer is a range rather than a figure.
+	// Empty means the pH is a single number, which is the ordinary case.
+	const META_NOTE_PH_MAX  = 'ff_note_ph_max';
 	const META_NOTE_NATURAL = 'ff_note_natural';
 	const META_NOTE_STAGE   = 'ff_note_stage';
 	const META_NOTE_GALLERY = 'ff_note_gallery';
@@ -467,6 +471,11 @@ class FF_Post_Types {
 			'single'       => true,
 			'show_in_rest' => false,
 		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_PH_MAX, array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => false,
+		) );
 		register_post_meta( self::NOTE_CPT, self::META_NOTE_NATURAL, array(
 			'type'         => 'string',
 			'single'       => true,
@@ -836,6 +845,7 @@ class FF_Post_Types {
 		$date     = get_post_meta( $post->ID, self::META_NOTE_DATE, true );
 		$trial    = get_post_meta( $post->ID, self::META_NOTE_TRIAL, true );
 		$ph       = get_post_meta( $post->ID, self::META_NOTE_PH, true );
+		$ph_max   = get_post_meta( $post->ID, self::META_NOTE_PH_MAX, true );
 		$natural  = get_post_meta( $post->ID, self::META_NOTE_NATURAL, true );
 		$stage    = get_post_meta( $post->ID, self::META_NOTE_STAGE, true );
 		$gallery  = get_post_meta( $post->ID, self::META_NOTE_GALLERY, true );
@@ -904,7 +914,10 @@ class FF_Post_Types {
 				<th scope="row"><label for="ff_note_ph"><?php esc_html_e( 'Final pH', 'founding-faces' ); ?></label></th>
 				<td>
 					<input type="number" step="0.01" min="0" max="14" name="ff_note_ph" id="ff_note_ph" value="<?php echo esc_attr( $ph ); ?>" class="small-text" />
-					<p class="description"><?php esc_html_e( 'Leave empty on a version where it was not measured. The change from the last version that has a figure is worked out and shown for you, so there is nothing to keep in step by hand.', 'founding-faces' ); ?></p>
+					<label for="ff_note_ph_max" style="margin:0 0.4rem;"><?php esc_html_e( 'to', 'founding-faces' ); ?></label>
+					<input type="number" step="0.01" min="0" max="14" name="ff_note_ph_max" id="ff_note_ph_max" value="<?php echo esc_attr( $ph_max ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'optional', 'founding-faces' ); ?>" />
+					<p class="description"><?php esc_html_e( 'One figure, or a range if that is the honest answer: fill in the second box and it reads 5.0 - 5.5 on the page. Leave both empty on a version where it was not measured.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The change from the last version that has a figure is worked out and shown for you, so there is nothing to keep in step by hand. On a range it is measured from the first number.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -1012,6 +1025,7 @@ class FF_Post_Types {
 		// measured at zero are different answers.
 		update_post_meta( $post_id, self::META_NOTE_TAG, isset( $_POST['ff_note_tag'] ) ? sanitize_title( wp_unslash( $_POST['ff_note_tag'] ) ) : '' );
 		update_post_meta( $post_id, self::META_NOTE_PH, self::sanitize_measure( isset( $_POST['ff_note_ph'] ) ? wp_unslash( $_POST['ff_note_ph'] ) : '' ) );
+		update_post_meta( $post_id, self::META_NOTE_PH_MAX, self::sanitize_measure( isset( $_POST['ff_note_ph_max'] ) ? wp_unslash( $_POST['ff_note_ph_max'] ) : '' ) );
 		update_post_meta( $post_id, self::META_NOTE_NATURAL, self::sanitize_measure( isset( $_POST['ff_note_natural'] ) ? wp_unslash( $_POST['ff_note_natural'] ) : '' ) );
 
 		// Stage, only if it's one of the known keys.
