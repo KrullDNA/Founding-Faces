@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.26
+Stable tag: 1.1.27
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,20 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.27 =
+* The whole note row is now the link to its note, not just the title. It is a
+  link laid over the row rather than one wrapped around it, since the title
+  and the picture are already links, and it is hidden from screen readers and
+  skipped by the keyboard so the title link stays the one that speaks.
+* The title colour control now reaches the title's link as well. Colouring the
+  span around it did nothing, because a link takes its colour from the theme.
+  The hover colour answers to the row too, since the row-wide link sits over
+  the title and takes the pointer.
+* New hover controls for note rows: background, border colour and shadow. A
+  row that is a link wants something to say so.
+* The product text section is now named "Product text (above the title)"
+  rather than "Product label", and gains an alignment control.
 
 = 1.1.26 =
 * With a picture or a blurb switched on, the date now sits under the title

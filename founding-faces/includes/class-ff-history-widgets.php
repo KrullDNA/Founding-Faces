@@ -465,6 +465,32 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'size_units' => array( 'px', '%' ),
 			'selectors'  => array( '{{WRAPPER}} .ff-history-item' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
+
+		// A whole note row is the link to its note, so it wants something to
+		// say so under the pointer. Nothing is set here by default.
+		$this->add_control( 'item_hover_h', array(
+			'label'     => __( 'Hover (notes)', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
+		$this->add_control( 'item_bg_h', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-note-row:hover' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'item_border_h', array(
+			'label'     => __( 'Border colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+			'selectors' => array( '{{WRAPPER}} .ff-note-row:hover' => 'border-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'      => 'item_shadow_h',
+			'selector'  => '{{WRAPPER}} .ff-note-row:hover',
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
 		$this->end_controls_section();
 
 		/* ============================ ITEM TEXT ============================ */
@@ -781,7 +807,7 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 
 		/* ========================= PRODUCT LABEL =========================== */
 		$this->start_controls_section( 'ff_ma_product_style', array(
-			'label'     => __( 'Product label', 'founding-faces' ),
+			'label'     => __( 'Product text (above the title)', 'founding-faces' ),
 			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
 			'condition' => array(
 				'section'           => array( 'all', 'notes' ),
@@ -797,6 +823,20 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'name'     => 'np_typo',
 			'label'    => __( 'Typography', 'founding-faces' ),
 			'selector' => '{{WRAPPER}} .ff-note-product',
+		) );
+		$this->add_responsive_control( 'np_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'flex-start' => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center'     => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'flex-end'   => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+				'stretch'    => array( 'title' => __( 'Full width', 'founding-faces' ), 'icon' => 'eicon-text-align-justify' ),
+			),
+			// align-self rather than text-align: the label sits in a column and
+			// hugs its own words, so that a background wraps the words rather
+			// than the whole row.
+			'selectors' => array( '{{WRAPPER}} .ff-note-product' => 'align-self: {{VALUE}};' ),
 		) );
 		$this->add_control( 'np_bg', array(
 			'label'     => __( 'Background', 'founding-faces' ),
@@ -1092,7 +1132,12 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$this->add_control( 'main_color', array(
 			'label'     => __( 'Colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-history-item-main' => 'color: {{VALUE}};' ),
+			'selectors' => array(
+				'{{WRAPPER}} .ff-history-item-main'   => 'color: {{VALUE}};',
+				// The title is usually a link, and a link takes its colour from
+				// the theme rather than from the span around it.
+				'{{WRAPPER}} .ff-history-item-main a' => 'color: {{VALUE}};',
+			),
 		) );
 		$this->add_responsive_control( 'main_margin', array(
 			'label'      => __( 'Margin', 'founding-faces' ),
@@ -1214,7 +1259,12 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		$this->add_control( 'link_hover', array(
 			'label'     => __( 'Link hover colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-history-item-main a:hover' => 'color: {{VALUE}};' ),
+			'selectors' => array(
+				'{{WRAPPER}} .ff-history-item-main a:hover'              => 'color: {{VALUE}};',
+				// The row-wide link lies over the title, so on a card the
+				// pointer is on the row rather than on the title itself.
+				'{{WRAPPER}} .ff-note-row:hover .ff-history-item-main a' => 'color: {{VALUE}};',
+			),
 			'condition' => array( 'section' => array( 'all', 'notes', 'feedback' ) ),
 		) );
 
