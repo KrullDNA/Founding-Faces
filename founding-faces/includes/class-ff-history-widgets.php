@@ -93,6 +93,25 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			'description'  => __( 'Notes with no product attached simply skip the line.', 'founding-faces' ),
 		) );
 
+		$this->add_control( 'show_note_image', array(
+			'label'        => __( 'Show the note\'s first image', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'condition'    => array( 'section' => array( 'all', 'notes' ) ),
+			'description'  => __( 'A thumbnail beside each row, taken from the note\'s gallery. The first image only: this is the archive, not the note. A note with no images simply skips it.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'note_excerpt_words', array(
+			'label'       => __( 'Words of the note to show', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'default'     => 0,
+			'min'         => 0,
+			'max'         => 100,
+			'condition'   => array( 'section' => array( 'all', 'notes' ) ),
+			'description' => __( 'The opening of the note under its title, so the archive says what happened as well as when. 0 leaves it off. Plain text, since a half-closed tag is worse than no formatting.', 'founding-faces' ),
+		) );
+
 		$this->add_responsive_control( 'notes_per_page', array(
 			'label'       => __( 'Notes per page', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::NUMBER,
@@ -1119,9 +1138,13 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 			$prod  = ! isset( $s['show_note_product'] ) || 'yes' === $s['show_note_product'];
 			$pag   = isset( $s['notes_paging'] ) ? $s['notes_paging'] : 'more';
 			$tab   = isset( $s['notes_new_tab'] ) && 'yes' === $s['notes_new_tab'];
+			$extra = array(
+				'image'   => isset( $s['show_note_image'] ) && 'yes' === $s['show_note_image'],
+				'excerpt' => isset( $s['note_excerpt_words'] ) ? absint( $s['note_excerpt_words'] ) : 0,
+			);
 			$out  .= $sample
-				? FF_History::sample_notes( $h, $link, $per, $show, $prod, $pag, $tab )
-				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod, $pag, $tab );
+				? FF_History::sample_notes( $h, $link, $per, $show, $prod, $pag, $tab, $extra )
+				: FF_History::render_notes( $mid, $h, $link, $per, $show, $prod, $pag, $tab, $extra );
 		}
 		if ( 'all' === $section || 'feedback' === $section ) {
 			$h    = ( 'feedback' === $section ) ? $heading : '';

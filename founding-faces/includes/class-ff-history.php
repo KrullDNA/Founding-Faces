@@ -248,7 +248,7 @@ class FF_History {
 	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more', $new_tab = false ) {
+	public static function sample_notes( $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more', $new_tab = false, $extra = array() ) {
 		$heading  = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 		$paging   = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
 		$per_page = self::page_sizes( $per_page )['desktop'];
@@ -264,9 +264,23 @@ class FF_History {
 		$out .= self::note_filter_bar( $show );
 		$out .= '<div class="ff-notes-results">';
 		$out .= '<ul class="ff-history-list ff-notes-read-list">';
+		$extra = wp_parse_args( $extra, array( 'image' => false, 'excerpt' => 0 ) );
+
+		$sample_blurb = __( 'A line or two from the note itself, so the archive says what happened as well as when. It runs on far enough that a word count set above has something to bite on and the shortened length can be judged here rather than guessed at.', 'founding-faces' );
+
 		foreach ( $rows as $i => $row ) {
 			$main = $link ? '<a href="#"' . $tab_attr . '>' . esc_html( $row[0] ) . '</a>' : esc_html( $row[0] );
 			$out .= '<li class="ff-history-item ff-note-row' . ( $row[1] ? ' is-unread' : '' ) . '">';
+
+			// A placeholder rather than a real attachment: the canvas has to
+			// show the shape of a row with a picture in it whether or not this
+			// site has a note with one yet.
+			if ( ! empty( $extra['image'] ) ) {
+				$out .= '<span class="ff-note-thumb"><img class="ff-note-thumb-img" src="'
+					. esc_attr( FF_Display::placeholder_image_src( ( $i % 3 ) + 1 ) )
+					. '" alt="" width="800" height="600" /></span>';
+			}
+
 			$out .= '<div class="ff-history-item-body">';
 			if ( $show_product ) {
 				$out .= '<span class="ff-note-product">' . esc_html( $row[2] ) . '</span>';
@@ -276,6 +290,9 @@ class FF_History {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
+			if ( absint( $extra['excerpt'] ) ) {
+				$out .= '<p class="ff-note-excerpt">' . esc_html( wp_trim_words( $sample_blurb, absint( $extra['excerpt'] ), '…' ) ) . '</p>';
+			}
 			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
@@ -470,7 +487,7 @@ class FF_History {
 	 * @param bool   $show_product Whether to name the product above each title.
 	 * @return string
 	 */
-	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more', $new_tab = false ) {
+	public static function render_notes( $member_id, $heading = '', $link = true, $per_page = 0, $show = array(), $show_product = true, $paging = 'more', $new_tab = false, $extra = array() ) {
 		$heading = '' !== $heading ? $heading : __( 'Notes', 'founding-faces' );
 		$paging  = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
 		$sizes   = self::page_sizes( $per_page );
@@ -496,7 +513,7 @@ class FF_History {
 			$out .= '<p class="ff-empty-note">' . esc_html__( 'There are no notes to read just yet.', 'founding-faces' ) . '</p>';
 		} else {
 			$out .= '<ul class="ff-history-list ff-notes-read-list">';
-			$out .= self::note_rows( $slice, $link, $show_product, $new_tab );
+			$out .= self::note_rows( $slice, $link, $show_product, $new_tab, $extra );
 			$out .= '</ul>';
 		}
 		$out .= '</div>';
@@ -522,6 +539,8 @@ class FF_History {
 				. ' data-link="' . ( $link ? '1' : '0' ) . '"'
 				. ' data-new-tab="' . ( $new_tab ? '1' : '0' ) . '"'
 				. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
+				. ' data-image="' . ( ! empty( $extra['image'] ) ? '1' : '0' ) . '"'
+				. ' data-excerpt="' . absint( isset( $extra['excerpt'] ) ? $extra['excerpt'] : 0 ) . '"'
 				. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">'
 				. esc_html__( 'Load more', 'founding-faces' )
 				. '</button>';
@@ -857,7 +876,86 @@ class FF_History {
 	 * @param bool    $new_tab      Whether each link opens in a new tab.
 	 * @return string
 	 */
-	public static function note_rows( $entries, $link = true, $show_product = true, $new_tab = false ) {
+	/**
+	 * The note's first image, as a thumbnail beside the row.
+	 *
+	 * The first one only. This is an archive, not the note: one picture says
+	 * which batch it was and the reader opens the note for the rest.
+	 *
+	 * @param int   $note_id The note.
+	 * @param array $extra   The row options.
+	 * @param bool  $link    Whether rows link to the note.
+	 * @param bool  $new_tab Whether that link opens a new tab.
+	 * @return string
+	 */
+	private static function note_thumb( $note_id, $extra, $link = true, $new_tab = false ) {
+		if ( empty( $extra['image'] ) ) {
+			return '';
+		}
+
+		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $note_id, FF_Post_Types::META_NOTE_GALLERY, true ) ) ) );
+		if ( empty( $ids ) ) {
+			return '';
+		}
+
+		$img = wp_get_attachment_image( reset( $ids ), 'medium', false, array(
+			'class'   => 'ff-note-thumb-img',
+			'loading' => 'lazy',
+			'alt'     => '',
+		) );
+
+		if ( ! $img ) {
+			return '';
+		}
+
+		$url = $link ? get_permalink( $note_id ) : '';
+
+		if ( $url ) {
+			$attr = $new_tab ? ' target="_blank" rel="noopener"' : '';
+			// aria-hidden and no tab stop: the title beside it is the same link
+			// and already says where it goes, so this one is decoration a
+			// screen reader would only have to hear twice.
+			return '<a class="ff-note-thumb" href="' . esc_url( $url ) . '"' . $attr . ' tabindex="-1" aria-hidden="true">' . $img . '</a>';
+		}
+
+		return '<span class="ff-note-thumb">' . $img . '</span>';
+	}
+
+	/**
+	 * The opening of the note, trimmed.
+	 *
+	 * Plain text, because a half-closed tag is worse than no formatting, and
+	 * because this is a glance rather than a read.
+	 *
+	 * @param int   $note_id The note.
+	 * @param array $extra   The row options.
+	 * @return string
+	 */
+	private static function note_excerpt( $note_id, $extra ) {
+		$words = absint( $extra['excerpt'] );
+		if ( ! $words ) {
+			return '';
+		}
+
+		$note = get_post( $note_id );
+		if ( ! $note ) {
+			return '';
+		}
+
+		$text = trim( wp_strip_all_tags( strip_shortcodes( (string) $note->post_content ) ) );
+		if ( '' === $text ) {
+			return '';
+		}
+
+		return '<p class="ff-note-excerpt">' . esc_html( wp_trim_words( $text, $words, '…' ) ) . '</p>';
+	}
+
+	public static function note_rows( $entries, $link = true, $show_product = true, $new_tab = false, $extra = array() ) {
+		$extra = wp_parse_args( $extra, array(
+			'image'   => false,
+			'excerpt' => 0,
+		) );
+
 		$out      = '';
 		$products = array();
 
@@ -893,6 +991,7 @@ class FF_History {
 			}
 
 			$out .= '<li class="ff-history-item ff-note-row' . ( $is_unread ? ' is-unread' : '' ) . '">';
+			$out .= self::note_thumb( $note_id, $extra, $link, $new_tab );
 			$out .= '<div class="ff-history-item-body">';
 
 			// The product sits above the title: it says what the note is about
@@ -910,6 +1009,7 @@ class FF_History {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
+			$out .= self::note_excerpt( $note_id, $extra );
 			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $date ) ) . '</span>';
 			$out .= '</li>';
@@ -956,6 +1056,10 @@ class FF_History {
 		$link     = ! empty( $_POST['link'] );
 		$product  = ! empty( $_POST['show_product'] );
 		$new_tab  = ! empty( $_POST['new_tab'] );
+		$extra    = array(
+			'image'   => ! empty( $_POST['image'] ),
+			'excerpt' => isset( $_POST['excerpt'] ) ? absint( wp_unslash( $_POST['excerpt'] ) ) : 0,
+		);
 
 		$options = self::note_filter_options();
 		$filters = array(
@@ -985,7 +1089,7 @@ class FF_History {
 			? array_slice( $entries, $offset, min( 100, $per_page ) )
 			: $entries;
 
-		$rows = self::note_rows( $slice, $link, $product, $new_tab );
+		$rows = self::note_rows( $slice, $link, $product, $new_tab, $extra );
 		$next = ( $per_page > 0 ) ? $offset + count( $slice ) : $total;
 
 		// Which page this batch is, so the numbers can mark it as current. The

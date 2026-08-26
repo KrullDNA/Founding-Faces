@@ -1996,7 +1996,7 @@ class FF_Display {
 	 * @param int $n The slide number.
 	 * @return string A data URI.
 	 */
-	private static function placeholder_image_src( $n ) {
+	public static function placeholder_image_src( $n ) {
 		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">'
 			. '<rect width="800" height="600" fill="#eceae6"/>'
 			. '<text x="400" y="345" font-family="Helvetica,Arial,sans-serif" font-size="140" fill="#b6afa5" text-anchor="middle">' . (int) $n . '</text>'

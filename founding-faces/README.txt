@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.23
+Stable tag: 1.1.24
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.24 =
+* The Member Archive widget can now show a photograph and a short blurb beside
+  each note, the way the Notes widget does. Two new controls sit in the notes
+  part of the content tab: "Show note image" and "Blurb words", the latter set
+  to 0, meaning off, so nothing changes until you ask for it.
+* The photograph is the note's first gallery image. A note without images, or
+  without body copy, simply leaves that part out rather than holding a gap.
+* The blurb is plain text, so any formatting or shortcodes in the note are
+  stripped rather than rendered in miniature.
+* Load more carries both settings, so the second page of notes looks like the
+  first.
 
 = 1.1.23 =
 * Natural origin sits on a line of its own, under the version, date and pH,
