@@ -828,6 +828,136 @@ class FF_Member_Archive_Widget extends \Elementor\Widget_Base {
 		) );
 		$this->end_controls_section();
 
+		/* ===================== NOTE PICTURE AND BLURB ====================== */
+		// The picture rules name the class and an img inside it. The image
+		// optimiser wraps every image in a picture element and moves the class
+		// onto the wrapper, so a rule naming only the class would style the
+		// wrapper and leave the image to the theme.
+		$thumb = '{{WRAPPER}} .ff-note-row .ff-note-thumb-img, {{WRAPPER}} .ff-note-row .ff-note-thumb-img img';
+
+		$this->start_controls_section( 'ff_ma_note_media_style', array(
+			'label'     => __( 'Note picture and blurb', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'section' => array( 'all', 'notes' ) ),
+		) );
+
+		$this->add_control( 'nt_h', array(
+			'label'     => __( 'Picture', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'condition' => array( 'show_note_image' => 'yes' ),
+		) );
+		$this->add_responsive_control( 'nt_width', array(
+			'label'      => __( 'Width', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em', '%' ),
+			'range'      => array( 'px' => array( 'min' => 40, 'max' => 400 ) ),
+			'condition'  => array( 'show_note_image' => 'yes' ),
+			'selectors'  => array( $thumb => 'width: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'nt_height', array(
+			'label'      => __( 'Height', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em', 'vh' ),
+			'range'      => array( 'px' => array( 'min' => 40, 'max' => 400 ) ),
+			'condition'  => array( 'show_note_image' => 'yes' ),
+			'selectors'  => array( $thumb => 'height: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'nt_fit', array(
+			'label'     => __( 'Fit', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'options'   => array(
+				''        => __( 'Default', 'founding-faces' ),
+				'cover'   => __( 'Fill the frame, cropping', 'founding-faces' ),
+				'contain' => __( 'Fit inside the frame', 'founding-faces' ),
+				'fill'    => __( 'Stretch to the frame', 'founding-faces' ),
+			),
+			'condition' => array( 'show_note_image' => 'yes' ),
+			'selectors' => array( $thumb => 'object-fit: {{VALUE}};' ),
+		) );
+		$this->add_control( 'nt_position', array(
+			'label'     => __( 'Focus', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'options'   => array(
+				''              => __( 'Default', 'founding-faces' ),
+				'center center' => __( 'Centre', 'founding-faces' ),
+				'center top'    => __( 'Top', 'founding-faces' ),
+				'center bottom' => __( 'Bottom', 'founding-faces' ),
+				'left center'   => __( 'Left', 'founding-faces' ),
+				'right center'  => __( 'Right', 'founding-faces' ),
+			),
+			'condition' => array( 'show_note_image' => 'yes' ),
+			'selectors' => array( $thumb => 'object-position: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'nt_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'condition'  => array( 'show_note_image' => 'yes' ),
+			'selectors'  => array(
+				'{{WRAPPER}} .ff-note-thumb' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				$thumb                       => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+			),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'      => 'nt_border',
+			'selector'  => '{{WRAPPER}} .ff-note-thumb',
+			'condition' => array( 'show_note_image' => 'yes' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'      => 'nt_shadow',
+			'selector'  => '{{WRAPPER}} .ff-note-thumb',
+			'condition' => array( 'show_note_image' => 'yes' ),
+		) );
+		$this->add_responsive_control( 'nt_gap', array(
+			'label'      => __( 'Gap to the title', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'condition'  => array( 'show_note_image' => 'yes' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-thumb' => 'margin-inline-end: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'nx_h', array(
+			'label'     => __( 'Blurb', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'nx_typo',
+			'label'    => __( 'Typography', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-note-excerpt',
+		) );
+		$this->add_control( 'nx_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-note-excerpt' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'nx_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'    => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center'  => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'   => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+				'justify' => array( 'title' => __( 'Justified', 'founding-faces' ), 'icon' => 'eicon-text-align-justify' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-note-excerpt' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'nx_width', array(
+			'label'      => __( 'Maximum width', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( '%', 'px', 'em' ),
+			'range'      => array( '%' => array( 'min' => 20, 'max' => 100 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-excerpt' => 'max-width: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'nx_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-note-excerpt' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		/* ========================== UNREAD BADGE =========================== */
 		$this->start_controls_section( 'ff_ma_unread_style', array(
 			'label'     => __( 'Unread notes (badge & row)', 'founding-faces' ),

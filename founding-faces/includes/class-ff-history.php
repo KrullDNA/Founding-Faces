@@ -290,11 +290,14 @@ class FF_History {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
+			$out .= '</div>';
+			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
+
+			// Outside the title column, so it runs the width of the row rather
+			// than the narrow gap the picture and the date leave behind.
 			if ( absint( $extra['excerpt'] ) ) {
 				$out .= '<p class="ff-note-excerpt">' . esc_html( wp_trim_words( $sample_blurb, absint( $extra['excerpt'] ), '…' ) ) . '</p>';
 			}
-			$out .= '</div>';
-			$out .= '<span class="ff-history-item-date">' . esc_html( self::sample_date( $i + 1 ) ) . '</span>';
 			$out .= '</li>';
 		}
 		$out .= '</ul></div>';
@@ -1009,9 +1012,12 @@ class FF_History {
 				$out .= ' <span class="ff-unread-badge">' . esc_html__( 'Unread', 'founding-faces' ) . '</span>';
 			}
 			$out .= '</span>';
-			$out .= self::note_excerpt( $note_id, $extra );
 			$out .= '</div>';
 			$out .= '<span class="ff-history-item-date">' . esc_html( self::format_date( $date ) ) . '</span>';
+
+			// Outside the title column, so it runs the width of the row rather
+			// than the narrow gap the picture and the date leave behind.
+			$out .= self::note_excerpt( $note_id, $extra );
 			$out .= '</li>';
 		}
 

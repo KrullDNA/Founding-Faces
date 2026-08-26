@@ -937,9 +937,12 @@
 	object-position: center center;
 }
 
+/* The blurb sits below the picture, the title and the date rather than in the
+ * column between them, so it reads across the whole row instead of down a
+ * narrow strip. flex-basis carries it onto its own line. */
 .ff-note-excerpt {
-	margin: 0.2rem 0 0;
-	font-size: 0.9rem;
+	flex: 1 1 100%;
+	margin: 0.4rem 0 0;
 	line-height: 1.5;
 	color: var(--ff-muted);
 }
@@ -947,6 +950,7 @@
 /* A row with a picture or a blurb in it is a block, not a line, so the date
  * sits with the top of it rather than the bottom. */
 .ff-note-row {
+	flex-wrap: wrap;
 	align-items: flex-start;
 }
 
