@@ -446,7 +446,7 @@ class FF_Display {
 	 */
 	public static function product_measure( $product_id, $which ) {
 		foreach ( self::product_notes( $product_id ) as $note ) {
-			$value = self::measure( $note->ID, $which );
+			$value = self::measure_display( $note->ID, $which );
 			if ( '' !== $value ) {
 				return array(
 					'value'  => $value,
@@ -469,6 +469,36 @@ class FF_Display {
 	public static function measure( $note_id, $which ) {
 		$key = ( 'ph' === $which ) ? FF_Post_Types::META_NOTE_PH : FF_Post_Types::META_NOTE_NATURAL;
 		return (string) get_post_meta( $note_id, $key, true );
+	}
+
+	/**
+	 * A measured figure as it should read on the page.
+	 *
+	 * The pH can be a range, and a range is often the honest answer: a formula
+	 * that lands between 5.0 and 5.5 has not been measured badly, it has been
+	 * specified. So the display value and the value the change is worked out
+	 * from are two different things, and only the first of them is a sentence.
+	 *
+	 * @param int    $note_id The note.
+	 * @param string $which   'ph' or 'natural'.
+	 * @return string An empty string when it was not measured.
+	 */
+	public static function measure_display( $note_id, $which ) {
+		$value = self::measure( $note_id, $which );
+		if ( '' === $value || 'ph' !== $which ) {
+			return $value;
+		}
+
+		$top = (string) get_post_meta( $note_id, FF_Post_Types::META_NOTE_PH_MAX, true );
+
+		// A second figure that is not above the first is not a range, it is a
+		// typo or a leftover, and reading "5.5 - 5.2" back to a member would be
+		// worse than quietly showing the one number that is certainly right.
+		if ( '' === $top || (float) $top <= (float) $value ) {
+			return $value;
+		}
+
+		return $value . ' - ' . $top;
 	}
 
 	/**
@@ -523,7 +553,7 @@ class FF_Display {
 	 * @param float|null $change The change, or null for none.
 	 * @return string
 	 */
-	private static function measure_html( $which, $value, $change ) {
+	private static function measure_html( $which, $display, $change ) {
 		$unit  = ( 'natural' === $which ) ? '%' : '';
 		$class = ( 'natural' === $which ) ? 'ff-note-natural' : 'ff-note-ph';
 		$label = ( 'natural' === $which )
@@ -532,7 +562,7 @@ class FF_Display {
 
 		$out = '<span class="' . $class . '">'
 			. '<span class="ff-measure-label">' . esc_html( $label ) . '</span> '
-			. '<span class="ff-measure-value">' . esc_html( $value . $unit ) . '</span>';
+			. '<span class="ff-measure-value">' . esc_html( $display . $unit ) . '</span>';
 
 		if ( null !== $change ) {
 			$out .= ' <span class="ff-note-delta ' . ( $change > 0 ? 'is-up' : 'is-down' ) . '">'
@@ -1091,7 +1121,7 @@ class FF_Display {
 			$meta[] = array( 'text', '<span class="ff-note-date">' . esc_html( $date ) . '</span>' );
 		}
 		foreach ( array( 'ph', 'natural' ) as $which ) {
-			$value = self::measure( $note->ID, $which );
+			$value = self::measure_display( $note->ID, $which );
 			if ( '' !== $value && self::shows( $a, $which ) ) {
 				$meta[] = array( 'text', self::measure_html( $which, $value, self::measure_change( $note->ID, $which ) ) );
 			}
@@ -1180,7 +1210,7 @@ class FF_Display {
 		// One figure that has gone up and one that has gone down, so both
 		// colours can be set without waiting for a formula to move.
 		if ( self::shows( $a, 'ph' ) ) {
-			$meta[] = array( 'text', self::measure_html( 'ph', '5.2', -0.3 ) );
+			$meta[] = array( 'text', self::measure_html( 'ph', '5.0 - 5.5', -0.3 ) );
 		}
 		if ( self::shows( $a, 'natural' ) ) {
 			$meta[] = array( 'text', self::measure_html( 'natural', '94.6', 0.4 ) );
@@ -1275,7 +1305,7 @@ class FF_Display {
 		$out .= '<h2 class="ff-product-name">' . esc_html__( 'Sample product, Renewal Serum', 'founding-faces' ) . '</h2>';
 		$out .= '<div class="ff-product-meta">' . self::stage_badge( 'stability_testing' );
 		$out .= '<span class="ff-product-status">' . esc_html__( 'Currently in eight-week stability testing', 'founding-faces' ) . '</span>';
-		$out .= self::measure_html( 'ph', '5.2', -0.3 );
+		$out .= self::measure_html( 'ph', '5.0 - 5.5', -0.3 );
 		$out .= self::measure_html( 'natural', '94.6', 0.4 );
 		$out .= '</div>';
 		$out .= '<div class="ff-product-intro"><p>' . esc_html__( 'Sample introduction copy so the product header can be styled before a real product is chosen.', 'founding-faces' ) . '</p></div>';
