@@ -303,6 +303,9 @@ class FF_History {
 			if ( absint( $extra['excerpt'] ) ) {
 				$out .= '<p class="ff-note-excerpt">' . esc_html( wp_trim_words( $sample_blurb, absint( $extra['excerpt'] ), '…' ) ) . '</p>';
 			}
+			if ( $link ) {
+				$out .= '<a class="ff-note-row-link" href="#"' . $tab_attr . ' tabindex="-1" aria-hidden="true"></a>';
+			}
 			$out .= '</li>';
 		}
 		$out .= '</ul></div>';
@@ -958,6 +961,26 @@ class FF_History {
 		return '<p class="ff-note-excerpt">' . esc_html( wp_trim_words( $text, $words, '…' ) ) . '</p>';
 	}
 
+	/**
+	 * The link that covers a whole note row.
+	 *
+	 * A sibling laid over the row rather than a wrapper around it: a card
+	 * holds a title link and a picture link already, and an anchor cannot
+	 * hold another. Hidden from screen readers and skipped by the keyboard,
+	 * because the title link beside it goes to the same place and says where.
+	 *
+	 * @param string $url  The note's permalink, or an empty string.
+	 * @param string $attr Target and rel, when rows open in a new tab.
+	 * @return string
+	 */
+	private static function row_link( $url, $attr = '' ) {
+		if ( ! $url ) {
+			return '';
+		}
+
+		return '<a class="ff-note-row-link" href="' . esc_url( $url ) . '"' . $attr . ' tabindex="-1" aria-hidden="true"></a>';
+	}
+
 	public static function note_rows( $entries, $link = true, $show_product = true, $new_tab = false, $extra = array() ) {
 		$extra = wp_parse_args( $extra, array(
 			'image'   => false,
@@ -993,14 +1016,12 @@ class FF_History {
 			$title = $title ? $title : __( '(untitled note)', 'founding-faces' );
 
 			$main = esc_html( $title );
-			if ( $link ) {
-				$url = get_permalink( $note_id );
-				if ( $url ) {
-					// rel="noopener" with target: without it the opened page can
-					// reach back through window.opener.
-					$attr = $new_tab ? ' target="_blank" rel="noopener"' : '';
-					$main = '<a href="' . esc_url( $url ) . '"' . $attr . '>' . esc_html( $title ) . '</a>';
-				}
+			$url  = $link ? get_permalink( $note_id ) : '';
+			$attr = $new_tab ? ' target="_blank" rel="noopener"' : '';
+			if ( $url ) {
+				// rel="noopener" with target: without it the opened page can
+				// reach back through window.opener.
+				$main = '<a href="' . esc_url( $url ) . '"' . $attr . '>' . esc_html( $title ) . '</a>';
 			}
 
 			$out .= '<li class="ff-history-item ff-note-row' . $rich . ( $is_unread ? ' is-unread' : '' ) . '">';
@@ -1034,6 +1055,7 @@ class FF_History {
 			// Outside the title column, so it runs the width of the row rather
 			// than the narrow gap the picture and the date leave behind.
 			$out .= self::note_excerpt( $note_id, $extra );
+			$out .= self::row_link( $url, $attr );
 			$out .= '</li>';
 		}
 

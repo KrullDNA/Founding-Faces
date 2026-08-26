@@ -950,8 +950,19 @@
 /* A row with a picture or a blurb in it is a block, not a line, so the date
  * sits with the top of it rather than the bottom. */
 .ff-note-row {
+	position: relative;
 	flex-wrap: wrap;
 	align-items: flex-start;
+}
+
+/* The whole row is the link. It lies over the row rather than wrapping it,
+ * because the title and the picture are already links and an anchor cannot
+ * hold another. inherit on the radius keeps it inside a rounded card. */
+.ff-note-row-link {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	border-radius: inherit;
 }
 
 /* In a card row the date sits inside the title column, under the title. It
