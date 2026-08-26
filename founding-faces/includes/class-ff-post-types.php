@@ -905,7 +905,7 @@ class FF_Post_Types {
 			<tr>
 				<th scope="row"><label for="ff_note_natural"><?php esc_html_e( 'Natural origin', 'founding-faces' ); ?></label></th>
 				<td>
-					<input type="number" step="0.1" min="0" max="100" name="ff_note_natural" id="ff_note_natural" value="<?php echo esc_attr( $natural ); ?>" class="small-text" /> %
+					<input type="number" step="0.01" min="0" max="100" name="ff_note_natural" id="ff_note_natural" value="<?php echo esc_attr( $natural ); ?>" class="small-text" /> %
 					<p class="description"><?php esc_html_e( 'As a percentage, ISO 16128 or however you are calculating it. Same again: leave it empty where it was not calculated.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>

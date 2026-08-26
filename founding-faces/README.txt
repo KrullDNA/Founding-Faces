@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.19
+Stable tag: 1.1.20
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,11 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.20 =
+* Natural origin takes two decimal places, so 94.25% can be recorded as it was
+  calculated rather than rounded on the way in. The change beside it already
+  worked to two, so a shift of 0.05 now shows as 0.05 instead of disappearing.
 
 = 1.1.19 =
 * The note card's image grid gets the same treatment as the slider: its height
