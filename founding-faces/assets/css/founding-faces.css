@@ -395,13 +395,16 @@
 
 /* Named twice, and weighted, for the reason given at .ff-slide-img: an image
  * optimiser moves this class onto a <picture> wrapper and leaves the img
- * inside it bare. */
+ * inside it bare. The crop defaults live here so a card's images line up as a
+ * grid of matching squares before anybody sets a control, which is what a row
+ * of thumbnails is for. */
 .ff-gallery-item .ff-gallery-img,
 .ff-gallery-item .ff-gallery-img img {
+	display: block;
 	width: 100%;
 	height: 120px;
 	object-fit: cover;
-	display: block;
+	object-position: center center;
 }
 
 /* Notes archive filter bar ------------------------------------------------- */

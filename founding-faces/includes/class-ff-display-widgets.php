@@ -474,17 +474,50 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
 			'selectors' => array( '{{WRAPPER}} .ff-note-gallery' => 'gap: {{SIZE}}{{UNIT}};' ),
 		) );
+		// Both the element carrying the class and any img inside it. An image
+		// optimiser serving WebP wraps the img in a <picture> and moves our
+		// class up onto the wrapper, and a height on a wrapper crops nothing.
+		$gal = '{{WRAPPER}} .ff-gallery-img, {{WRAPPER}} .ff-gallery-img img';
+
 		$this->add_responsive_control( 'gal_height', array(
 			'label'     => __( 'Image height', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::SLIDER,
 			'range'     => array( 'px' => array( 'min' => 60, 'max' => 500 ) ),
-			'selectors' => array( '{{WRAPPER}} .ff-gallery-img' => 'height: {{SIZE}}{{UNIT}}; object-fit: cover;' ),
+			'selectors' => array( $gal => 'height: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'gal_fit', array(
+			'label'     => __( 'How it fills that height', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'cover',
+			'options'   => array(
+				'cover'   => __( 'Crop to fill', 'founding-faces' ),
+				'contain' => __( 'Fit inside', 'founding-faces' ),
+				'fill'    => __( 'Stretch', 'founding-faces' ),
+			),
+			'selectors' => array( $gal => 'object-fit: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'gal_position', array(
+			'label'       => __( 'Crop position', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'center center',
+			'options'     => array(
+				'center center' => __( 'Centre', 'founding-faces' ),
+				'center top'    => __( 'Top', 'founding-faces' ),
+				'center bottom' => __( 'Bottom', 'founding-faces' ),
+				'left center'   => __( 'Left', 'founding-faces' ),
+				'right center'  => __( 'Right', 'founding-faces' ),
+			),
+			'description' => __( 'Which part of the picture survives the crop. A bench shot cropped from the top is all bench, which is rarely the part worth keeping.', 'founding-faces' ),
+			'selectors'   => array( $gal => 'object-position: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'gal_radius', array(
 			'label'      => __( 'Image corner radius', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
 			'size_units' => array( 'px', '%' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-gallery-img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'selectors'  => array(
+				$gal                          => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				'{{WRAPPER}} .ff-gallery-item' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+			),
 		) );
 		$this->add_responsive_control( 'gal_margin', array(
 			'label'      => __( 'Gallery margin', 'founding-faces' ),

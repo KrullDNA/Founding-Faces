@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.18
+Stable tag: 1.1.19
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,16 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.19 =
+* The note card's image grid gets the same treatment as the slider: its height
+  and corner radius now reach the image inside the <picture> wrapper, and it
+  gains the two controls it never had, how the image fills the height and which
+  part of it survives the crop.
+* Centre is the default, so a bench shot is no longer cropped down to the part
+  of the bench above the bowl.
+* The corner radius also goes on the tile around the image, so a linked
+  thumbnail is clipped to the same shape rather than squaring off its corners.
 
 = 1.1.18 =
 * The same <picture> wrapper fault, in the three other places the plugin draws
