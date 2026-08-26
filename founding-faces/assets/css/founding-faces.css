@@ -912,6 +912,42 @@
 	flex-direction: column;
 	gap: 0.2rem;
 	min-width: 0;
+	/* Takes the room the thumbnail and the date leave, so a long title wraps
+	 * rather than pushing the date off the end. */
+	flex: 1 1 auto;
+}
+
+/* A note's first image beside its row. Both selectors and the extra weight for
+ * the reason given at .ff-slide-img: an optimiser moves the class onto a
+ * <picture> and leaves the img inside it bare. */
+.ff-note-thumb {
+	display: block;
+	flex: 0 0 auto;
+	line-height: 0;
+	overflow: hidden;
+	border-radius: var(--ff-radius);
+}
+
+.ff-note-row .ff-note-thumb-img,
+.ff-note-row .ff-note-thumb-img img {
+	display: block;
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	object-position: center center;
+}
+
+.ff-note-excerpt {
+	margin: 0.2rem 0 0;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: var(--ff-muted);
+}
+
+/* A row with a picture or a blurb in it is a block, not a line, so the date
+ * sits with the top of it rather than the bottom. */
+.ff-note-row {
+	align-items: flex-start;
 }
 
 .ff-history-item-main {
