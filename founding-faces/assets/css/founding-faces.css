@@ -253,6 +253,12 @@
 	gap: 0.5rem;
 }
 
+/* The third group takes the width to itself, so a long figure sits under the
+ * short ones rather than wrapping out of the middle of them. */
+.ff-note-meta-block {
+	flex-basis: 100%;
+}
+
 .ff-note-trial,
 .ff-note-date,
 .ff-note-ph,

@@ -1123,7 +1123,10 @@ class FF_Display {
 		foreach ( array( 'ph', 'natural' ) as $which ) {
 			$value = self::measure_display( $note->ID, $which );
 			if ( '' !== $value && self::shows( $a, $which ) ) {
-				$meta[] = array( 'text', self::measure_html( $which, $value, self::measure_change( $note->ID, $which ) ) );
+				$meta[] = array(
+					( 'natural' === $which ) ? 'block' : 'text',
+					self::measure_html( $which, $value, self::measure_change( $note->ID, $which ) ),
+				);
 			}
 		}
 		if ( 'the-35-only' === $audience && self::shows( $a, 'vault' ) ) {
@@ -1213,7 +1216,7 @@ class FF_Display {
 			$meta[] = array( 'text', self::measure_html( 'ph', '5.0 - 5.5', -0.3 ) );
 		}
 		if ( self::shows( $a, 'natural' ) ) {
-			$meta[] = array( 'text', self::measure_html( 'natural', '94.6', 0.4 ) );
+			$meta[] = array( 'block', self::measure_html( 'natural', '94.6', 0.4 ) );
 		}
 		if ( $vault && self::shows( $a, 'vault' ) ) {
 			$meta[] = array( 'pill', '<span class="ff-note-vault">' . esc_html__( 'The 35 vault', 'founding-faces' ) . '</span>' );
@@ -1508,13 +1511,27 @@ class FF_Display {
 	 * @return string
 	 */
 	private static function meta_row( $items, $args ) {
-		$sep    = self::meta_separator( $args );
-		$groups = array( 'pill' => '', 'text' => '' );
+		$sep = self::meta_separator( $args );
+
+		// Three groups, each a line of its own: the badges, the short figures
+		// that read as one sentence, and anything long enough to want the width
+		// to itself. Natural origin is in the last of those because its label
+		// and its figure together are as wide as the other three combined, and
+		// a line that wraps mid-item leaves a separator stranded at the end.
+		$classes = array(
+			'pill'  => 'ff-note-meta-pills',
+			'text'  => 'ff-note-meta-text',
+			'block' => 'ff-note-meta-block',
+		);
+
+		$groups = array( 'pill' => '', 'text' => '', 'block' => '' );
 		$prev   = '';
 
 		foreach ( $items as $item ) {
 			list( $kind, $html ) = $item;
 
+			// Separators join adjacent items within a group and never trail off
+			// the end of one, which is what the last item on a line used to do.
 			if ( 'text' === $kind && '' !== $sep && 'text' === $prev ) {
 				$groups['text'] .= $sep;
 			}
@@ -1524,9 +1541,9 @@ class FF_Display {
 		}
 
 		$out = '';
-		foreach ( array( 'pill', 'text' ) as $kind ) {
+		foreach ( $classes as $kind => $class ) {
 			if ( '' !== $groups[ $kind ] ) {
-				$out .= '<span class="ff-note-meta-group ff-note-meta-' . ( 'pill' === $kind ? 'pills' : 'text' ) . '">' . $groups[ $kind ] . '</span>';
+				$out .= '<span class="ff-note-meta-group ' . $class . '">' . $groups[ $kind ] . '</span>';
 			}
 		}
 
