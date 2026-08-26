@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.24
+Stable tag: 1.1.25
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.25 =
+* The blurb now runs the full width of the row, under the picture, the title
+  and the date, rather than sharing the narrow column between them. It was
+  reading as one word a line.
+* A new "Note picture and blurb" style section holds what was previously left
+  to the stylesheet: width, height, fit, focus, corner radius, border, shadow
+  and the gap to the title for the picture, and typography, colour, alignment,
+  maximum width and margin for the blurb.
+* The picture rules name the class and an img inside it, so the image
+  optimiser's picture wrapper cannot take the crop back.
 
 = 1.1.24 =
 * The Member Archive widget can now show a photograph and a short blurb beside
