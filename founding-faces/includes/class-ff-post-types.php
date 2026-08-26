@@ -185,7 +185,12 @@ class FF_Post_Types {
 		if ( '' === $value || ! is_numeric( $value ) ) {
 			return '';
 		}
-		return (string) ( 0 + $value );
+
+		// Kept exactly as typed rather than run through a number, which drops
+		// trailing zeros. 94.20 and 94.2 are the same quantity and not the same
+		// statement: the first says the figure was worked to two places, and on
+		// a page about how a formula was made that distinction is the point.
+		return $value;
 	}
 
 	public static function note_stages() {
