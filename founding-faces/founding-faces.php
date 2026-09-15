@@ -393,32 +393,3 @@ function ff_remove_feedback_tags() {
 	update_option( 'ff_feedback_tags_removed', '1' );
 }
 add_action( 'admin_init', 'ff_remove_feedback_tags' );
-
-/**
- * Drop the stored CARTO base map URL, once.
- *
- * CARTO's pale grey tiles used to be served to anyone and are now returned
- * with "API key required" printed across them. Any site that saved the map
- * settings holds that URL in the database, where it would go on overriding the
- * new keyless default for ever. Only the exact old defaults are cleared: a URL
- * someone chose, including a CARTO one carrying a key of their own, is theirs
- * and is left alone.
- */
-function ff_clear_legacy_map_tiles() {
-	if ( '1' === get_option( 'ff_map_tiles_migrated' ) ) {
-		return;
-	}
-
-	$stored = trim( (string) get_option( FF_Map::OPT_TILE_URL, '' ) );
-	if ( '' !== $stored && in_array( $stored, FF_Map::legacy_tile_urls(), true ) ) {
-		update_option( FF_Map::OPT_TILE_URL, '' );
-
-		$attribution = trim( (string) get_option( FF_Map::OPT_TILE_ATTRIBUTION, '' ) );
-		if ( false !== stripos( $attribution, 'CARTO' ) ) {
-			update_option( FF_Map::OPT_TILE_ATTRIBUTION, '' );
-		}
-	}
-
-	update_option( 'ff_map_tiles_migrated', '1' );
-}
-add_action( 'admin_init', 'ff_clear_legacy_map_tiles' );

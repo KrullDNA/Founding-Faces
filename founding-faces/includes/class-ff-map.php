@@ -32,8 +32,6 @@ class FF_Map {
 	// Settings option keys for the map (plugin-level defaults).
 	const OPT_TILE_URL         = 'ff_map_tile_url';
 	const OPT_TILE_ATTRIBUTION = 'ff_map_tile_attribution';
-	const OPT_TILE_GREY        = 'ff_map_tile_grey';
-	const OPT_TILE_LIGHT       = 'ff_map_tile_light';
 	const OPT_35_COLOR         = 'ff_map_35_color';
 	const OPT_35_SIZE          = 'ff_map_35_size';
 	const OPT_CIRCLE_COLOR     = 'ff_map_circle_color';
@@ -80,39 +78,14 @@ class FF_Map {
 	 * -----------------------------------------------------------------------
 	 */
 
-	/**
-	 * The default base map: OpenStreetMap's own tiles.
-	 *
-	 * Deliberately not CARTO any more. Their pale grey Positron style used to
-	 * be served to anyone, and is now stamped "API key required" unless you
-	 * hold an account with them. OpenStreetMap asks for nothing but the credit
-	 * line, and the desaturation below returns the pale grey look without
-	 * anyone having to keep a subscription alive for a background image.
-	 *
-	 * @return string
-	 */
+	/** @return string The default pale-grey Positron tile URL (no key needed). */
 	public static function default_tile_url() {
-		return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+		return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 	}
 
 	/** @return string The default tile attribution. */
 	public static function default_tile_attribution() {
-		return '&copy; OpenStreetMap contributors';
-	}
-
-	/**
-	 * The CARTO tile URLs this plugin used to ship as the default.
-	 *
-	 * Used to recognise a stored setting that was never a choice, only the old
-	 * default written to the database by a visit to the settings screen.
-	 *
-	 * @return string[]
-	 */
-	public static function legacy_tile_urls() {
-		return array(
-			'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-			'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-		);
+		return '&copy; OpenStreetMap contributors &copy; CARTO';
 	}
 
 	/**
@@ -132,46 +105,14 @@ class FF_Map {
 			$attribution = self::default_tile_attribution();
 		}
 
-		// The tone filter exists to bring the keyless default map back to the
-		// pale grey the dots were designed against. It has no business touching
-		// a map someone chose for themselves, so when nothing is stored it
-		// applies to the built-in map only. An explicit value always wins.
-		$own_map = ( $tile !== self::default_tile_url() );
-		$grey    = get_option( self::OPT_TILE_GREY, '' );
-		$light   = get_option( self::OPT_TILE_LIGHT, '' );
-
 		return array(
 			'tile_url'     => $tile,
 			'attribution'  => $attribution,
-			// Percentages, applied to the tiles as a CSS filter. The dots are
-			// drawn over the top and are not touched by it.
-			'tile_grey'    => ( '' === $grey || null === $grey )
-				? ( $own_map ? 0 : 100 )
-				: self::clamp_percent( $grey, 0, 100, 100 ),
-			'tile_light'   => ( '' === $light || null === $light )
-				? ( $own_map ? 100 : 106 )
-				: self::clamp_percent( $light, 50, 150, 106 ),
 			'c35_color'    => get_option( self::OPT_35_COLOR, '#2b2d33' ),
 			'c35_size'     => (int) get_option( self::OPT_35_SIZE, 8 ),
 			'circle_color' => get_option( self::OPT_CIRCLE_COLOR, '#9aa0a6' ),
 			'circle_size'  => (int) get_option( self::OPT_CIRCLE_SIZE, 6 ),
 		);
-	}
-
-	/**
-	 * Keep a stored percentage inside its range.
-	 *
-	 * @param mixed $value   The stored value.
-	 * @param int   $min     Lowest allowed.
-	 * @param int   $max     Highest allowed.
-	 * @param int   $default What to use when nothing sensible is stored.
-	 * @return int
-	 */
-	public static function clamp_percent( $value, $min, $max, $default ) {
-		if ( '' === $value || null === $value || ! is_numeric( $value ) ) {
-			return $default;
-		}
-		return max( $min, min( $max, (int) $value ) );
 	}
 
 	/*
@@ -361,8 +302,6 @@ class FF_Map {
 			'height'       => 520,
 			'tile_url'     => $s['tile_url'],
 			'attribution'  => $s['attribution'],
-			'tile_grey'    => $s['tile_grey'],
-			'tile_light'   => $s['tile_light'],
 			'tiers'        => array(
 				'35'     => array( 'color' => $s['c35_color'], 'size' => $s['c35_size'] ),
 				'circle' => array( 'color' => $s['circle_color'], 'size' => $s['circle_size'] ),
@@ -405,8 +344,6 @@ class FF_Map {
 			'zoomControl' => (bool) $args['zoom_control'],
 			'tileUrl'     => $args['tile_url'],
 			'attribution' => $args['attribution'],
-			'tileGrey'    => self::clamp_percent( $args['tile_grey'], 0, 100, 100 ),
-			'tileLight'   => self::clamp_percent( $args['tile_light'], 50, 150, 106 ),
 			'tiers'       => array(
 				'35'     => array( 'color' => $args['tiers']['35']['color'], 'size' => (int) $args['tiers']['35']['size'] ),
 				'circle' => array( 'color' => $args['tiers']['circle']['color'], 'size' => (int) $args['tiers']['circle']['size'] ),
