@@ -746,7 +746,7 @@ class FF_Settings {
 					&nbsp;&nbsp;
 					<label><?php esc_html_e( 'Lighten (%)', 'founding-faces' ); ?>
 						<input name="<?php echo esc_attr( FF_Map::OPT_TILE_LIGHT ); ?>" type="number" min="50" max="150" value="<?php echo esc_attr( $s['tile_light'] ); ?>" style="width:80px;" /></label>
-					<p class="description"><?php esc_html_e( 'Drains the colour out of the base map so the dots carry the page. 100 and 106 give a pale grey close to the old Positron style from a map that costs nothing. Set desaturation to 0 to leave the provider\'s own colours alone. The dots are drawn over the top and are never affected.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Drains the colour out of the base map so the dots carry the page. Applied to the built-in OpenStreetMap default only: point the tile URL above at a provider of your own and the tone is left alone unless you set these yourself. 100 and 106 give a pale grey close to CARTO\'s Positron from a map that costs nothing. The dots are drawn over the top and are never affected.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>

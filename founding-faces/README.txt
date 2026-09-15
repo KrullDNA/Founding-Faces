@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.28
+Stable tag: 1.1.29
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -198,6 +198,12 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.29 =
+* The base map tone is now applied to the built-in map only. It exists to bring
+  the keyless default back to pale grey, and a site pointing at a provider of
+  its own, a keyed CARTO Positron for instance, is left exactly as that
+  provider drew it unless the percentages are set by hand.
 
 = 1.1.28 =
 * The members map no longer uses CARTO. Their pale grey tiles used to be

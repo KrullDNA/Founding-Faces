@@ -132,13 +132,25 @@ class FF_Map {
 			$attribution = self::default_tile_attribution();
 		}
 
+		// The tone filter exists to bring the keyless default map back to the
+		// pale grey the dots were designed against. It has no business touching
+		// a map someone chose for themselves, so when nothing is stored it
+		// applies to the built-in map only. An explicit value always wins.
+		$own_map = ( $tile !== self::default_tile_url() );
+		$grey    = get_option( self::OPT_TILE_GREY, '' );
+		$light   = get_option( self::OPT_TILE_LIGHT, '' );
+
 		return array(
 			'tile_url'     => $tile,
 			'attribution'  => $attribution,
 			// Percentages, applied to the tiles as a CSS filter. The dots are
 			// drawn over the top and are not touched by it.
-			'tile_grey'    => self::clamp_percent( get_option( self::OPT_TILE_GREY, 100 ), 0, 100, 100 ),
-			'tile_light'   => self::clamp_percent( get_option( self::OPT_TILE_LIGHT, 106 ), 50, 150, 106 ),
+			'tile_grey'    => ( '' === $grey || null === $grey )
+				? ( $own_map ? 0 : 100 )
+				: self::clamp_percent( $grey, 0, 100, 100 ),
+			'tile_light'   => ( '' === $light || null === $light )
+				? ( $own_map ? 100 : 106 )
+				: self::clamp_percent( $light, 50, 150, 106 ),
 			'c35_color'    => get_option( self::OPT_35_COLOR, '#2b2d33' ),
 			'c35_size'     => (int) get_option( self::OPT_35_SIZE, 8 ),
 			'circle_color' => get_option( self::OPT_CIRCLE_COLOR, '#9aa0a6' ),
