@@ -211,8 +211,26 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 			'label'       => __( 'Base tile source', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::TEXT,
 			'default'     => '',
-			'placeholder' => __( 'Uses the plugin setting (Positron) when blank', 'founding-faces' ),
+			'placeholder' => __( 'Uses the plugin setting when blank', 'founding-faces' ),
 			'description' => __( 'Leave blank to use the plugin-level tile setting.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'tile_grey', array(
+			'label'       => __( 'Desaturate the base map (%)', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'min'         => 0,
+			'max'         => 100,
+			'default'     => '',
+			'description' => __( 'Blank uses the plugin-level setting. Drains the colour out of the base map so the dots carry it. The dots themselves are never affected.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'tile_light', array(
+			'label'       => __( 'Lighten the base map (%)', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'min'         => 50,
+			'max'         => 150,
+			'default'     => '',
+			'description' => __( 'Blank uses the plugin-level setting.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'container_bg', array(
@@ -318,6 +336,12 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 		);
 
 		// Blank tile source falls back to the plugin-level setting.
+		foreach ( array( 'tile_grey', 'tile_light' ) as $tone ) {
+			if ( isset( $s[ $tone ] ) && '' !== $s[ $tone ] && is_numeric( $s[ $tone ] ) ) {
+				$args[ $tone ] = (int) $s[ $tone ];
+			}
+		}
+
 		if ( isset( $s['tile_url'] ) && '' !== trim( $s['tile_url'] ) ) {
 			$args['tile_url'] = trim( $s['tile_url'] );
 		}

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.27
+Stable tag: 1.1.28
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -135,9 +135,10 @@ Stage 10: The members map
 * [ff_members_map] shortcode: an anonymous dot per member, placed from their
   postcode via a bundled Australian postcode-to-coordinates table (3,170
   postcodes), no external API call.
-* Leaflet (bundled locally, no CDN) with the pale grey Positron OpenStreetMap
-  style as the base map, from a no-key provider. The tile URL is a single
-  setting so it can be repointed later.
+* Leaflet (bundled locally, no CDN) over OpenStreetMap's own tiles, which need
+  no account and no key. The tiles are desaturated and lightened in the browser
+  to the pale grey the dots read against. The tile URL and both percentages are
+  settings, so the map can be repointed at any other provider later.
 * Settings for per-tier dot colour and size (The 35 vs The Circle); dots are
   semi-transparent so dense areas glow, with a tiny stable jitter so shared
   postcodes spread into a soft cluster.
@@ -185,7 +186,8 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   zoom, min/max zoom, scroll-wheel zoom (default off), pan/drag with an option
   to lock panning to Australia's bounds, zoom buttons on/off, map height; dot
   colour/size per tier, dot opacity, optional dot border; base tile source
-  (defaults to the plugin Positron setting), container background/border/radius,
+  (defaults to the plugin setting), how far to desaturate and lighten the base
+  map, container background/border/radius,
   and an optional legend with position. All map behaviour options are standard
   Leaflet options. Still reads postcode only, nothing clickable.
 * Leaflet and the widget assets load only where a map is present.
@@ -196,6 +198,19 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.28 =
+* The members map no longer uses CARTO. Their pale grey tiles used to be
+  served to anyone and now come back with "API key required" printed across
+  them, so the default is OpenStreetMap's own tiles, which need no account and
+  no key.
+* Two new map settings, Desaturate and Lighten, drain the colour out of the
+  base map in the browser so it reads as the same pale grey the dots were
+  designed against. Both are also on the map widget, per instance, and the
+  dots are drawn over the top and never affected.
+* A site already holding the old CARTO URL in its map settings is moved across
+  once, automatically. A tile URL anyone chose themselves, including a CARTO
+  one carrying their own key, is left exactly as it is.
 
 = 1.1.27 =
 * The whole note row is now the link to its note, not just the title. It is a
@@ -1551,7 +1566,7 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
 
 = 1.0.6 =
 * Change (map): removed the "Leaflet" attribution prefix (not legally required).
-  The OpenStreetMap / CARTO data attribution remains, as it is required.
+  The OpenStreetMap data attribution remains, as it is required.
 
 = 1.0.5 =
 * Fix (map): test members now appear on the map (they exist to exercise the

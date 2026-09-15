@@ -50,8 +50,8 @@
 		} );
 
 		// Remove Leaflet's own "Leaflet" credit (the library is BSD-licensed and
-		// doesn't require UI attribution). The tile/data attribution below ,
-		// OpenStreetMap and CARTO, is legally required and stays.
+		// doesn't require UI attribution). The tile and data attribution below,
+		// OpenStreetMap by default, is legally required and stays.
 		if ( map.attributionControl ) {
 			map.attributionControl.setPrefix( false );
 		}
@@ -65,12 +65,23 @@
 			} );
 		}
 
-		// The base map imagery (what the map shows).
+		// The base map imagery (what the map shows). The desaturation is a CSS
+		// filter on the tile pane rather than anything asked of the provider,
+		// so any keyless map can be brought back to a pale grey that lets the
+		// dots carry the page. The dots sit in a pane of their own and are not
+		// touched by it.
 		L.tileLayer( cfg.tileUrl, {
 			attribution: cfg.attribution,
 			subdomains: 'abcd',
 			maxZoom: cfg.maxZoom
 		} ).addTo( map );
+
+		var pane = el.querySelector( '.leaflet-tile-pane' );
+		if ( pane ) {
+			var grey = ( typeof cfg.tileGrey === 'number' ) ? cfg.tileGrey : 100;
+			var light = ( typeof cfg.tileLight === 'number' ) ? cfg.tileLight : 106;
+			pane.style.filter = 'grayscale(' + grey + '%) brightness(' + ( light / 100 ) + ')';
+		}
 
 		var t35 = cfg.tiers[ '35' ];
 		var tc = cfg.tiers.circle;

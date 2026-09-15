@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.27
+ * Version:           1.1.28
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.27' );
+define( 'FF_VERSION', '1.1.28' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -393,3 +393,32 @@ function ff_remove_feedback_tags() {
 	update_option( 'ff_feedback_tags_removed', '1' );
 }
 add_action( 'admin_init', 'ff_remove_feedback_tags' );
+
+/**
+ * Drop the stored CARTO base map URL, once.
+ *
+ * CARTO's pale grey tiles used to be served to anyone and are now returned
+ * with "API key required" printed across them. Any site that saved the map
+ * settings holds that URL in the database, where it would go on overriding the
+ * new keyless default for ever. Only the exact old defaults are cleared: a URL
+ * someone chose, including a CARTO one carrying a key of their own, is theirs
+ * and is left alone.
+ */
+function ff_clear_legacy_map_tiles() {
+	if ( '1' === get_option( 'ff_map_tiles_migrated' ) ) {
+		return;
+	}
+
+	$stored = trim( (string) get_option( FF_Map::OPT_TILE_URL, '' ) );
+	if ( '' !== $stored && in_array( $stored, FF_Map::legacy_tile_urls(), true ) ) {
+		update_option( FF_Map::OPT_TILE_URL, '' );
+
+		$attribution = trim( (string) get_option( FF_Map::OPT_TILE_ATTRIBUTION, '' ) );
+		if ( false !== stripos( $attribution, 'CARTO' ) ) {
+			update_option( FF_Map::OPT_TILE_ATTRIBUTION, '' );
+		}
+	}
+
+	update_option( 'ff_map_tiles_migrated', '1' );
+}
+add_action( 'admin_init', 'ff_clear_legacy_map_tiles' );

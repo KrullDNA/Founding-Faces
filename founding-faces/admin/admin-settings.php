@@ -137,6 +137,8 @@ class FF_Settings {
 		// The tile URL uses a custom sanitiser because esc_url_raw() strips the
 		// {z}/{x}/{y} placeholders Leaflet needs.
 		register_setting( self::GROUP, FF_Map::OPT_TILE_URL, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_tile_url' ) ) );
+		register_setting( self::GROUP, FF_Map::OPT_TILE_GREY, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Map::OPT_TILE_LIGHT, array( 'sanitize_callback' => 'absint' ) );
 		register_setting( self::GROUP, FF_Map::OPT_TILE_ATTRIBUTION, array( 'sanitize_callback' => 'wp_kses_post' ) );
 		register_setting( self::GROUP, FF_Map::OPT_35_COLOR, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_color' ) ) );
 		register_setting( self::GROUP, FF_Map::OPT_35_SIZE, array( 'sanitize_callback' => 'absint' ) );
@@ -733,7 +735,18 @@ class FF_Settings {
 				<th scope="row"><label for="<?php echo esc_attr( FF_Map::OPT_TILE_URL ); ?>"><?php esc_html_e( 'Base map tile URL', 'founding-faces' ); ?></label></th>
 				<td>
 					<input name="<?php echo esc_attr( FF_Map::OPT_TILE_URL ); ?>" id="<?php echo esc_attr( FF_Map::OPT_TILE_URL ); ?>" type="text" class="large-text code" value="<?php echo esc_attr( $s['tile_url'] ); ?>" />
-					<p class="description"><?php esc_html_e( 'Defaults to the pale grey Positron style (no key). Set once here; repoint to another provider (e.g. Stadia) later without touching code.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Defaults to OpenStreetMap, which needs no account and no key. Repoint it at another provider here, including a keyed one, without touching code. The {z}, {x} and {y} placeholders must survive the paste.', 'founding-faces' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Base map tone', 'founding-faces' ); ?></th>
+				<td>
+					<label><?php esc_html_e( 'Desaturate (%)', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Map::OPT_TILE_GREY ); ?>" type="number" min="0" max="100" value="<?php echo esc_attr( $s['tile_grey'] ); ?>" style="width:80px;" /></label>
+					&nbsp;&nbsp;
+					<label><?php esc_html_e( 'Lighten (%)', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Map::OPT_TILE_LIGHT ); ?>" type="number" min="50" max="150" value="<?php echo esc_attr( $s['tile_light'] ); ?>" style="width:80px;" /></label>
+					<p class="description"><?php esc_html_e( 'Drains the colour out of the base map so the dots carry the page. 100 and 106 give a pale grey close to the old Positron style from a map that costs nothing. Set desaturation to 0 to leave the provider\'s own colours alone. The dots are drawn over the top and are never affected.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
