@@ -909,11 +909,29 @@ class FF_History {
 			return '';
 		}
 
-		$img = wp_get_attachment_image( reset( $ids ), 'medium', false, array(
-			'class'   => 'ff-note-thumb-img',
-			'loading' => 'lazy',
-			'alt'     => '',
-		) );
+		// A still, never a player: the archive is a list to scan, and a row is
+		// no place to start a video. A clip earns its place here only through
+		// the poster frame set on it, and a gallery that is all video with no
+		// posters simply has no thumbnail.
+		$img = '';
+		foreach ( $ids as $id ) {
+			if ( FF_Display::is_video( $id ) ) {
+				$poster = FF_Display::video_poster( $id );
+				if ( $poster && '' === $img ) {
+					$img = '<img class="ff-note-thumb-img" src="' . esc_url( $poster ) . '" alt="" loading="lazy" />';
+				}
+				continue;
+			}
+
+			$img = wp_get_attachment_image( $id, 'medium', false, array(
+				'class'   => 'ff-note-thumb-img',
+				'loading' => 'lazy',
+				'alt'     => '',
+			) );
+			if ( $img ) {
+				break;
+			}
+		}
 
 		if ( ! $img ) {
 			return '';

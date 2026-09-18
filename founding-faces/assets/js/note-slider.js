@@ -73,6 +73,30 @@
 			return count <= perView( el );
 		}
 
+		// Whether a video in the gallery is playing. Autoplay stops for as long
+		// as one is, because sliding a video out from under someone watching it
+		// is the rudest thing a gallery can do.
+		function watching() {
+			var videos = el.querySelectorAll( 'video' );
+			for ( var i = 0; i < videos.length; i++ ) {
+				if ( ! videos[ i ].paused && ! videos[ i ].ended ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Moving on stops whatever was playing, so sound never carries over
+		// from a slide nobody is looking at any more.
+		function hush() {
+			var videos = el.querySelectorAll( 'video' );
+			for ( var i = 0; i < videos.length; i++ ) {
+				if ( ! videos[ i ].paused ) {
+					videos[ i ].pause();
+				}
+			}
+		}
+
 		// The width of one step: the distance between two slides' left edges,
 		// which covers the gap without having to read it.
 		function step() {
@@ -115,6 +139,7 @@
 				return;
 			}
 			moving = true;
+			hush();
 
 			var distance = step();
 			var ms = speed( track );
@@ -146,6 +171,7 @@
 				return;
 			}
 			moving = true;
+			hush();
 
 			var ms = speed( track );
 
@@ -169,6 +195,7 @@
 			if ( moving || still() || target === current ) {
 				return;
 			}
+			hush();
 
 			var steps = ( target - current + count ) % count;
 
@@ -213,7 +240,12 @@
 		function start() {
 			stop();
 			if ( autoplay > 0 && ! reducedMotion() && ! still() ) {
-				timer = window.setInterval( forward, autoplay );
+				timer = window.setInterval( function () {
+					if ( watching() ) {
+						return;
+					}
+					forward();
+				}, autoplay );
 			}
 		}
 

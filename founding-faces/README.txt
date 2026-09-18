@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.29
+Stable tag: 1.1.30
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,9 +80,9 @@ Stage 5: Email connector + Campaign Monitor
 Stage 6: Products & notes with gating
 * Notes (ff_note) are structured records: linked product, date, version number,
   development stage (in development / stability testing / passed / failed),
-  image gallery and a per-note audience flag (everyone / the-35-only), all
-  entered in a clean "Note details" metabox with a media-library gallery
-  picker.
+  a gallery of images and video, and a per-note audience flag (everyone /
+  the-35-only), all entered in a clean "Note details" metabox with a
+  media-library gallery picker.
 * Server-side gating (FF_Gating): can_view_note() plus member / The 35 / The
   Circle checks, the single source of truth for who sees what.
 * Elementor "Show to" visibility condition on every element (Everyone /
@@ -97,7 +97,7 @@ Stage 7: Frontend display
 * Components as shortcodes (Elementor-compatible): [ff_note], [ff_notes]
   (newest first, filterable by stage with filter chips), [ff_product_header],
   [ff_home] (a hybrid home: latest-notes feed above a products list), and
-  [ff_note_gallery] (the note's images as a slider).
+  [ff_note_gallery] (the note's images and video as a slider).
 * Product metabox adds a current stage and a "where it's up to" line.
 * Apotheca brand tokens baked into the components; the note markup is
   filterable (ff_render_note) so Elementor Pro Theme Builder can override it.
@@ -196,6 +196,25 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.30 =
+* Video in the note gallery. Add a clip in the same place as the images and it
+  takes its turn in the order you chose them, in the slider, on the note card,
+  and through the JetEngine gallery callback.
+* It is the same field and the same list of attachments as before, so there is
+  nothing to migrate and no second gallery to keep in step.
+* A new Video section on the Note Gallery widget: player controls, play on
+  arrival, loop and start muted. Play on arrival is always silent, because no
+  phone will start a video with sound on a page nobody has touched yet.
+* The slider holds still while a video is playing and pauses whatever was
+  playing when it moves, so sound never carries over from a slide nobody is
+  looking at.
+* Images and video share one frame, so the height, fit and corner radius set
+  for the images govern a clip in the same gallery.
+* The Elementor editor's sample gallery now has a video in it, so the player
+  can be styled before a note carries a clip.
+* In the Member Archive the thumbnail stays a still. A video reaches it only
+  through a poster frame set on the attachment.
 
 = 1.1.27 =
 * The whole note row is now the link to its note, not just the title. It is a

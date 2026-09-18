@@ -204,6 +204,54 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 		) );
 
 		$this->end_controls_section();
+
+		$this->video_content_section();
+	}
+
+	/**
+	 * How a video in the gallery plays.
+	 */
+	private function video_content_section() {
+		$this->start_controls_section( 'ff_gal_video', array(
+			'label' => __( 'Video', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'video_note', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'Video is part of the gallery, not a section of its own. Add a clip to the note in the same place as the images and it takes its turn in the order you chose.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
+		$this->add_control( 'video_controls', array(
+			'label'        => __( 'Show the player controls', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+		) );
+
+		$this->add_control( 'video_autoplay', array(
+			'label'        => __( 'Play on arrival', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'description'  => __( 'Always silent. No phone will start a video with sound on a page nobody has touched yet, so autoplay carries mute whether or not mute is set below.', 'founding-faces' ),
+		) );
+
+		$this->add_control( 'video_loop', array(
+			'label'        => __( 'Loop', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+		) );
+
+		$this->add_control( 'video_muted', array(
+			'label'        => __( 'Start muted', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+		) );
+
+		$this->end_controls_section();
 	}
 
 	/*
@@ -261,7 +309,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 	 */
 	private function image_style_section() {
 		$this->start_controls_section( 'ff_gal_img', array(
-			'label' => __( 'Images', 'founding-faces' ),
+			'label' => __( 'Images and video', 'founding-faces' ),
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
 
@@ -276,7 +324,9 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 		// tags and never get wrapped, so it only ever shows up live.
 		//
 		// Naming both covers the site with an optimiser and the site without.
-		$sel = '{{WRAPPER}} .ff-slide-img, {{WRAPPER}} .ff-slide-img img';
+		// The video is named alongside the image throughout, so a gallery of
+		// both sits in one frame rather than two different ones.
+		$sel = '{{WRAPPER}} .ff-slide-img, {{WRAPPER}} .ff-slide-img img, {{WRAPPER}} .ff-slide-video';
 
 		// None of these carries a condition either. A condition is evaluated
 		// again when the front end's stylesheet is written, separately from the
@@ -641,6 +691,10 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'autoplay' => $autoplay,
 			'prev'     => $this->icon_html( isset( $s['prev_icon'] ) ? $s['prev_icon'] : array() ),
 			'next'     => $this->icon_html( isset( $s['next_icon'] ) ? $s['next_icon'] : array() ),
+			'video_controls' => ! isset( $s['video_controls'] ) || 'yes' === $s['video_controls'],
+			'video_autoplay' => isset( $s['video_autoplay'] ) && 'yes' === $s['video_autoplay'],
+			'video_loop'     => isset( $s['video_loop'] ) && 'yes' === $s['video_loop'],
+			'video_muted'    => isset( $s['video_muted'] ) && 'yes' === $s['video_muted'],
 		);
 	}
 

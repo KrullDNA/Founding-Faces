@@ -1644,6 +1644,79 @@ class FF_Display {
 	}
 
 	/**
+	 * Whether an attachment is a video rather than an image.
+	 *
+	 * The gallery holds attachment ids and always has, so a video needs no new
+	 * field and no migration. It is simply an item in the same list that has to
+	 * be drawn with a different tag.
+	 *
+	 * @param int $id The attachment.
+	 * @return bool
+	 */
+	public static function is_video( $id ) {
+		return 0 === strpos( (string) get_post_mime_type( absint( $id ) ), 'video/' );
+	}
+
+	/**
+	 * A video attachment's poster frame, if one was set.
+	 *
+	 * WordPress stores it as the attachment's own featured image. Without one
+	 * the browser shows the first frame once it has the metadata, which is why
+	 * the tag below always asks for metadata even when nothing else loads.
+	 *
+	 * @param int $id The attachment.
+	 * @return string A URL, or an empty string.
+	 */
+	public static function video_poster( $id ) {
+		$poster = get_the_post_thumbnail_url( absint( $id ), 'large' );
+		return $poster ? $poster : '';
+	}
+
+	/**
+	 * One video in the gallery.
+	 *
+	 * Autoplay carries muted whether or not muted was asked for, because no
+	 * phone will start a video with sound on a page nobody has touched yet, and
+	 * an autoplay that silently fails is worse than one that plays quietly.
+	 *
+	 * @param int    $id    The attachment.
+	 * @param string $class The class for the video element.
+	 * @param array  $args  Playback options.
+	 * @return string
+	 */
+	public static function video_html( $id, $class, $args = array() ) {
+		$id  = absint( $id );
+		$src = wp_get_attachment_url( $id );
+		if ( ! $src ) {
+			return '';
+		}
+
+		$a = wp_parse_args( $args, array(
+			'controls' => true,
+			'autoplay' => false,
+			'loop'     => false,
+			'muted'    => false,
+		) );
+
+		$mime   = get_post_mime_type( $id );
+		$poster = self::video_poster( $id );
+
+		// playsinline: without it an iPhone takes the video full screen the
+		// moment it plays, which throws the member out of the note.
+		$out  = '<video class="' . esc_attr( $class ) . '" preload="metadata" playsinline';
+		$out .= $poster ? ' poster="' . esc_url( $poster ) . '"' : '';
+		$out .= $a['controls'] ? ' controls' : '';
+		$out .= $a['loop'] ? ' loop' : '';
+		$out .= ( $a['muted'] || $a['autoplay'] ) ? ' muted' : '';
+		$out .= $a['autoplay'] ? ' autoplay' : '';
+		$out .= '>';
+		$out .= '<source src="' . esc_url( $src ) . '" type="' . esc_attr( $mime ) . '" />';
+		$out .= '</video>';
+
+		return $out;
+	}
+
+	/**
 	 * The image gallery markup for a note's gallery CSV.
 	 *
 	 * @param string $gallery A CSV of attachment ids.
@@ -1657,6 +1730,17 @@ class FF_Display {
 
 		$out = '<div class="ff-note-gallery">';
 		foreach ( $ids as $id ) {
+			// A video plays where it sits. Sending it to its own file, the way
+			// an image is sent, would take the member out of the note to look
+			// at a bare player on a blank page.
+			if ( self::is_video( $id ) ) {
+				$video = self::video_html( $id, 'ff-gallery-video' );
+				if ( $video ) {
+					$out .= '<span class="ff-gallery-item ff-gallery-item--video">' . $video . '</span>';
+				}
+				continue;
+			}
+
 			$img = wp_get_attachment_image( $id, 'medium', false, array( 'class' => 'ff-gallery-img', 'loading' => 'lazy' ) );
 			if ( $img ) {
 				$full = wp_get_attachment_image_url( $id, 'full' );
@@ -1773,20 +1857,30 @@ class FF_Display {
 	 */
 	public static function sc_note_gallery( $atts ) {
 		$a = shortcode_atts( array(
-			'id'       => 0,
-			'size'     => 'large',
-			'link'     => 'none',
-			'caption'  => '0',
-			'dots'     => '0',
-			'autoplay' => 0,
+			'id'             => 0,
+			'size'           => 'large',
+			'link'           => 'none',
+			'caption'        => '0',
+			'dots'           => '0',
+			'autoplay'       => 0,
+			'video_controls' => '1',
+			'video_autoplay' => '0',
+			'video_loop'     => '0',
+			'video_muted'    => '0',
 		), $atts, 'ff_note_gallery' );
 
+		$yes = array( '1', 'yes', 'true' );
+
 		return self::note_gallery_html( self::note_context_id( $a['id'] ), array(
-			'size'     => sanitize_key( $a['size'] ),
-			'link'     => sanitize_key( $a['link'] ),
-			'caption'  => in_array( strtolower( (string) $a['caption'] ), array( '1', 'yes', 'true' ), true ),
-			'dots'     => in_array( strtolower( (string) $a['dots'] ), array( '1', 'yes', 'true' ), true ),
-			'autoplay' => absint( $a['autoplay'] ),
+			'size'           => sanitize_key( $a['size'] ),
+			'link'           => sanitize_key( $a['link'] ),
+			'caption'        => in_array( strtolower( (string) $a['caption'] ), $yes, true ),
+			'dots'           => in_array( strtolower( (string) $a['dots'] ), $yes, true ),
+			'autoplay'       => absint( $a['autoplay'] ),
+			'video_controls' => in_array( strtolower( (string) $a['video_controls'] ), $yes, true ),
+			'video_autoplay' => in_array( strtolower( (string) $a['video_autoplay'] ), $yes, true ),
+			'video_loop'     => in_array( strtolower( (string) $a['video_loop'] ), $yes, true ),
+			'video_muted'    => in_array( strtolower( (string) $a['video_muted'] ), $yes, true ),
 		) );
 	}
 
@@ -1822,6 +1916,24 @@ class FF_Display {
 		$slides = array();
 
 		foreach ( $ids as $id ) {
+			$caption = $args['caption'] ? FF_Text::inline( wp_get_attachment_caption( $id ) ) : '';
+
+			// A video slide is the video itself, with no link around it: the
+			// lightbox and the file link both exist to enlarge a still, and a
+			// player already has full screen of its own.
+			if ( self::is_video( $id ) ) {
+				$video = self::video_html( $id, 'ff-slide-video', array(
+					'controls' => $args['video_controls'],
+					'autoplay' => $args['video_autoplay'],
+					'loop'     => $args['video_loop'],
+					'muted'    => $args['video_muted'],
+				) );
+				if ( $video ) {
+					$slides[] = self::slide_html( $video, '', $caption, $args );
+				}
+				continue;
+			}
+
 			$img = wp_get_attachment_image( $id, $args['size'], false, array(
 				'class'   => 'ff-slide-img',
 				'loading' => 'lazy',
@@ -1830,7 +1942,6 @@ class FF_Display {
 				continue;
 			}
 
-			$caption = $args['caption'] ? FF_Text::inline( wp_get_attachment_caption( $id ) ) : '';
 			$slides[] = self::slide_html( $img, wp_get_attachment_image_url( $id, 'full' ), $caption, $args );
 		}
 
@@ -1856,6 +1967,20 @@ class FF_Display {
 
 		for ( $i = 1; $i <= 5; $i++ ) {
 			$src = self::placeholder_image_src( $i );
+
+			// The third one stands in for a video, so the player, its controls
+			// and the frame around it can all be styled on the canvas before
+			// any note has a clip on it. A poster and no source: the browser
+			// draws exactly what a real video shows before it is played.
+			if ( 3 === $i ) {
+				$video = '<video class="ff-slide-video" preload="none" playsinline poster="' . esc_url( $src ) . '"';
+				$video .= $args['video_controls'] ? ' controls' : '';
+				$video .= '></video>';
+				$caption = $args['caption'] ? __( 'Sample caption, a video in the gallery shows here.', 'founding-faces' ) : '';
+				$slides[] = self::slide_html( $video, '', esc_html( $caption ), $args );
+				continue;
+			}
+
 			$img = '<img class="ff-slide-img" src="' . esc_url( $src ) . '" alt="" width="800" height="600" />';
 			/* translators: %d is the position of a sample image in the slider. */
 			$caption  = $args['caption'] ? sprintf( __( 'Sample caption %d, the image caption from the media library shows here.', 'founding-faces' ), $i ) : '';
@@ -1886,6 +2011,12 @@ class FF_Display {
 			'next'     => '',
 			'prev_label' => __( 'Previous image', 'founding-faces' ),
 			'next_label' => __( 'Next image', 'founding-faces' ),
+			// How a video in the gallery plays. Controls on by default: a note
+			// is something to look through, not something that starts at you.
+			'video_controls' => true,
+			'video_autoplay' => false,
+			'video_loop'     => false,
+			'video_muted'    => false,
 		) );
 	}
 

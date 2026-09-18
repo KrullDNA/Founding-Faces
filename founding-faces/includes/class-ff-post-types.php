@@ -953,14 +953,15 @@ class FF_Post_Types {
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Image gallery', 'founding-faces' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Gallery', 'founding-faces' ); ?></th>
 				<td>
 					<input type="hidden" name="ff_note_gallery" id="ff_note_gallery" value="<?php echo esc_attr( $gallery ); ?>" />
 					<div id="ff_note_gallery_preview" class="ff-gallery-preview">
 						<?php echo self::gallery_preview_html( $gallery ); // Escaped inside the helper. ?>
 					</div>
-					<button type="button" class="button" id="ff_note_gallery_add"><?php esc_html_e( 'Add / edit images', 'founding-faces' ); ?></button>
+					<button type="button" class="button" id="ff_note_gallery_add"><?php esc_html_e( 'Add / edit media', 'founding-faces' ); ?></button>
 					<button type="button" class="button" id="ff_note_gallery_clear"><?php esc_html_e( 'Clear', 'founding-faces' ); ?></button>
+					<p class="description"><?php esc_html_e( 'Images and video, in the order you choose them. A video plays where it sits, so keep clips short: the whole file is served from this site, with nothing to step the quality down on a slow connection.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -977,6 +978,18 @@ class FF_Post_Types {
 		$ids  = array_filter( array_map( 'absint', explode( ',', (string) $gallery ) ) );
 		$html = '';
 		foreach ( $ids as $id ) {
+			// A video has no thumbnail of its own unless a poster frame was
+			// set on it, so it falls back to its file name. Either way it is
+			// marked, so a mixed gallery reads in the order it will render.
+			if ( FF_Display::is_video( $id ) ) {
+				$poster = FF_Display::video_poster( $id );
+				$html  .= '<span class="ff-gallery-thumb ff-gallery-thumb--video">';
+				$html  .= $poster ? '<img src="' . esc_url( $poster ) . '" alt="" />' : '';
+				$html  .= '<span class="ff-gallery-thumb-label">' . esc_html( basename( (string) get_attached_file( $id ) ) ) . '</span>';
+				$html  .= '</span>';
+				continue;
+			}
+
 			$img = wp_get_attachment_image( $id, 'thumbnail' );
 			if ( $img ) {
 				$html .= '<span class="ff-gallery-thumb">' . $img . '</span>';

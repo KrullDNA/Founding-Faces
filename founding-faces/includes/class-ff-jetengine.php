@@ -227,6 +227,13 @@ class FF_JetEngine {
 
 		$out = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;">';
 		foreach ( $ids as $id ) {
+			// A video plays in place. Sending it to its own file would take the
+			// member off the listing to look at a bare player.
+			if ( FF_Display::is_video( $id ) ) {
+				$out .= FF_Display::video_html( $id, 'ff-je-gallery-video' );
+				continue;
+			}
+
 			$img = wp_get_attachment_image( $id, 'medium', false, array( 'class' => 'ff-je-gallery-img', 'loading' => 'lazy' ) );
 			if ( $img ) {
 				$full = wp_get_attachment_image_url( $id, 'full' );
