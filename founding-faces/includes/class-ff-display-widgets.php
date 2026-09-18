@@ -147,7 +147,7 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 			'natural' => __( 'Natural origin', 'founding-faces' ),
 			'vault'   => __( 'The 35 vault chip', 'founding-faces' ),
 			'body'    => __( 'Body copy', 'founding-faces' ),
-			'gallery' => __( 'Images', 'founding-faces' ),
+			'gallery' => __( 'Images and video', 'founding-faces' ),
 		);
 	}
 
@@ -477,7 +477,9 @@ abstract class FF_Display_Widget_Base extends \Elementor\Widget_Base {
 		// Both the element carrying the class and any img inside it. An image
 		// optimiser serving WebP wraps the img in a <picture> and moves our
 		// class up onto the wrapper, and a height on a wrapper crops nothing.
-		$gal = '{{WRAPPER}} .ff-gallery-img, {{WRAPPER}} .ff-gallery-img img';
+		// The video is named alongside the image, so a card carrying both puts
+		// them in one frame rather than two sizes side by side.
+		$gal = '{{WRAPPER}} .ff-gallery-img, {{WRAPPER}} .ff-gallery-img img, {{WRAPPER}} .ff-gallery-video';
 
 		$this->add_responsive_control( 'gal_height', array(
 			'label'     => __( 'Image height', 'founding-faces' ),

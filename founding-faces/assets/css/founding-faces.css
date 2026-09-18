@@ -377,7 +377,8 @@
  * a style attribute moves to the <picture> wrapper with nothing left behind,
  * and there is no way to write a second selector for an attribute. */
 .ff-je-gallery-img,
-.ff-je-gallery-img img {
+.ff-je-gallery-img img,
+.ff-je-gallery-video {
 	display: block;
 	width: 100%;
 	height: 120px;
@@ -405,12 +406,19 @@
  * grid of matching squares before anybody sets a control, which is what a row
  * of thumbnails is for. */
 .ff-gallery-item .ff-gallery-img,
-.ff-gallery-item .ff-gallery-img img {
+.ff-gallery-item .ff-gallery-img img,
+.ff-gallery-item .ff-gallery-video {
 	display: block;
 	width: 100%;
 	height: 120px;
 	object-fit: cover;
 	object-position: center center;
+}
+
+/* A video tile is not a link, so it needs saying that it is not one. Nothing
+ * else about it differs from an image tile. */
+.ff-gallery-item--video {
+	cursor: default;
 }
 
 /* Notes archive filter bar ------------------------------------------------- */
@@ -1695,7 +1703,8 @@
  * ".elementor img { height: auto; border-radius: 0 }", which is one class and
  * one element and would otherwise win on a straight class selector. */
 .ff-slide .ff-slide-img,
-.ff-slide .ff-slide-img img {
+.ff-slide .ff-slide-img img,
+.ff-slide .ff-slide-video {
 	display: block;
 	width: 100%;
 	height: auto;

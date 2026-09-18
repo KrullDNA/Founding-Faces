@@ -118,6 +118,41 @@
 	border-radius: 4px;
 }
 
+/* A video in the gallery. It shows its poster frame when one was set, and its
+ * file name either way, so a mixed gallery can be read in running order. */
+.ff-gallery-thumb--video {
+	position: relative;
+	display: block;
+	width: 72px;
+	height: 72px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #f0f0f1;
+	overflow: hidden;
+}
+
+.ff-gallery-thumb--video img {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	border-radius: 0;
+}
+
+.ff-gallery-thumb-label {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 2px 4px;
+	font-size: 10px;
+	line-height: 1.3;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.6);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 /* Poll editor rows --------------------------------------------------------- */
 .ff-poll-row {
 	display: flex;
