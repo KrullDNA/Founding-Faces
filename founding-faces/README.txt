@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.30
+Stable tag: 1.1.31
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,27 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.31 =
+* A new note can now be announced to The 35. A "Tell The 35" box on the note
+  itself sends an email with a link to it. The Circle is not included: they
+  cannot see the vault notes anyway, and a list that size belongs in the email
+  platform.
+* Nothing is sent on publishing. Publishing is how a note is saved, and notes
+  get edited and republished, so it is a button you press, with a record of
+  when it was pressed, who pressed it and how many it reached.
+* The send goes out in batches, ten at a time with five minutes between by
+  default, both settable. Thirty-five identical emails leaving a shared host
+  inside a second looks like a spam run to whoever receives them.
+* Consent is read again as each batch goes, so an unsubscribe part way through
+  a send is honoured rather than arriving late. There is a "send the next batch
+  now" button and a stop button while one is running.
+* The announcement is a seventh email template, editable and previewable on the
+  Emails screen with the rest, and it carries the usual unsubscribe link.
+* A test member can now be given a real name and email address, so putting your
+  own address on one in The 35 means everything the group is sent arrives where
+  you can read it. A test account still holding its generated placeholder
+  address is left out of a send, since mail to it only bounces.
 
 = 1.1.30 =
 * Video in the note gallery. Add a clip in the same place as the images and it

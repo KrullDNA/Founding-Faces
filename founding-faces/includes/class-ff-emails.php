@@ -56,6 +56,10 @@ class FF_Emails {
 	const TOKEN_LIFETIME = 7 * DAY_IN_SECONDS;
 
 	// Who the programme's emails come from, and where a reply goes.
+	// The note announcement, sent to The 35 by hand from the note itself.
+	const OPT_NOTE_SUBJECT = 'ff_email_note_subject';
+	const OPT_NOTE_BODY    = 'ff_email_note_body';
+
 	const OPT_FROM_NAME   = 'ff_email_from_name';
 	const OPT_FROM_EMAIL  = 'ff_email_from_email';
 	const OPT_REPLY_NAME  = 'ff_email_reply_name';
@@ -102,6 +106,19 @@ class FF_Emails {
 		return $is_35
 			? __( 'Welcome, you are Founding Face {number}', 'founding-faces' )
 			: __( 'Welcome to the Apotheca community', 'founding-faces' );
+	}
+
+	/** @return string The default subject for the note announcement. */
+	public static function default_note_subject() {
+		return __( 'A new note on {product}', 'founding-faces' );
+	}
+
+	/** @return string The default body for the note announcement. */
+	public static function default_note_body() {
+		return __(
+			"Hi {name},\n\nThere's a new development note on {product}: {note_title}.\n\nIt's in the archive now, with whatever came out of this round, the measurements, the photographs and what happens next.\n\n{site_name}",
+			'founding-faces'
+		);
 	}
 
 	/**
@@ -274,6 +291,19 @@ class FF_Emails {
 				'heading'         => __( 'Your application', 'founding-faces' ),
 				'preheader'       => __( 'An update on your Founding Faces application.', 'founding-faces' ),
 				'silent_if_empty' => true,
+			),
+			'note'         => array(
+				'label'           => __( 'New note published', 'founding-faces' ),
+				'when'            => __( 'Sent to The 35 only, and only when you press the button on the note itself. Nothing goes out on publishing, so a note can be edited and republished as often as it needs to be.', 'founding-faces' ),
+				'subject_option'  => self::OPT_NOTE_SUBJECT,
+				'subject_default' => self::default_note_subject(),
+				'body_option'     => self::OPT_NOTE_BODY,
+				'body_default'    => self::default_note_body(),
+				'heading'         => __( 'A new development note', 'founding-faces' ),
+				'preheader'       => __( 'Something new from the bench.', 'founding-faces' ),
+				'cta_label'       => __( 'Read the note', 'founding-faces' ),
+				'cta_url'         => '{note_url}',
+				'unsubscribe'     => true,
 			),
 			'reset'        => array(
 				'label'           => __( 'Password reset link', 'founding-faces' ),
@@ -470,6 +500,33 @@ class FF_Emails {
 	}
 
 	/**
+	 * The placeholder values a note announcement adds to a member's own.
+	 *
+	 * Everything here is already on the note. Nothing is invented for the
+	 * email, so what arrives and what the member finds when they follow it
+	 * cannot drift apart.
+	 *
+	 * @param int $note_id The note.
+	 * @return array
+	 */
+	public static function note_replacements( $note_id ) {
+		$note_id = absint( $note_id );
+		$product = (int) get_post_meta( $note_id, FF_Post_Types::META_NOTE_PRODUCT, true );
+		$trial   = (string) get_post_meta( $note_id, FF_Post_Types::META_NOTE_TRIAL, true );
+		$stage   = (string) get_post_meta( $note_id, FF_Post_Types::META_NOTE_STAGE, true );
+
+		return array(
+			'{note_title}' => get_the_title( $note_id ),
+			'{note_url}'   => (string) get_permalink( $note_id ),
+			// A note with no product falls back to the site, rather than
+			// leaving a subject line reading "A new note on".
+			'{product}'    => $product ? get_the_title( $product ) : get_bloginfo( 'name' ),
+			'{version}'    => $trial,
+			'{stage}'      => $stage ? FF_JetEngine::stage_label( $stage ) : '',
+		);
+	}
+
+	/**
 	 * The placeholder values for an applicant, who has no account yet.
 	 *
 	 * @param string $name The applicant's name as given on the form.
@@ -500,6 +557,32 @@ class FF_Emails {
 		// compose() returns false when the body has been emptied on purpose,
 		// which is how a silent decline is arranged.
 		return self::deliver( $email, self::compose( 'decline', self::applicant_replacements( $name ) ) );
+	}
+
+	/**
+	 * Tell one member about a new note.
+	 *
+	 * News rather than necessity, so consent decides. The caller checks it too,
+	 * because a send spread over an hour can outlive somebody's decision to
+	 * leave, and this is the last gate before the mail goes.
+	 *
+	 * @param int $user_id The member.
+	 * @param int $note_id The note.
+	 * @return bool
+	 */
+	public static function send_note( $user_id, $note_id ) {
+		$user = get_userdata( $user_id );
+		if ( ! $user || ! self::may_email( $user_id ) ) {
+			return false;
+		}
+
+		return self::deliver(
+			$user->user_email,
+			self::compose( 'note', array_merge(
+				self::member_replacements( $user_id ),
+				self::note_replacements( $note_id )
+			) )
+		);
 	}
 
 	/*

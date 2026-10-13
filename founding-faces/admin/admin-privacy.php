@@ -204,10 +204,17 @@ class FF_Admin_Privacy {
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="ff_create_test" />';
 		wp_nonce_field( 'ff_create_test' );
+		echo '<p>';
 		echo '<select name="group">';
 		echo '<option value="the-35">' . esc_html__( 'The 35', 'founding-faces' ) . '</option>';
 		echo '<option value="the-circle">' . esc_html__( 'The Circle', 'founding-faces' ) . '</option>';
 		echo '</select> ';
+		echo '<input type="text" name="test_name" class="regular-text" placeholder="' . esc_attr__( 'Name (optional)', 'founding-faces' ) . '" /> ';
+		echo '<input type="email" name="test_email" class="regular-text" placeholder="' . esc_attr__( 'Email (optional)', 'founding-faces' ) . '" />';
+		echo '</p>';
+		echo '<p><label><input type="checkbox" name="test_consent" value="1" checked="checked" /> ';
+		echo esc_html__( 'Send this account the emails the group gets', 'founding-faces' ) . '</label></p>';
+		echo '<p class="description">' . esc_html__( 'Give a test account in The 35 your own address and everything The 35 is sent arrives where you can read it, the note announcements included. Leave the address empty and the account gets an unreachable one, which is what keeps a shelf of old test accounts from bouncing mail and spoiling the domain. Most inboxes let you add a tag to your own address, you+35@…, so you can hold several.', 'founding-faces' ) . '</p>';
 		echo '<button type="submit" class="button">' . esc_html__( 'Create test member', 'founding-faces' ) . '</button>';
 		echo '</form>';
 
@@ -272,9 +279,16 @@ class FF_Admin_Privacy {
 		self::guard();
 		check_admin_referer( 'ff_create_test' );
 
-		$group  = isset( $_POST['group'] ) ? sanitize_key( wp_unslash( $_POST['group'] ) ) : 'the-circle';
-		$group  = in_array( $group, array( 'the-35', 'the-circle' ), true ) ? $group : 'the-circle';
-		$result = FF_Members::create_test_member( $group );
+		$group   = isset( $_POST['group'] ) ? sanitize_key( wp_unslash( $_POST['group'] ) ) : 'the-circle';
+		$group   = in_array( $group, array( 'the-35', 'the-circle' ), true ) ? $group : 'the-circle';
+		$email   = isset( $_POST['test_email'] ) ? sanitize_email( wp_unslash( $_POST['test_email'] ) ) : '';
+		$name    = isset( $_POST['test_name'] ) ? sanitize_text_field( wp_unslash( $_POST['test_name'] ) ) : '';
+		$consent = ! empty( $_POST['test_consent'] );
+		$result  = FF_Members::create_test_member( $group, $email, $name, $consent );
+
+		if ( is_wp_error( $result ) && 'ff_test_email_taken' === $result->get_error_code() ) {
+			self::redirect( 'test_email_taken' );
+		}
 		self::redirect( is_wp_error( $result ) ? 'error' : 'test_created' );
 	}
 
@@ -335,6 +349,7 @@ class FF_Admin_Privacy {
 		$messages = array(
 			'deleted'           => array( 'success', __( 'The member\'s personal data was deleted; their number is retired.', 'founding-faces' ) ),
 			'test_created'      => array( 'success', __( 'Test member created.', 'founding-faces' ) ),
+			'test_email_taken'  => array( 'error', __( 'There is already an account on that email address. Add a tag to your own, you+35@…, and each one counts as a separate account.', 'founding-faces' ) ),
 			'reset_done'        => array( 'success', __( 'Reset complete, numbering is back to zero and test accounts are gone.', 'founding-faces' ) ),
 			'reset_refused'     => array( 'error', __( 'Reset refused: a real numbered member exists.', 'founding-faces' ) ),
 			'reset_unconfirmed' => array( 'error', __( 'Reset not run: the confirmation word didn\'t match.', 'founding-faces' ) ),
