@@ -769,12 +769,22 @@ class FF_Members {
 	 * @param string $group_slug Either 'the-35' or 'the-circle'.
 	 * @return int|WP_Error The new user id, or an error.
 	 */
-	public static function create_test_member( $group_slug ) {
+	public static function create_test_member( $group_slug, $email = '', $name = '', $consent = false ) {
 		global $wpdb;
 
 		$host  = wp_parse_url( home_url(), PHP_URL_HOST );
 		$host  = $host ? $host : 'example.com';
 		$token = uniqid();
+
+		// An address of your own turns a test account into a seat in the room:
+		// everything The 35 is sent arrives where you can read it. Without one
+		// the account keeps its unreachable placeholder, which is what stops a
+		// shelf of old test accounts bouncing mail and spoiling the domain.
+		$email = is_email( $email ) ? sanitize_email( $email ) : '';
+		if ( $email && email_exists( $email ) ) {
+			return new WP_Error( 'ff_test_email_taken', __( 'There is already an account on that email address.', 'founding-faces' ) );
+		}
+		$name = trim( wp_strip_all_tags( (string) $name ) );
 
 		// A spread of real postcodes so the map has something to show.
 		$postcodes = array( '2000', '3000', '4000', '5000', '6000', '7000', '0800', '2600' );
@@ -786,14 +796,16 @@ class FF_Members {
 			$wpdb->prefix . 'ff_applications',
 			array(
 				'created_at'    => $now,
-				'name'          => 'Test ' . $token,
-				'email'         => 'ff-test-' . $token . '@' . $host,
+				'name'          => '' !== $name ? $name : 'Test ' . $token,
+				'email'         => $email ? $email : self::placeholder_email( $token, $host ),
 				'postcode'      => $postcode,
 				'instagram'     => '',
 				'skin_concerns' => '',
 				'answers'       => 'Test account',
-				'consent'       => 0,
-				'consent_at'    => null,
+				// Consent only where there is an address that can actually
+				// receive, and only because you asked for it on this one.
+				'consent'       => ( $email && $consent ) ? 1 : 0,
+				'consent_at'    => ( $email && $consent ) ? $now : null,
 				'status'        => 'pending',
 				'assigned_number' => null,
 				'user_id'       => null,
@@ -809,6 +821,30 @@ class FF_Members {
 
 		// Approve it just like a real one, so it takes a real number.
 		return self::approve( $app_id, $group_slug );
+	}
+
+	/**
+	 * The unreachable address a test account gets when none was given.
+	 *
+	 * @param string $token A unique string.
+	 * @param string $host  The site's host.
+	 * @return string
+	 */
+	public static function placeholder_email( $token, $host ) {
+		return 'ff-test-' . $token . '@' . $host;
+	}
+
+	/**
+	 * Whether an address is one of those unreachable placeholders.
+	 *
+	 * Anything sent to one bounces, and a run of bounces is how a domain's
+	 * reputation goes, so this is what keeps old test accounts out of a send.
+	 *
+	 * @param string $email The address.
+	 * @return bool
+	 */
+	public static function is_placeholder_email( $email ) {
+		return 1 === preg_match( '/^ff-test-[a-z0-9]+@/i', (string) $email );
 	}
 
 	/**

@@ -91,6 +91,12 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Emails::OPT_REPLY_EMAIL, array( 'sanitize_callback' => 'sanitize_email' ) );
 		register_setting( self::GROUP, FF_Emails::OPT_BCC, array( 'sanitize_callback' => 'sanitize_email' ) );
 
+		// How a note announcement is paced.
+		register_setting( self::GROUP, FF_Emails::OPT_NOTE_SUBJECT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
+		register_setting( self::GROUP, FF_Emails::OPT_NOTE_BODY, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_copy' ) ) );
+		register_setting( self::GROUP, FF_Note_Mail::OPT_BATCH, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Note_Mail::OPT_GAP, array( 'sanitize_callback' => 'absint' ) );
+
 		// Branded email design options.
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO, array( 'sanitize_callback' => 'esc_url_raw' ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_LOGO_WIDTH, array( 'sanitize_callback' => 'absint' ) );
@@ -605,6 +611,21 @@ class FF_Settings {
 						value="<?php echo esc_attr( get_option( FF_Emails::OPT_BCC, '' ) ); ?>" />
 					<p class="description">
 						<?php esc_html_e( 'Optional. A copy of every email sent to a member, so you have a record of what went out and when. The member never sees this address. Emails to you are not copied, since you already have them.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Note announcements', 'founding-faces' ); ?></th>
+				<td>
+					<label><?php esc_html_e( 'Send', 'founding-faces' ); ?>
+						<input name="<?php echo esc_attr( FF_Note_Mail::OPT_BATCH ); ?>" type="number" min="1" max="50"
+							value="<?php echo esc_attr( FF_Note_Mail::batch_size() ); ?>" style="width:70px;" /></label>
+					<?php esc_html_e( 'at a time, one batch every', 'founding-faces' ); ?>
+					<label><input name="<?php echo esc_attr( FF_Note_Mail::OPT_GAP ); ?>" type="number" min="1" max="120"
+							value="<?php echo esc_attr( FF_Note_Mail::gap_minutes() ); ?>" style="width:70px;" />
+						<?php esc_html_e( 'minutes', 'founding-faces' ); ?></label>
+					<p class="description">
+						<?php esc_html_e( 'Thirty-five identical emails leaving a shared host inside a second looks like a spam run to whoever receives them, so they go out in batches with a pause between. Ten every five minutes clears The 35 in about twenty minutes. Lower and slower is safer; the only cost is the wait.', 'founding-faces' ); ?>
 					</p>
 				</td>
 			</tr>

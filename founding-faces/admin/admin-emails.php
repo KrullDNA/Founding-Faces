@@ -93,6 +93,28 @@ class FF_Admin_Emails {
 	 * @return array
 	 */
 	private static function replacements( $kind, $user_id = 0 ) {
+		// A note announcement carries the note's own details on top of whoever
+		// it is addressed to. The newest note, so the preview is of something
+		// real rather than a row of placeholders.
+		$note = array();
+		if ( 'note' === $kind ) {
+			$latest = get_posts( array(
+				'post_type'      => FF_Post_Types::NOTE_CPT,
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			) );
+			$note = $latest
+				? FF_Emails::note_replacements( (int) $latest[0] )
+				: array(
+					'{note_title}' => __( 'Version 12, the new emulsifier', 'founding-faces' ),
+					'{note_url}'   => home_url( '/' ),
+					'{product}'    => __( 'the night cream', 'founding-faces' ),
+					'{version}'    => '12',
+					'{stage}'      => __( 'In development', 'founding-faces' ),
+				);
+		}
+
 		if ( $user_id > 0 && get_userdata( $user_id ) ) {
 			$r = FF_Emails::member_replacements( $user_id, self::sample_link() );
 
@@ -100,7 +122,7 @@ class FF_Admin_Emails {
 			// place to find that out. Same reasoning as the password link.
 			$r['{unsubscribe_url}'] = self::sample_unsubscribe_link();
 
-			return $r;
+			return array_merge( $r, $note );
 		}
 
 		// Made-up but plausible details, so the layout is judged on something
@@ -109,7 +131,7 @@ class FF_Admin_Emails {
 		$name  = $admin && $admin->first_name ? $admin->first_name : __( 'Alex', 'founding-faces' );
 		$is_35 = ( 'welcome_circle' !== $kind );
 
-		return array(
+		return array_merge( $note, array(
 			'{name}'              => $name,
 			'{number}'            => $is_35 ? 7 : '',
 			'{group}'             => $is_35 ? __( 'The 35', 'founding-faces' ) : __( 'The Circle', 'founding-faces' ),
@@ -118,7 +140,7 @@ class FF_Admin_Emails {
 			'{login_url}'         => wp_login_url(),
 			'{set_password_link}' => self::sample_link(),
 			'{unsubscribe_url}'   => self::sample_unsubscribe_link(),
-		);
+		) );
 	}
 
 	/**

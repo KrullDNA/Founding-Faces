@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.30
+ * Version:           1.1.31
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.30' );
+define( 'FF_VERSION', '1.1.31' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -131,6 +131,10 @@ require_once FF_PATH . 'includes/class-ff-emails.php';
 // honours it. Loaded always: it has to work for someone who is not signed in.
 require_once FF_PATH . 'includes/class-ff-unsubscribe.php';
 
+// Telling The 35 about a new note, a batch at a time. Loaded always: the cron
+// worker that sends the later batches runs with nobody signed in.
+require_once FF_PATH . 'includes/class-ff-note-mail.php';
+
 // The email-platform connector interface and manager. The connectors
 // themselves (Campaign Monitor, Klaviyo) are separate add-on plugins that
 // register through the 'ff_register_connectors' hook, so the core never
@@ -163,6 +167,10 @@ register_deactivation_hook( FF_FILE, function () {
 	if ( $next ) {
 		wp_unschedule_event( $next, FF_Connectors::CRON_HOOK );
 	}
+
+	// Any note part way through sending stops where it is. Deactivating the
+	// plugin should not leave a job that finishes a mail-out on its own.
+	wp_clear_scheduled_hook( FF_Note_Mail::CRON_HOOK );
 } );
 
 /*
@@ -186,6 +194,7 @@ function ff_init() {
 	FF_Members::register();
 	FF_Emails::register();
 	FF_Unsubscribe::register();
+	FF_Note_Mail::register();
 	FF_Connectors::register();
 	FF_Gating::register();
 	FF_Page_Access::register();
