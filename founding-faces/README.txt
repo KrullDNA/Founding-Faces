@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.34
+Stable tag: 1.1.35
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,21 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.35 =
+* A poll now has three states that say what they do. Open is taking votes.
+  Closed stops the voting and shows the result and your reasoning, with the
+  poll staying where it is among the current ones. Moved to past polls files
+  it in the archive. To take a poll off the site, set it back to Draft.
+* "Auto-hide at" is now "Move to past polls at", which is what it does. It no
+  longer removes the poll from the site, so a poll that had quietly vanished
+  past its old hide time comes back as a past poll.
+* Open and past, in the tabs and the stacked sections, now splits current
+  from archived rather than voting from finished. A poll that has just closed
+  stands with the current ones, result and all, until you file it.
+* Anything marked hidden by 1.1.33 becomes a past poll.
+* The On the site column reads Open, Closed with its result on show, In the
+  past polls, or Draft, with the date when a schedule did it.
 
 = 1.1.34 =
 * A poll taken off the site by its auto-hide time now says so, on the poll

@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.34
+ * Version:           1.1.35
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.34' );
+define( 'FF_VERSION', '1.1.35' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -404,16 +404,17 @@ function ff_remove_feedback_tags() {
 add_action( 'admin_init', 'ff_remove_feedback_tags' );
 
 /**
- * Keep today's meaning for polls closed before the states were split, once.
+ * Retire the hidden poll state, once.
  *
- * "Closed" with neither a close nor a hide time used to mean the poll vanished
- * from the site. It now means closed and kept in the past polls, with hiding a
- * choice of its own. Polls already in that state are written across to hidden,
- * so nothing reappears on a site where somebody closed a poll to be rid of it.
- * Changing one back is a dropdown on the poll.
+ * A poll used to be able to take itself off the site on a schedule, and for a
+ * single version "closed" with no dates meant the same. Neither is a state any
+ * more: a poll is open, closed with its result on show, or filed in the past
+ * polls, and taking one off the site is what Draft is for. Anything marked
+ * hidden becomes a past poll, which is the nearest honest equivalent and is
+ * at least somewhere a person can find it.
  */
-function ff_split_poll_hidden_state() {
-	if ( '1' === get_option( 'ff_poll_states_split' ) ) {
+function ff_retire_hidden_polls() {
+	if ( '1' === get_option( 'ff_poll_hidden_retired' ) ) {
 		return;
 	}
 
@@ -425,18 +426,11 @@ function ff_split_poll_hidden_state() {
 	) );
 
 	foreach ( $polls as $poll_id ) {
-		if ( 'closed' !== get_post_meta( $poll_id, FF_Polls::META_STATUS, true ) ) {
-			continue;
-		}
-
-		$close_at = (int) get_post_meta( $poll_id, FF_Polls::META_CLOSE_AT, true );
-		$hide_at  = (int) get_post_meta( $poll_id, FF_Polls::META_HIDE_AT, true );
-
-		if ( 0 === $close_at && 0 === $hide_at ) {
-			update_post_meta( $poll_id, FF_Polls::META_STATUS, 'hidden' );
+		if ( 'hidden' === get_post_meta( $poll_id, FF_Polls::META_STATUS, true ) ) {
+			update_post_meta( $poll_id, FF_Polls::META_STATUS, 'past' );
 		}
 	}
 
-	update_option( 'ff_poll_states_split', '1' );
+	update_option( 'ff_poll_hidden_retired', '1' );
 }
-add_action( 'admin_init', 'ff_split_poll_hidden_state' );
+add_action( 'admin_init', 'ff_retire_hidden_polls' );

@@ -1042,7 +1042,7 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 					'archive'  => __( 'Open and past polls, in sections or tabs', 'founding-faces' ),
 					'specific' => __( 'One specific poll', 'founding-faces' ),
 				),
-				'description' => __( 'Open polls come first, newest first; closed ones follow while they are still inside their hide time.', 'founding-faces' ),
+				'description' => __( 'Current polls come first, newest first, whether they are still taking votes or showing their result. Polls moved to the past ones follow.', 'founding-faces' ),
 			)
 		);
 
