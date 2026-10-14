@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.37
+Stable tag: 1.1.38
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.38 =
+* The member count can now sit inside the map key, under The Circle, which is
+  where it belongs: it is the sum of the two lines above it. That is the new
+  default, with above and below the map still there.
+* In the key it takes the key's own styling rather than carrying its own, so
+  the box stays one thing. With the key switched off it goes above the map
+  instead, since showing the number is what the switch was for.
 
 = 1.1.37 =
 * The map can show how many members are on it, above or below the map, with a

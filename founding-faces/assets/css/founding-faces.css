@@ -1268,6 +1268,13 @@
 	opacity: 0.85;
 }
 
+/* The count under the two keys. It is the sum of them, so it sits below with
+ * a little air, and nothing else of its own. */
+.ff-map-legend-count {
+	display: block;
+	margin-top: 6px;
+}
+
 /* ==========================================================================
  * Account settings page.
  * ========================================================================== */

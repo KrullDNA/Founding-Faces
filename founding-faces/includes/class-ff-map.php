@@ -362,6 +362,11 @@ class FF_Map {
 			'legend'      => array(
 				'on'          => (bool) $args['legend']['on'],
 				'position'    => $args['legend']['position'],
+				// The member count, when it was asked to sit in the box with
+				// the keys rather than above or below the map.
+				'count'       => ( ! empty( $args['count']['on'] ) && 'legend' === $args['count']['position'] )
+					? self::count_line( self::points_for_render(), $args['count'] )
+					: '',
 				// Filtered here rather than escaped in the browser, so a legend
 				// label can carry a bold word like every other field can.
 				'label35'     => FF_Text::inline( $args['legend']['label_35'] ),
@@ -371,6 +376,18 @@ class FF_Map {
 
 		$map = '<div id="' . esc_attr( $id ) . '" class="ff-members-map" data-ffmap="'
 			. esc_attr( wp_json_encode( $config ) ) . '" style="height:' . $height . 'px;"></div>';
+
+		// In the key it travels as part of the config, drawn by the same code
+		// that draws the two keys, so it sits in the box rather than beside
+		// it. With no key on the map there is no box to sit in, and the switch
+		// that was turned on was "show the number", so it goes above the map
+		// rather than nowhere.
+		if ( 'legend' === $args['count']['position'] ) {
+			if ( ! empty( $args['legend']['on'] ) ) {
+				return $map;
+			}
+			$args['count']['position'] = 'above';
+		}
 
 		$count = self::count_html( $config['points'], $args['count'] );
 		if ( '' === $count ) {
@@ -397,6 +414,19 @@ class FF_Map {
 	 * @return string
 	 */
 	private static function count_html( $points, $args ) {
+		$line = self::count_line( $points, $args );
+
+		return ( '' === $line ) ? '' : '<p class="ff-map-count">' . $line . '</p>';
+	}
+
+	/**
+	 * The wording of the count, with the figures filled in.
+	 *
+	 * @param array $points The map points.
+	 * @param array $args   The count options.
+	 * @return string
+	 */
+	private static function count_line( $points, $args ) {
 		if ( empty( $args['on'] ) ) {
 			return '';
 		}
@@ -414,13 +444,11 @@ class FF_Map {
 			/* translators: %s is a placeholder for the number of members. */
 			: __( '{count} founding faces across Australia', 'founding-faces' );
 
-		$line = strtr( FF_Text::inline( $template ), array(
+		return strtr( FF_Text::inline( $template ), array(
 			'{count}'  => number_format_i18n( $total ),
 			'{the35}'  => number_format_i18n( $in_35 ),
 			'{circle}' => number_format_i18n( max( 0, $total - $in_35 ) ),
 		) );
-
-		return '<p class="ff-map-count">' . $line . '</p>';
 	}
 
 	/**

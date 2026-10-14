@@ -205,7 +205,7 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 		$this->start_controls_section( 'ff_map_count_style', array(
 			'label'     => __( 'Member count', 'founding-faces' ),
 			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
-			'condition' => array( 'count_show' => 'yes' ),
+			'condition' => array( 'count_show' => 'yes', 'count_position!' => 'legend' ),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
 			'name'     => 'mc_typo',
@@ -317,14 +317,16 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 			'description' => __( '{count} is everyone on the map, {the35} is The 35 and {circle} is the rest. Counted from the dots themselves, so the number and the map can never disagree.', 'founding-faces' ),
 		) );
 		$this->add_control( 'count_position', array(
-			'label'     => __( 'Where it sits', 'founding-faces' ),
-			'type'      => \Elementor\Controls_Manager::SELECT,
-			'default'   => 'above',
-			'options'   => array(
-				'above' => __( 'Above the map', 'founding-faces' ),
-				'below' => __( 'Below the map', 'founding-faces' ),
+			'label'       => __( 'Where it sits', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'legend',
+			'options'     => array(
+				'legend' => __( 'In the key, under The Circle', 'founding-faces' ),
+				'above'  => __( 'Above the map', 'founding-faces' ),
+				'below'  => __( 'Below the map', 'founding-faces' ),
 			),
-			'condition' => array( 'count_show' => 'yes' ),
+			'condition'   => array( 'count_show' => 'yes' ),
+			'description' => __( 'In the key puts it under The Circle, styled with that box rather than on its own. With the key switched off it goes above the map instead, since showing the number is what you asked for.', 'founding-faces' ),
 		) );
 
 		$this->add_control( 'legend_heading', array(
@@ -400,7 +402,9 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 			),
 			'count'        => array(
 				'on'       => ( isset( $s['count_show'] ) && 'yes' === $s['count_show'] ),
-				'position' => isset( $s['count_position'] ) && 'below' === $s['count_position'] ? 'below' : 'above',
+				'position' => isset( $s['count_position'] ) && in_array( $s['count_position'], array( 'legend', 'above', 'below' ), true )
+					? $s['count_position']
+					: 'legend',
 				'text'     => isset( $s['count_text'] ) ? $s['count_text'] : '',
 			),
 			'legend'       => array(

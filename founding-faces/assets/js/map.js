@@ -126,7 +126,10 @@
 				// an inline allowlist), so they carry the markup they were
 				// written with and nothing else.
 				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers[ '35' ].color + '"></i>' + cfg.legend.label35 + '</span>' +
-				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers.circle.color + '"></i>' + cfg.legend.labelCircle + '</span>';
+				'<span class="ff-map-legend-item"><i style="background:' + cfg.tiers.circle.color + '"></i>' + cfg.legend.labelCircle + '</span>' +
+				// The count, when it was asked to sit in the box. Under the two
+				// keys, because it is the sum of them.
+				( cfg.legend.count ? '<span class="ff-map-legend-count">' + cfg.legend.count + '</span>' : '' );
 			return div;
 		};
 		control.addTo( map );
