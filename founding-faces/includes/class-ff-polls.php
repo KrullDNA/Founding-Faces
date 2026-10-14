@@ -30,11 +30,14 @@ class FF_Polls {
 	// Poll meta keys.
 	const META_OPTIONS  = 'ff_poll_options';   // Array of ['id','label','image_id'].
 	const META_AUDIENCE = 'ff_poll_audience';  // 'everyone' | 'the-35-only'.
-	const META_STATUS   = 'ff_poll_status';    // 'open' | 'closed'.
+	const META_STATUS   = 'ff_poll_status';    // 'open' | 'closed' | 'past'.
 	const META_ACTIVE   = 'ff_poll_active';    // 1 if this is the current active poll.
 	const META_OUTCOME  = 'ff_poll_outcome';   // Nick's reasoning, shown on close.
 	const META_CLOSE_AT = 'ff_poll_close_at';  // GMT Unix time to auto-close (show results), or 0.
-	const META_HIDE_AT  = 'ff_poll_hide_at';   // GMT Unix time to auto-hide entirely, or 0.
+	// When the poll moves itself into the past polls. The key is the old
+	// hide one, kept so nothing has to be migrated: what changed is what it
+	// does, from taking the poll off the site to filing it in the archive.
+	const META_PAST_AT  = 'ff_poll_hide_at';
 	const META_TAG      = 'ff_poll_tag';       // The label voters carry on the email platform.
 
 	// The AJAX action name for casting a vote.
@@ -115,6 +118,103 @@ class FF_Polls {
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_metaboxes' ) );
 		add_action( 'save_post_' . self::POLL_CPT, array( __CLASS__, 'save_poll' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin' ) );
+
+		// The polls list, so a poll that is not on the site says so here
+		// rather than leaving you hunting for it on the page.
+		add_filter( 'manage_' . self::POLL_CPT . '_posts_columns', array( __CLASS__, 'poll_columns' ) );
+		add_action( 'manage_' . self::POLL_CPT . '_posts_custom_column', array( __CLASS__, 'poll_column' ), 10, 2 );
+	}
+
+	/**
+	 * How many votes a poll has had, in total.
+	 *
+	 * A count, never a list. Who voted for what is the member's own and is
+	 * read nowhere but their own page.
+	 *
+	 * @param int $poll_id The poll.
+	 * @return int
+	 */
+	public static function total_votes( $poll_id ) {
+		global $wpdb;
+
+		return (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}ff_poll_votes WHERE poll_id = %d",
+			absint( $poll_id )
+		) );
+	}
+
+	/**
+	 * Add a state column to the polls list.
+	 *
+	 * @param array $columns The existing columns.
+	 * @return array
+	 */
+	public static function poll_columns( $columns ) {
+		$out = array();
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'title' === $key ) {
+				$out['ff_state'] = __( 'On the site', 'founding-faces' );
+				$out['ff_votes'] = __( 'Votes', 'founding-faces' );
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Fill the state and votes columns.
+	 *
+	 * @param string $column  The column key.
+	 * @param int    $post_id The poll.
+	 */
+	public static function poll_column( $column, $post_id ) {
+		if ( 'ff_votes' === $column ) {
+			echo esc_html( (string) self::total_votes( $post_id ) );
+			return;
+		}
+
+		if ( 'ff_state' !== $column ) {
+			return;
+		}
+
+		// A draft is not on the site at all, whatever its poll settings say.
+		if ( 'publish' !== get_post_status( $post_id ) ) {
+			echo esc_html__( 'Draft, not on the site', 'founding-faces' );
+			return;
+		}
+
+		$state  = self::poll_state( $post_id );
+		$labels = array(
+			'open'   => __( 'Open, taking votes', 'founding-faces' ),
+			'closed' => __( 'Closed, result on show', 'founding-faces' ),
+			'past'   => __( 'In the past polls', 'founding-faces' ),
+		);
+
+		echo esc_html( isset( $labels[ $state ] ) ? $labels[ $state ] : $state );
+
+		// When the clock did it rather than you, say when.
+		$close_at = (int) get_post_meta( $post_id, self::META_CLOSE_AT, true );
+		$past_at  = (int) get_post_meta( $post_id, self::META_PAST_AT, true );
+		$now      = time();
+		$reason   = '';
+
+		if ( 'past' === $state && $past_at > 0 && $now >= $past_at ) {
+			$reason = sprintf(
+				/* translators: %s is a date and time. */
+				__( 'filed on %s', 'founding-faces' ),
+				wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $past_at )
+			);
+		} elseif ( 'closed' === $state && $close_at > 0 && $now >= $close_at ) {
+			$reason = sprintf(
+				/* translators: %s is a date and time. */
+				__( 'auto-closed on %s', 'founding-faces' ),
+				wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $close_at )
+			);
+		}
+
+		if ( '' !== $reason ) {
+			echo '<br /><span class="ff-consent">' . esc_html( $reason ) . '</span>';
+		}
 	}
 
 	/**
@@ -399,39 +499,42 @@ class FF_Polls {
 	}
 
 	/**
-	 * The effective state of a poll: 'open', 'closed' (results shown), or 'hidden'.
+	 * The effective state of a poll: 'open', 'closed' or 'past'.
 	 *
-	 * Combines the manual Status with the optional scheduled close/hide times:
-	 *  - Past the hide time  -> hidden (gone from the site).
-	 *  - Manually closed with NO close/hide times set -> hidden immediately.
-	 *  - Past the close time, or manually closed with a time set -> closed
-	 *    (results and reasoning shown, until the hide time passes).
-	 *  - Otherwise -> open (accepting votes).
+	 * Open is taking votes. Closed has finished and shows its result, in place
+	 * among the current polls. Past is the same poll filed in the archive. A
+	 * poll leaves the site by going back to Draft, which is WordPress's job
+	 * and not something worth a second mechanism.
+	 *
+	 * Combines the manual Status with the two optional times:
+	 *  - Past the "move to past polls" time -> past.
+	 *  - Past the close time, or closed by hand -> closed, in place.
+	 *  - Otherwise -> open.
 	 *
 	 * @param int $poll_id The poll id.
-	 * @return string 'open' | 'closed' | 'hidden'.
+	 * @return string 'open' | 'closed' | 'past'.
 	 */
 	public static function poll_state( $poll_id ) {
-		$now      = time();
+		$status  = (string) get_post_meta( $poll_id, self::META_STATUS, true );
+		$now     = time();
+		$past_at = (int) get_post_meta( $poll_id, self::META_PAST_AT, true );
+
+		// Filed in the past polls, by hand or by the clock. Still on the site,
+		// still showing its result, just no longer one of the current ones.
+		if ( 'past' === $status || ( $past_at > 0 && $now >= $past_at ) ) {
+			return 'past';
+		}
+
+		// Closed: the voting is over and the result is on show, but the poll
+		// stays where it is. A decision is worth standing next to for a while
+		// before it goes in the archive.
+		if ( 'closed' === $status ) {
+			return 'closed';
+		}
+
 		$close_at = (int) get_post_meta( $poll_id, self::META_CLOSE_AT, true );
-		$hide_at  = (int) get_post_meta( $poll_id, self::META_HIDE_AT, true );
-		$manual   = ( 'closed' === get_post_meta( $poll_id, self::META_STATUS, true ) );
 
-		if ( $hide_at > 0 && $now >= $hide_at ) {
-			return 'hidden';
-		}
-
-		$closed = ( $close_at > 0 && $now >= $close_at );
-
-		if ( $manual ) {
-			// Manually closed with neither date set disappears straight away.
-			if ( 0 === $close_at && 0 === $hide_at ) {
-				return 'hidden';
-			}
-			$closed = true;
-		}
-
-		return $closed ? 'closed' : 'open';
+		return ( $close_at > 0 && $now >= $close_at ) ? 'closed' : 'open';
 	}
 
 	/**
@@ -441,7 +544,17 @@ class FF_Polls {
 	 * @return bool
 	 */
 	public static function is_closed( $poll_id ) {
-		return 'closed' === self::poll_state( $poll_id );
+		return in_array( self::poll_state( $poll_id ), array( 'closed', 'past' ), true );
+	}
+
+	/**
+	 * Whether a poll has been filed in the past polls.
+	 *
+	 * @param int $poll_id The poll id.
+	 * @return bool
+	 */
+	public static function is_past( $poll_id ) {
+		return 'past' === self::poll_state( $poll_id );
 	}
 
 	/**
@@ -489,10 +602,9 @@ class FF_Polls {
 			'fields'         => 'ids',
 		) );
 		$ids = array_filter( array_map( 'intval', $ids ), array( __CLASS__, 'can_view_poll' ) );
-		// Drop polls past their hide time (or manually closed with no schedule).
-		$ids = array_filter( $ids, function ( $id ) {
-			return 'hidden' !== self::poll_state( $id );
-		} );
+
+		// Nothing else to filter: the query already asked for published polls,
+		// and a draft is how a poll leaves the site.
 		return array_values( $ids );
 	}
 
@@ -513,7 +625,7 @@ class FF_Polls {
 		// viewable_poll_ids() is already newest-first and already excludes
 		// hidden polls and any the viewer isn't in the audience for.
 		foreach ( self::viewable_poll_ids() as $id ) {
-			if ( 'closed' === self::poll_state( $id ) ) {
+			if ( self::is_past( $id ) ) {
 				$closed[] = $id;
 			} else {
 				$open[] = $id;
@@ -590,7 +702,10 @@ class FF_Polls {
 		$open   = array();
 		$closed = array();
 		foreach ( $ids as $id ) {
-			if ( self::is_closed( $id ) ) {
+			// The split is current against archived, not voting against
+			// finished. A poll that has just closed belongs with the current
+			// ones, with its result where everybody was already looking.
+			if ( self::is_past( $id ) ) {
 				$closed[] = $id;
 			} else {
 				$open[] = $id;
@@ -710,7 +825,7 @@ class FF_Polls {
 				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['open'], 1 ) . '</h2>';
 			}
 			$out .= self::panel_open( 'open', 'ff-polls-sample', $tabs, true );
-			$out .= self::sample_poll( 'voting', $text );
+			$out .= '<div class="ff-polls-archive-item">' . self::sample_poll( 'voting', $text ) . '</div>';
 			$out .= self::panel_close( $tabs );
 		}
 
@@ -719,7 +834,9 @@ class FF_Polls {
 				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['past'], 2 ) . '</h2>';
 			}
 			$out .= self::panel_open( 'past', 'ff-polls-sample', $tabs, 'past' === $show );
-			$out .= self::sample_poll( 'results', $text );
+			// Two, so the columns have something to lay out against.
+			$out .= '<div class="ff-polls-archive-item">' . self::sample_poll( 'results', $text ) . '</div>';
+			$out .= '<div class="ff-polls-archive-item">' . self::sample_poll( 'results', $text ) . '</div>';
 			$out .= self::panel_close( $tabs );
 		}
 
@@ -958,11 +1075,6 @@ class FF_Polls {
 			return '';
 		}
 
-		// Past its hide time (or manually closed with no schedule): gone entirely.
-		if ( 'hidden' === self::poll_state( $poll_id ) ) {
-			return '';
-		}
-
 		$style = wp_parse_args( $style, array(
 			'accent'  => '#3a3d44',
 			'align'   => 'left',
@@ -1005,8 +1117,9 @@ class FF_Polls {
 		$member_id = get_current_user_id();
 		$text      = self::text( $text );
 
-		// Closed: show results and Nick's reasoning to everyone in the audience.
-		if ( 'closed' === $state ) {
+		// Finished, whether it is still among the current polls or filed in the
+		// past ones: show the results and Nick's reasoning to the audience.
+		if ( 'closed' === $state || 'past' === $state ) {
 			return self::render_results( $poll_id, self::member_vote( $poll_id, $member_id ), true, $text );
 		}
 
@@ -1291,7 +1404,7 @@ class FF_Polls {
 		$active   = (int) get_post_meta( $post->ID, self::META_ACTIVE, true );
 		$outcome  = get_post_meta( $post->ID, self::META_OUTCOME, true );
 		$close_at = self::gmt_ts_to_local( get_post_meta( $post->ID, self::META_CLOSE_AT, true ) );
-		$hide_at  = self::gmt_ts_to_local( get_post_meta( $post->ID, self::META_HIDE_AT, true ) );
+		$past_at  = self::gmt_ts_to_local( get_post_meta( $post->ID, self::META_PAST_AT, true ) );
 
 		// Ensure at least two empty rows to start with.
 		if ( count( $options ) < 2 ) {
@@ -1341,23 +1454,24 @@ class FF_Polls {
 				<td>
 					<select name="ff_poll_status" id="ff_poll_status">
 						<option value="open" <?php selected( $status, 'open' ); ?>><?php esc_html_e( 'Open (accepting votes)', 'founding-faces' ); ?></option>
-						<option value="closed" <?php selected( $status, 'closed' ); ?>><?php esc_html_e( 'Closed (show results & reasoning)', 'founding-faces' ); ?></option>
+						<option value="closed" <?php selected( $status, 'closed' ); ?>><?php esc_html_e( 'Closed (stays here, shows the results and your reasoning)', 'founding-faces' ); ?></option>
+						<option value="past" <?php selected( $status, 'past' ); ?>><?php esc_html_e( 'Moved to past polls', 'founding-faces' ); ?></option>
 					</select>
-					<p class="description"><?php esc_html_e( 'With NO close/hide times set below, choosing "Closed" makes the poll disappear straight away. Set times below to close and hide it on a schedule instead.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Closed stops the voting and shows the result, with the poll staying where it is among the current ones. Moved to past polls files it in the archive. To take a poll off the site altogether, set it back to Draft: the votes are kept whatever you do.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="ff_poll_close_at"><?php esc_html_e( 'Auto-close at', 'founding-faces' ); ?></label></th>
 				<td>
 					<input type="datetime-local" name="ff_poll_close_at" id="ff_poll_close_at" value="<?php echo esc_attr( $close_at ); ?>" />
-					<p class="description"><?php esc_html_e( 'Optional. At this time the poll stops taking votes and shows the final results and your reasoning. Leave blank to close it by hand with the Status above.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Optional. At this time the poll stops taking votes and shows the final results and your reasoning, staying where it is. Leave it blank to close the poll by hand with the Status above.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="ff_poll_hide_at"><?php esc_html_e( 'Auto-hide at', 'founding-faces' ); ?></label></th>
+				<th scope="row"><label for="ff_poll_past_at"><?php esc_html_e( 'Move to past polls at', 'founding-faces' ); ?></label></th>
 				<td>
-					<input type="datetime-local" name="ff_poll_hide_at" id="ff_poll_hide_at" value="<?php echo esc_attr( $hide_at ); ?>" />
-					<p class="description"><?php esc_html_e( 'Optional. At this time the poll disappears from the site entirely. Set it a little after the close time so members can see the final votes for a while first.', 'founding-faces' ); ?></p>
+					<input type="datetime-local" name="ff_poll_past_at" id="ff_poll_past_at" value="<?php echo esc_attr( $past_at ); ?>" />
+					<p class="description"><?php esc_html_e( 'Optional. At this time the poll moves itself out of the current polls and into the past ones, result and all. Set it a while after the close time so the decision stands where members were already looking before it is filed.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -1457,14 +1571,15 @@ class FF_Polls {
 		update_post_meta( $post_id, self::META_AUDIENCE, $audience );
 
 		// Status.
-		$status = ( isset( $_POST['ff_poll_status'] ) && 'closed' === $_POST['ff_poll_status'] ) ? 'closed' : 'open';
+		$status = isset( $_POST['ff_poll_status'] ) ? sanitize_key( wp_unslash( $_POST['ff_poll_status'] ) ) : 'open';
+		$status = in_array( $status, array( 'open', 'closed', 'past' ), true ) ? $status : 'open';
 		update_post_meta( $post_id, self::META_STATUS, $status );
 
-		// Scheduled close/hide times (stored as GMT timestamps; 0 = unset).
+		// The two scheduled times (stored as GMT timestamps; 0 = unset).
 		$close_at = isset( $_POST['ff_poll_close_at'] ) ? self::local_to_gmt_ts( sanitize_text_field( wp_unslash( $_POST['ff_poll_close_at'] ) ) ) : 0;
-		$hide_at  = isset( $_POST['ff_poll_hide_at'] ) ? self::local_to_gmt_ts( sanitize_text_field( wp_unslash( $_POST['ff_poll_hide_at'] ) ) ) : 0;
+		$past_at  = isset( $_POST['ff_poll_past_at'] ) ? self::local_to_gmt_ts( sanitize_text_field( wp_unslash( $_POST['ff_poll_past_at'] ) ) ) : 0;
 		update_post_meta( $post_id, self::META_CLOSE_AT, $close_at );
-		update_post_meta( $post_id, self::META_HIDE_AT, $hide_at );
+		update_post_meta( $post_id, self::META_PAST_AT, $past_at );
 
 		// Outcome.
 		update_post_meta( $post_id, self::META_OUTCOME, isset( $_POST['ff_poll_outcome'] ) ? wp_kses_post( wp_unslash( $_POST['ff_poll_outcome'] ) ) : '' );
