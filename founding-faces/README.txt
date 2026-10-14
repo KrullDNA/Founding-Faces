@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.32
+Stable tag: 1.1.33
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,26 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.33 =
+* One poll widget, not two. Everything the Polls Archive did is now a "Show"
+  option on Founding Faces Poll: the latest poll, all current polls, open and
+  past polls in sections or tabs, or one specific poll. Columns, heights, gap,
+  the tab layout and both labels come with it.
+* The old Polls Archive widget is off the widget panel but still registered,
+  so a page already using it keeps working and can still be edited. Replace it
+  when you next touch that page.
+* Closing a poll no longer makes it disappear. The status dropdown now has
+  three choices: open, closed and kept in the past polls, or hidden. Before
+  this, closing a poll with no close or hide time set took it off the site
+  entirely, which is why a closed poll could vanish with nothing to say where
+  it went. Polls already in that state stay hidden, so nothing reappears
+  unasked; switch one to "Closed" to put it in the past polls.
+* The polls list has two new columns, whether a poll is on the site and how
+  many votes it has had, so a poll you cannot find explains itself.
+* Fixed: the Elementor editor showed the no-poll message rather than the
+  sample polls whenever that message had been written, which is why the tabs
+  never appeared on the canvas.
 
 = 1.1.32 =
 * The polls archive can now be tabs rather than one section under the other,

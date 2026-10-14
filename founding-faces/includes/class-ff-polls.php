@@ -30,7 +30,7 @@ class FF_Polls {
 	// Poll meta keys.
 	const META_OPTIONS  = 'ff_poll_options';   // Array of ['id','label','image_id'].
 	const META_AUDIENCE = 'ff_poll_audience';  // 'everyone' | 'the-35-only'.
-	const META_STATUS   = 'ff_poll_status';    // 'open' | 'closed'.
+	const META_STATUS   = 'ff_poll_status';    // 'open' | 'closed' | 'hidden'.
 	const META_ACTIVE   = 'ff_poll_active';    // 1 if this is the current active poll.
 	const META_OUTCOME  = 'ff_poll_outcome';   // Nick's reasoning, shown on close.
 	const META_CLOSE_AT = 'ff_poll_close_at';  // GMT Unix time to auto-close (show results), or 0.
@@ -115,6 +115,89 @@ class FF_Polls {
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_metaboxes' ) );
 		add_action( 'save_post_' . self::POLL_CPT, array( __CLASS__, 'save_poll' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin' ) );
+
+		// The polls list, so a poll that is not on the site says so here
+		// rather than leaving you hunting for it on the page.
+		add_filter( 'manage_' . self::POLL_CPT . '_posts_columns', array( __CLASS__, 'poll_columns' ) );
+		add_action( 'manage_' . self::POLL_CPT . '_posts_custom_column', array( __CLASS__, 'poll_column' ), 10, 2 );
+	}
+
+	/**
+	 * How many votes a poll has had, in total.
+	 *
+	 * A count, never a list. Who voted for what is the member's own and is
+	 * read nowhere but their own page.
+	 *
+	 * @param int $poll_id The poll.
+	 * @return int
+	 */
+	public static function total_votes( $poll_id ) {
+		global $wpdb;
+
+		return (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}ff_poll_votes WHERE poll_id = %d",
+			absint( $poll_id )
+		) );
+	}
+
+	/**
+	 * Add a state column to the polls list.
+	 *
+	 * @param array $columns The existing columns.
+	 * @return array
+	 */
+	public static function poll_columns( $columns ) {
+		$out = array();
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'title' === $key ) {
+				$out['ff_state'] = __( 'On the site', 'founding-faces' );
+				$out['ff_votes'] = __( 'Votes', 'founding-faces' );
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Fill the state and votes columns.
+	 *
+	 * @param string $column  The column key.
+	 * @param int    $post_id The poll.
+	 */
+	public static function poll_column( $column, $post_id ) {
+		if ( 'ff_votes' === $column ) {
+			echo esc_html( (string) self::total_votes( $post_id ) );
+			return;
+		}
+
+		if ( 'ff_state' !== $column ) {
+			return;
+		}
+
+		$state  = self::poll_state( $post_id );
+		$labels = array(
+			'open'   => __( 'Open, taking votes', 'founding-faces' ),
+			'closed' => __( 'Closed, in past polls', 'founding-faces' ),
+			'hidden' => __( 'Hidden, not on the site', 'founding-faces' ),
+		);
+
+		echo esc_html( isset( $labels[ $state ] ) ? $labels[ $state ] : $state );
+
+		// Why, when the answer is a date rather than the dropdown.
+		$close_at = (int) get_post_meta( $post_id, self::META_CLOSE_AT, true );
+		$hide_at  = (int) get_post_meta( $post_id, self::META_HIDE_AT, true );
+		$status   = (string) get_post_meta( $post_id, self::META_STATUS, true );
+
+		if ( 'open' === $status && 'open' !== $state ) {
+			$when = ( 'hidden' === $state ) ? $hide_at : $close_at;
+			if ( $when ) {
+				echo '<br /><span class="ff-consent">' . esc_html( sprintf(
+					/* translators: %s is a date and time. */
+					__( 'by the schedule, %s', 'founding-faces' ),
+					wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $when )
+				) ) . '</span>';
+			}
+		}
 	}
 
 	/**
@@ -415,23 +498,26 @@ class FF_Polls {
 		$now      = time();
 		$close_at = (int) get_post_meta( $poll_id, self::META_CLOSE_AT, true );
 		$hide_at  = (int) get_post_meta( $poll_id, self::META_HIDE_AT, true );
-		$manual   = ( 'closed' === get_post_meta( $poll_id, self::META_STATUS, true ) );
+		$status   = (string) get_post_meta( $poll_id, self::META_STATUS, true );
+
+		// Taken off the site by hand, whatever the dates say.
+		if ( 'hidden' === $status ) {
+			return 'hidden';
+		}
 
 		if ( $hide_at > 0 && $now >= $hide_at ) {
 			return 'hidden';
 		}
 
-		$closed = ( $close_at > 0 && $now >= $close_at );
-
-		if ( $manual ) {
-			// Manually closed with neither date set disappears straight away.
-			if ( 0 === $close_at && 0 === $hide_at ) {
-				return 'hidden';
-			}
-			$closed = true;
+		// Closed by hand is closed, and stays in the past polls. Hiding it is
+		// a separate choice, made in the same dropdown, because a poll that
+		// vanished the moment it closed used to be the only way to close one,
+		// and nobody could tell the difference between that and a bug.
+		if ( 'closed' === $status ) {
+			return 'closed';
 		}
 
-		return $closed ? 'closed' : 'open';
+		return ( $close_at > 0 && $now >= $close_at ) ? 'closed' : 'open';
 	}
 
 	/**
@@ -710,7 +796,7 @@ class FF_Polls {
 				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['open'], 1 ) . '</h2>';
 			}
 			$out .= self::panel_open( 'open', 'ff-polls-sample', $tabs, true );
-			$out .= self::sample_poll( 'voting', $text );
+			$out .= '<div class="ff-polls-archive-item">' . self::sample_poll( 'voting', $text ) . '</div>';
 			$out .= self::panel_close( $tabs );
 		}
 
@@ -719,7 +805,9 @@ class FF_Polls {
 				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['past'], 2 ) . '</h2>';
 			}
 			$out .= self::panel_open( 'past', 'ff-polls-sample', $tabs, 'past' === $show );
-			$out .= self::sample_poll( 'results', $text );
+			// Two, so the columns have something to lay out against.
+			$out .= '<div class="ff-polls-archive-item">' . self::sample_poll( 'results', $text ) . '</div>';
+			$out .= '<div class="ff-polls-archive-item">' . self::sample_poll( 'results', $text ) . '</div>';
 			$out .= self::panel_close( $tabs );
 		}
 
@@ -1341,9 +1429,10 @@ class FF_Polls {
 				<td>
 					<select name="ff_poll_status" id="ff_poll_status">
 						<option value="open" <?php selected( $status, 'open' ); ?>><?php esc_html_e( 'Open (accepting votes)', 'founding-faces' ); ?></option>
-						<option value="closed" <?php selected( $status, 'closed' ); ?>><?php esc_html_e( 'Closed (show results & reasoning)', 'founding-faces' ); ?></option>
+						<option value="closed" <?php selected( $status, 'closed' ); ?>><?php esc_html_e( 'Closed, kept in past polls (shows results and reasoning)', 'founding-faces' ); ?></option>
+						<option value="hidden" <?php selected( $status, 'hidden' ); ?>><?php esc_html_e( 'Hidden (off the site entirely)', 'founding-faces' ); ?></option>
 					</select>
-					<p class="description"><?php esc_html_e( 'With NO close/hide times set below, choosing "Closed" makes the poll disappear straight away. Set times below to close and hide it on a schedule instead.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Closed keeps the poll in the past polls with its result on show. Hidden takes it off the site, votes kept. Or leave this on Open and let the times below do it on a schedule.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -1457,7 +1546,8 @@ class FF_Polls {
 		update_post_meta( $post_id, self::META_AUDIENCE, $audience );
 
 		// Status.
-		$status = ( isset( $_POST['ff_poll_status'] ) && 'closed' === $_POST['ff_poll_status'] ) ? 'closed' : 'open';
+		$status = isset( $_POST['ff_poll_status'] ) ? sanitize_key( wp_unslash( $_POST['ff_poll_status'] ) ) : 'open';
+		$status = in_array( $status, array( 'open', 'closed', 'hidden' ), true ) ? $status : 'open';
 		update_post_meta( $post_id, self::META_STATUS, $status );
 
 		// Scheduled close/hide times (stored as GMT timestamps; 0 = unset).

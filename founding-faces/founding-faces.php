@@ -3,7 +3,7 @@
  * Plugin Name:       Founding Faces
  * Plugin URI:        https://foundingfaces.com
  * Description:        Runs the entire private membership programme for Apotheca: applications, moderation into The 35 or The Circle, member creation, formulation notes, polls, an anonymous members map, and email-platform sync. Lean, single-purpose, no bundled frameworks.
- * Version:           1.1.32
+ * Version:           1.1.33
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KDNA for Apotheca
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // The plugin version. Used for asset cache-busting and database upgrades.
-define( 'FF_VERSION', '1.1.32' );
+define( 'FF_VERSION', '1.1.33' );
 
 // The database schema version. Bumped only when a table structure changes,
 // so the activator knows when to run dbDelta again on an existing install.
@@ -402,3 +402,41 @@ function ff_remove_feedback_tags() {
 	update_option( 'ff_feedback_tags_removed', '1' );
 }
 add_action( 'admin_init', 'ff_remove_feedback_tags' );
+
+/**
+ * Keep today's meaning for polls closed before the states were split, once.
+ *
+ * "Closed" with neither a close nor a hide time used to mean the poll vanished
+ * from the site. It now means closed and kept in the past polls, with hiding a
+ * choice of its own. Polls already in that state are written across to hidden,
+ * so nothing reappears on a site where somebody closed a poll to be rid of it.
+ * Changing one back is a dropdown on the poll.
+ */
+function ff_split_poll_hidden_state() {
+	if ( '1' === get_option( 'ff_poll_states_split' ) ) {
+		return;
+	}
+
+	$polls = get_posts( array(
+		'post_type'      => FF_Polls::POLL_CPT,
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+	) );
+
+	foreach ( $polls as $poll_id ) {
+		if ( 'closed' !== get_post_meta( $poll_id, FF_Polls::META_STATUS, true ) ) {
+			continue;
+		}
+
+		$close_at = (int) get_post_meta( $poll_id, FF_Polls::META_CLOSE_AT, true );
+		$hide_at  = (int) get_post_meta( $poll_id, FF_Polls::META_HIDE_AT, true );
+
+		if ( 0 === $close_at && 0 === $hide_at ) {
+			update_post_meta( $poll_id, FF_Polls::META_STATUS, 'hidden' );
+		}
+	}
+
+	update_option( 'ff_poll_states_split', '1' );
+}
+add_action( 'admin_init', 'ff_split_poll_hidden_state' );
