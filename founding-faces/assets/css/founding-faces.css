@@ -505,6 +505,16 @@
 	color: var(--ff-ink);
 }
 
+/* A message is not a poll, so it takes the whole row rather than a column of
+ * the grid the polls are laid out in. Without this it wraps inside one
+ * column's width while the rest of the row sits empty beside it. */
+.ff-polls-archive-grid > .ff-poll-empty,
+.ff-polls-archive-grid > .ff-empty-note,
+.ff-polls-list > .ff-poll-empty,
+.ff-polls-list > .ff-empty-note {
+	grid-column: 1 / -1;
+}
+
 .ff-poll-empty-heading {
 	margin: 0 0 0.5rem;
 	font-size: 1.2rem;
