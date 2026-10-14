@@ -1097,20 +1097,13 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 			'placeholder' => __( 'Past polls', 'founding-faces' ),
 			'condition'   => array( 'source' => 'archive' ),
 		) );
-		$this->add_control( 'open_empty', array(
-			'label'       => __( 'When the open tab is empty', 'founding-faces' ),
-			'type'        => \Elementor\Controls_Manager::TEXT,
-			'default'     => '',
-			'placeholder' => __( 'No poll open at the moment.', 'founding-faces' ),
-			'condition'   => array( 'source' => 'archive', 'archive_layout' => 'tabs' ),
-			'description' => __( 'Both tabs are always there, so each one needs a line for the day it has nothing in it.', 'founding-faces' ),
-		) );
 		$this->add_control( 'past_empty', array(
 			'label'       => __( 'When the past tab is empty', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::TEXT,
 			'default'     => '',
 			'placeholder' => __( 'No past polls yet.', 'founding-faces' ),
 			'condition'   => array( 'source' => 'archive', 'archive_layout' => 'tabs' ),
+			'description' => __( 'The open tab uses the "When there is no poll" wording further down, since that is the same moment.', 'founding-faces' ),
 		) );
 		$this->add_responsive_control( 'archive_columns', array(
 			'label'      => __( 'Columns', 'founding-faces' ),
@@ -1300,7 +1293,6 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		$headings = ( ! isset( $settings['archive_headings'] ) || 'yes' === $settings['archive_headings'] ) ? 'yes' : 'no';
 		$open_lbl = isset( $settings['open_label'] ) ? (string) $settings['open_label'] : '';
 		$past_lbl = isset( $settings['past_label'] ) ? (string) $settings['past_label'] : '';
-		$open_mt  = isset( $settings['open_empty'] ) ? (string) $settings['open_empty'] : '';
 		$past_mt  = isset( $settings['past_empty'] ) ? (string) $settings['past_empty'] : '';
 
 		if ( 'archive' === $source ) {
@@ -1312,9 +1304,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 				'layout'     => $layout,
 				'open_label' => $open_lbl,
 				'past_label' => $past_lbl,
-				'open_empty' => $open_mt,
 				'past_empty' => $past_mt,
-			), $text, '' );
+			), $text, $this->ffp_empty_html( $settings ) );
 		} elseif ( 'all' === $source ) {
 			$html = FF_Polls::render_poll_list( FF_Polls::ordered_poll_ids(), $style, $text );
 		} else {

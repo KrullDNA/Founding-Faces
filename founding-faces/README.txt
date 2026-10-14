@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.38
+Stable tag: 1.1.39
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.39 =
+* The empty Active tab now shows the wording from "When there is no poll",
+  the message you already wrote, rather than a line of its own. It is the same
+  moment, and asking for it in two fields is how one of them ends up
+  forgotten. Clearing both fields still shows nothing at all.
+* The separate "When the open tab is empty" field has gone with it. The past
+  tab keeps its own, since nothing else covers that moment.
 
 = 1.1.38 =
 * The member count can now sit inside the map key, under The Circle, which is

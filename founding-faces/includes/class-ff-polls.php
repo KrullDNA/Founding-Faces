@@ -686,7 +686,6 @@ class FF_Polls {
 				'layout'     => 'stacked', // 'stacked' | 'tabs'.
 				'open_label' => '',
 				'past_label' => '',
-				'open_empty' => '',
 				'past_empty' => '',
 			),
 			$atts,
@@ -731,10 +730,25 @@ class FF_Polls {
 			'past' => '' !== trim( (string) $atts['past_label'] ) ? $atts['past_label'] : __( 'Past polls', 'founding-faces' ),
 		);
 
+		// What an empty tab says. The open one says whatever was written in
+		// "When there is no poll", because that is the same moment and asking
+		// for it twice in two fields is how one of them ends up forgotten.
 		$blanks = array(
-			'open' => '' !== trim( (string) $atts['open_empty'] ) ? $atts['open_empty'] : __( 'No poll open at the moment.', 'founding-faces' ),
-			'past' => '' !== trim( (string) $atts['past_empty'] ) ? $atts['past_empty'] : __( 'No past polls yet.', 'founding-faces' ),
+			'open' => null,
+			'past' => '' !== trim( (string) $atts['past_empty'] ) ? '<p class="ff-empty-note">' . FF_Text::inline( $atts['past_empty'] ) . '</p>' : '',
 		);
+
+		if ( null !== $empty ) {
+			// Deliberately cleared means say nothing, and an empty string is
+			// how that arrives.
+			$blanks['open'] = $empty;
+		} else {
+			$blanks['open'] = '<p class="ff-empty-note">' . esc_html__( 'No poll open at the moment.', 'founding-faces' ) . '</p>';
+		}
+
+		if ( '' === trim( (string) $atts['past_empty'] ) ) {
+			$blanks['past'] = '<p class="ff-empty-note">' . esc_html__( 'No past polls yet.', 'founding-faces' ) . '</p>';
+		}
 
 		// Both tabs, always, with the current polls in front. A tab row that
 		// appears and disappears with the polls behind it is not navigation,
@@ -788,7 +802,7 @@ class FF_Polls {
 			$out .= self::panel_open( $which, $uid, $tabs, 'open' === $which );
 
 			if ( empty( $ids_in ) ) {
-				$out .= '<p class="ff-empty-note">' . FF_Text::inline( $blanks[ $which ] ) . '</p>';
+				$out .= (string) $blanks[ $which ];
 			}
 
 			foreach ( $ids_in as $id ) {
