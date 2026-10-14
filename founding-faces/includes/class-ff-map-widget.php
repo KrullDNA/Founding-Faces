@@ -202,6 +202,65 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 		$this->end_controls_section();
 
 		/* ------------------------------------------------ Frame & styling -- */
+		$this->start_controls_section( 'ff_map_count_style', array(
+			'label'     => __( 'Member count', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'count_show' => 'yes' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'mc_typo',
+			'label'    => __( 'Typography', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-map-count',
+		) );
+		$this->add_control( 'mc_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-map-count' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'mc_align', array(
+			'label'     => __( 'Alignment', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::CHOOSE,
+			'options'   => array(
+				'left'   => array( 'title' => __( 'Left', 'founding-faces' ), 'icon' => 'eicon-text-align-left' ),
+				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
+				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .ff-map-count' => 'text-align: {{VALUE}};' ),
+		) );
+		$this->add_control( 'mc_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'separator' => 'before',
+			'selectors' => array( '{{WRAPPER}} .ff-map-count' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'mc_border',
+			'selector' => '{{WRAPPER}} .ff-map-count',
+		) );
+		$this->add_responsive_control( 'mc_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'mc_shadow',
+			'selector' => '{{WRAPPER}} .ff-map-count',
+		) );
+		$this->add_responsive_control( 'mc_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'mc_margin', array(
+			'label'      => __( 'Margin', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em', 'rem' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		$this->start_controls_section( 'ff_map_frame', array(
 			'label' => __( 'Frame & styling', 'founding-faces' ),
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
@@ -236,6 +295,36 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 			'selectors'  => array(
 				'{{WRAPPER}} .ff-members-map' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
 			),
+		) );
+
+		$this->add_control( 'count_heading', array(
+			'label'     => __( 'Member count', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+		$this->add_control( 'count_show', array(
+			'label'        => __( 'Show the number of members', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => '',
+			'return_value' => 'yes',
+		) );
+		$this->add_control( 'count_text', array(
+			'label'       => __( 'Wording', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '',
+			'placeholder' => __( '{count} founding faces across Australia', 'founding-faces' ),
+			'condition'   => array( 'count_show' => 'yes' ),
+			'description' => __( '{count} is everyone on the map, {the35} is The 35 and {circle} is the rest. Counted from the dots themselves, so the number and the map can never disagree.', 'founding-faces' ),
+		) );
+		$this->add_control( 'count_position', array(
+			'label'     => __( 'Where it sits', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'above',
+			'options'   => array(
+				'above' => __( 'Above the map', 'founding-faces' ),
+				'below' => __( 'Below the map', 'founding-faces' ),
+			),
+			'condition' => array( 'count_show' => 'yes' ),
 		) );
 
 		$this->add_control( 'legend_heading', array(
@@ -308,6 +397,11 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 				'on'    => ( 'yes' === $s['stroke'] ),
 				'color' => $s['stroke_color'],
 				'width' => (int) $slider( $s['stroke_width'], 1 ),
+			),
+			'count'        => array(
+				'on'       => ( isset( $s['count_show'] ) && 'yes' === $s['count_show'] ),
+				'position' => isset( $s['count_position'] ) && 'below' === $s['count_position'] ? 'below' : 'above',
+				'text'     => isset( $s['count_text'] ) ? $s['count_text'] : '',
 			),
 			'legend'       => array(
 				'on'           => ( 'yes' === $s['legend_show'] ),

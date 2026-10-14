@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.35
+Stable tag: 1.1.37
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,28 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.37 =
+* The map can show how many members are on it, above or below the map, with a
+  switch to turn it on. Off by default.
+* The wording is yours: {count} is everyone on the map, {the35} is The 35 and
+  {circle} is the rest. It defaults to "{count} founding faces across
+  Australia".
+* The number is counted from the dots the map is drawn from, so the two can
+  never disagree, and in the Elementor editor it counts the sample dots, which
+  means the line can be styled before there is a member on it.
+* A Member count style section covers typography, colour, alignment,
+  background, border, corner radius, shadow, padding and margin.
+
+= 1.1.36 =
+* Both tabs are now always there, with the current polls in front. A tab row
+  that appears and disappears with the polls behind it is not navigation, and
+  it was the reason a page holding only past polls showed no tabs at all.
+* An empty tab says so. Two new fields set what it says, defaulting to "No
+  poll open at the moment." and "No past polls yet."
+* The open tab is always the one in front, whether or not there is a poll in
+  it. A member arriving at the page is being asked something, not handed an
+  archive.
 
 = 1.1.35 =
 * A poll now has three states that say what they do. Open is taking votes.

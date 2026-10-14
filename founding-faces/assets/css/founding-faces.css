@@ -1212,6 +1212,17 @@
  * widget's own z-index (Elementor's Advanced tab) still positions the map
  * against the rest of the page, which is the level that decision belongs at.
  */
+/* The number of members, above or below the map. Structure only: it inherits
+ * its type and colour until the widget says otherwise, and carries a margin
+ * so it does not sit flush against the map it belongs to. */
+.ff-map-count {
+	margin: 0 0 0.75rem;
+}
+
+.ff-map-count:last-child {
+	margin: 0.75rem 0 0;
+}
+
 .ff-members-map {
 	position: relative;
 	z-index: 0;

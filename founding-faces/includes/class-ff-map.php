@@ -308,6 +308,11 @@ class FF_Map {
 			),
 			'opacity'      => 0.45,
 			'stroke'       => array( 'on' => false, 'color' => '#ffffff', 'width' => 1 ),
+			'count'        => array(
+				'on'       => false,
+				'position' => 'above',
+				'text'     => '',
+			),
 			'legend'       => array(
 				'on'           => false,
 				'position'     => 'bottomright',
@@ -364,8 +369,58 @@ class FF_Map {
 			),
 		);
 
-		return '<div id="' . esc_attr( $id ) . '" class="ff-members-map" data-ffmap="'
+		$map = '<div id="' . esc_attr( $id ) . '" class="ff-members-map" data-ffmap="'
 			. esc_attr( wp_json_encode( $config ) ) . '" style="height:' . $height . 'px;"></div>';
+
+		$count = self::count_html( $config['points'], $args['count'] );
+		if ( '' === $count ) {
+			return $map;
+		}
+
+		return 'below' === $args['count']['position']
+			? $map . $count
+			: $count . $map;
+	}
+
+	/**
+	 * The line that says how many members are on the map.
+	 *
+	 * Counted from the points the map itself is drawn from, so the number and
+	 * the dots cannot disagree, and in the editor it counts the samples, which
+	 * is what makes the line stylable before there are any members.
+	 *
+	 * A number is all it is. The brief says members are a number to the public
+	 * and never to Nick, and this is the public half of that sentence.
+	 *
+	 * @param array $points The map points.
+	 * @param array $args   The count options.
+	 * @return string
+	 */
+	private static function count_html( $points, $args ) {
+		if ( empty( $args['on'] ) ) {
+			return '';
+		}
+
+		$total  = count( $points );
+		$in_35  = 0;
+		foreach ( $points as $point ) {
+			if ( isset( $point[2] ) && 35 === (int) $point[2] ) {
+				$in_35++;
+			}
+		}
+
+		$template = FF_Text::filled( $args['text'] )
+			? $args['text']
+			/* translators: %s is a placeholder for the number of members. */
+			: __( '{count} founding faces across Australia', 'founding-faces' );
+
+		$line = strtr( FF_Text::inline( $template ), array(
+			'{count}'  => number_format_i18n( $total ),
+			'{the35}'  => number_format_i18n( $in_35 ),
+			'{circle}' => number_format_i18n( max( 0, $total - $in_35 ) ),
+		) );
+
+		return '<p class="ff-map-count">' . $line . '</p>';
 	}
 
 	/**

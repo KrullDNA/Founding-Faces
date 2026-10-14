@@ -951,6 +951,24 @@ trait FF_Poll_Style_Controls {
 	}
 
 	/**
+	 * Whether an archive render came back with no polls in it.
+	 *
+	 * The no-poll copy is words, so a blank-string test sees text and decides
+	 * there is something to show. A poll leaves a poll behind in the markup,
+	 * and that is what this looks for.
+	 *
+	 * @param string $html The rendered archive.
+	 * @return bool
+	 */
+	protected static function ffp_archive_is_empty( $html ) {
+		$html = (string) $html;
+
+		// Every rendered poll is wrapped in one of these, and nothing else
+		// produces one, so its absence means no poll came back.
+		return false === strpos( $html, 'ff-polls-archive-item' );
+	}
+
+	/**
 	 * Whether the widget is rendering inside the Elementor editor.
 	 *
 	 * @return bool
@@ -1078,6 +1096,21 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 			'default'     => '',
 			'placeholder' => __( 'Past polls', 'founding-faces' ),
 			'condition'   => array( 'source' => 'archive' ),
+		) );
+		$this->add_control( 'open_empty', array(
+			'label'       => __( 'When the open tab is empty', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '',
+			'placeholder' => __( 'No poll open at the moment.', 'founding-faces' ),
+			'condition'   => array( 'source' => 'archive', 'archive_layout' => 'tabs' ),
+			'description' => __( 'Both tabs are always there, so each one needs a line for the day it has nothing in it.', 'founding-faces' ),
+		) );
+		$this->add_control( 'past_empty', array(
+			'label'       => __( 'When the past tab is empty', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '',
+			'placeholder' => __( 'No past polls yet.', 'founding-faces' ),
+			'condition'   => array( 'source' => 'archive', 'archive_layout' => 'tabs' ),
 		) );
 		$this->add_responsive_control( 'archive_columns', array(
 			'label'      => __( 'Columns', 'founding-faces' ),
@@ -1267,6 +1300,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		$headings = ( ! isset( $settings['archive_headings'] ) || 'yes' === $settings['archive_headings'] ) ? 'yes' : 'no';
 		$open_lbl = isset( $settings['open_label'] ) ? (string) $settings['open_label'] : '';
 		$past_lbl = isset( $settings['past_label'] ) ? (string) $settings['past_label'] : '';
+		$open_mt  = isset( $settings['open_empty'] ) ? (string) $settings['open_empty'] : '';
+		$past_mt  = isset( $settings['past_empty'] ) ? (string) $settings['past_empty'] : '';
 
 		if ( 'archive' === $source ) {
 			// '' rather than the no-poll copy, so an empty archive reads as
@@ -1277,6 +1312,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 				'layout'     => $layout,
 				'open_label' => $open_lbl,
 				'past_label' => $past_lbl,
+				'open_empty' => $open_mt,
+				'past_empty' => $past_mt,
 			), $text, '' );
 		} elseif ( 'all' === $source ) {
 			$html = FF_Polls::render_poll_list( FF_Polls::ordered_poll_ids(), $style, $text );
@@ -1297,7 +1334,11 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 		// In the editor, show a sample poll when there's no real one to render,
 		// so every part (bars, labels, capsule, outcome) can be styled up front.
 		// "All" gets three, so the columns have something to lay out.
-		if ( $this->ffp_is_editor() && '' === trim( wp_strip_all_tags( (string) $html ) ) ) {
+		$nothing = ( 'archive' === $source )
+			? self::ffp_archive_is_empty( $html )
+			: ( '' === trim( wp_strip_all_tags( (string) $html ) ) );
+
+		if ( $this->ffp_is_editor() && $nothing ) {
 			if ( 'archive' === $source ) {
 				echo FF_Polls::sample_archive( 'both', $layout, $headings, $open_lbl, $past_lbl, $text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				return;
@@ -1314,7 +1355,8 @@ class FF_Poll_Widget extends \Elementor\Widget_Base {
 			return;
 		}
 
-		if ( '' === trim( wp_strip_all_tags( (string) $html ) ) ) {
+		// Nothing real in it: fall through to the no-poll copy below.
+		if ( $nothing && 'archive' !== $source ) {
 			$html = '';
 		}
 
@@ -1367,24 +1409,6 @@ class FF_Polls_Archive_Widget extends \Elementor\Widget_Base {
 	 */
 	public function show_in_panel() {
 		return false;
-	}
-
-	/**
-	 * Whether an archive render came back with no polls in it.
-	 *
-	 * The no-poll copy is words, so a blank-string test sees text and decides
-	 * there is something to show. A poll leaves a poll behind in the markup,
-	 * and that is what this looks for.
-	 *
-	 * @param string $html The rendered archive.
-	 * @return bool
-	 */
-	protected static function ffp_archive_is_empty( $html ) {
-		$html = (string) $html;
-
-		// Every rendered poll is wrapped in one of these, and nothing else
-		// produces one, so its absence means no poll came back.
-		return false === strpos( $html, 'ff-polls-archive-item' );
 	}
 
 	protected function register_controls() {
