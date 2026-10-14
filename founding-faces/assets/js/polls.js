@@ -11,6 +11,13 @@
 	document.addEventListener( 'DOMContentLoaded', function () {
 		// Delegate clicks so it works for any poll on the page.
 		document.addEventListener( 'click', function ( e ) {
+			var tab = e.target.closest( '.ff-poll-tab' );
+			if ( tab ) {
+				e.preventDefault();
+				showTab( tab );
+				return;
+			}
+
 			var button = e.target.closest( '.ff-poll-option' );
 			if ( ! button ) {
 				return;
@@ -24,7 +31,65 @@
 			e.preventDefault();
 			castVote( poll, button );
 		} );
+
+		// Left and right walk the tabs, which is what a tablist is expected to
+		// do. Home and End go to the ends of it.
+		document.addEventListener( 'keydown', function ( e ) {
+			var tab = e.target.closest ? e.target.closest( '.ff-poll-tab' ) : null;
+			if ( ! tab ) {
+				return;
+			}
+
+			var tabs = Array.prototype.slice.call( tab.parentNode.querySelectorAll( '.ff-poll-tab' ) );
+			var at = tabs.indexOf( tab );
+			var to = -1;
+
+			if ( e.key === 'ArrowRight' ) {
+				to = ( at + 1 ) % tabs.length;
+			} else if ( e.key === 'ArrowLeft' ) {
+				to = ( at - 1 + tabs.length ) % tabs.length;
+			} else if ( e.key === 'Home' ) {
+				to = 0;
+			} else if ( e.key === 'End' ) {
+				to = tabs.length - 1;
+			}
+
+			if ( to > -1 ) {
+				e.preventDefault();
+				showTab( tabs[ to ] );
+				tabs[ to ].focus();
+			}
+		} );
 	} );
+
+	// Bring one tab's panel to the front and put the others away.
+	function showTab( tab ) {
+		var bar = tab.parentNode;
+		var archive = tab.closest( '.ff-polls-archive' );
+		if ( ! bar || ! archive ) {
+			return;
+		}
+
+		var tabs = bar.querySelectorAll( '.ff-poll-tab' );
+		for ( var i = 0; i < tabs.length; i++ ) {
+			var on = ( tabs[ i ] === tab );
+			tabs[ i ].classList.toggle( 'is-current', on );
+			tabs[ i ].setAttribute( 'aria-selected', on ? 'true' : 'false' );
+			// Only the current tab is a tab stop, so the keyboard steps past
+			// the row rather than through every tab in it.
+			tabs[ i ].setAttribute( 'tabindex', on ? '0' : '-1' );
+
+			var panel = document.getElementById( tabs[ i ].getAttribute( 'aria-controls' ) );
+			if ( panel ) {
+				panel.classList.toggle( 'is-current', on );
+				if ( on ) {
+					panel.removeAttribute( 'hidden' );
+				} else {
+					panel.setAttribute( 'hidden', 'hidden' );
+				}
+			}
+		}
+	}
 
 	// Send the vote and reveal the results.
 	function castVote( poll, button ) {

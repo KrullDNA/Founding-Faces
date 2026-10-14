@@ -569,8 +569,11 @@ class FF_Polls {
 	public static function archive_shortcode( $atts, $text = array(), $empty = null ) {
 		$atts = shortcode_atts(
 			array(
-				'headings' => 'yes',
-				'show'     => 'both', // 'both' | 'open' | 'past'.
+				'headings'   => 'yes',
+				'show'       => 'both', // 'both' | 'open' | 'past'.
+				'layout'     => 'stacked', // 'stacked' | 'tabs'.
+				'open_label' => '',
+				'past_label' => '',
 			),
 			$atts,
 			'ff_polls_archive'
@@ -602,9 +605,24 @@ class FF_Polls {
 			$closed = array();
 		}
 
-		// Headings are only useful when both sections can appear together.
-		$headings = ( 'yes' === $atts['headings'] ) && ( 'both' === $show );
-		$out      = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . '">';
+		// The two labels, which name the sections whether they are headings
+		// above one another or tabs beside each other. {count} is filled in
+		// from what is actually there, so a label can carry the number without
+		// anybody keeping it up to date.
+		$labels = array(
+			'open' => '' !== trim( (string) $atts['open_label'] ) ? $atts['open_label'] : __( 'Open now', 'founding-faces' ),
+			'past' => '' !== trim( (string) $atts['past_label'] ) ? $atts['past_label'] : __( 'Past polls', 'founding-faces' ),
+		);
+
+		// Tabs only make sense when both sides can appear. One of the two on
+		// its own is a heading over a list, and a single tab is a label
+		// pretending to be a choice.
+		$tabs = ( 'tabs' === $atts['layout'] ) && ( 'both' === $show ) && ! empty( $open ) && ! empty( $closed );
+
+		// Headings are only useful when both sections can appear together, and
+		// never alongside the tabs, which name the sections already.
+		$headings = ( 'yes' === $atts['headings'] ) && ( 'both' === $show ) && ! $tabs;
+		$out      = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . ( $tabs ? ' ff-polls-archive--tabs' : '' ) . '">';
 
 		if ( empty( $open ) && empty( $closed ) ) {
 			// A caller that supplied its own empty-state copy owns this moment
@@ -621,30 +639,166 @@ class FF_Polls {
 			return $out . '</div>';
 		}
 
+		// Each widget on a page needs its own ids, so a tab points at its own
+		// panel rather than the first one on the page with that name.
+		static $instance = 0;
+		$instance++;
+		$uid = 'ff-polls-' . $instance;
+
+		if ( $tabs ) {
+			$out .= self::tab_bar( $labels, array( 'open' => count( $open ), 'past' => count( $closed ) ), $uid );
+		}
+
 		if ( ! empty( $open ) ) {
 			if ( $headings ) {
-				$out .= '<h2 class="ff-polls-archive-heading">' . esc_html__( 'Open now', 'founding-faces' ) . '</h2>';
+				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['open'], count( $open ) ) . '</h2>';
 			}
-			$out .= '<div class="ff-polls-archive-grid">';
+			$out .= self::panel_open( 'open', $uid, $tabs, true );
 			foreach ( $open as $id ) {
 				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id, array(), $text ) . '</div>';
 			}
-			$out .= '</div>';
+			$out .= self::panel_close( $tabs );
 		}
 
 		if ( ! empty( $closed ) ) {
 			if ( $headings ) {
-				$out .= '<h2 class="ff-polls-archive-heading">' . esc_html__( 'Past polls', 'founding-faces' ) . '</h2>';
+				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['past'], count( $closed ) ) . '</h2>';
 			}
-			$out .= '<div class="ff-polls-archive-grid">';
+			$out .= self::panel_open( 'past', $uid, $tabs, empty( $open ) );
 			foreach ( $closed as $id ) {
 				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id, array(), $text ) . '</div>';
 			}
-			$out .= '</div>';
+			$out .= self::panel_close( $tabs );
 		}
 
 		$out .= '</div>';
 		return $out;
+	}
+
+	/**
+	 * A sample archive for the Elementor canvas.
+	 *
+	 * The same markup the page gets, tabs and all, so a tab row can be styled
+	 * before a poll has ever closed. Both sides always have something in them
+	 * here, which is the only way the editor can show the choice.
+	 *
+	 * @param string $show     both | open | past.
+	 * @param string $layout   stacked | tabs.
+	 * @param string $headings 'yes' to draw the stacked headings.
+	 * @param string $open_lbl The open label as written.
+	 * @param string $past_lbl The past label as written.
+	 * @param array  $text     The widget's text overrides.
+	 * @return string
+	 */
+	public static function sample_archive( $show, $layout, $headings, $open_lbl, $past_lbl, $text = array() ) {
+		$labels = array(
+			'open' => '' !== trim( (string) $open_lbl ) ? $open_lbl : __( 'Open now', 'founding-faces' ),
+			'past' => '' !== trim( (string) $past_lbl ) ? $past_lbl : __( 'Past polls', 'founding-faces' ),
+		);
+
+		$tabs  = ( 'tabs' === $layout ) && ( 'both' === $show );
+		$heads = ( 'yes' === $headings ) && ( 'both' === $show ) && ! $tabs;
+
+		$out = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . ( $tabs ? ' ff-polls-archive--tabs' : '' ) . '">';
+
+		if ( $tabs ) {
+			$out .= self::tab_bar( $labels, array( 'open' => 1, 'past' => 2 ), 'ff-polls-sample' );
+		}
+
+		if ( 'past' !== $show ) {
+			if ( $heads ) {
+				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['open'], 1 ) . '</h2>';
+			}
+			$out .= self::panel_open( 'open', 'ff-polls-sample', $tabs, true );
+			$out .= self::sample_poll( 'voting', $text );
+			$out .= self::panel_close( $tabs );
+		}
+
+		if ( 'open' !== $show ) {
+			if ( $heads ) {
+				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['past'], 2 ) . '</h2>';
+			}
+			$out .= self::panel_open( 'past', 'ff-polls-sample', $tabs, 'past' === $show );
+			$out .= self::sample_poll( 'results', $text );
+			$out .= self::panel_close( $tabs );
+		}
+
+		return $out . '</div>';
+	}
+
+	/**
+	 * One label, with {count} filled in.
+	 *
+	 * Author-facing copy, so it is allowed its own markup, in line with every
+	 * other piece of text the editor can set.
+	 *
+	 * @param string $label The label as written.
+	 * @param int    $count How many polls are in that section.
+	 * @return string
+	 */
+	private static function label_html( $label, $count ) {
+		return str_replace( '{count}', (int) $count, FF_Text::inline( $label ) );
+	}
+
+	/**
+	 * The row of tabs.
+	 *
+	 * Real buttons in a real tablist, so the keyboard and a screen reader get
+	 * the same thing the mouse does.
+	 *
+	 * @param array  $labels Open and past labels.
+	 * @param array  $counts How many polls are in each.
+	 * @param string $uid    This widget's unique id stem.
+	 * @return string
+	 */
+	private static function tab_bar( $labels, $counts, $uid ) {
+		$out = '<div class="ff-poll-tabs" role="tablist">';
+
+		foreach ( array( 'open', 'past' ) as $i => $which ) {
+			$current = ( 0 === $i );
+			$out    .= '<button type="button" class="ff-poll-tab' . ( $current ? ' is-current' : '' ) . '"'
+				. ' id="' . esc_attr( $uid . '-tab-' . $which ) . '"'
+				. ' role="tab"'
+				. ' aria-controls="' . esc_attr( $uid . '-panel-' . $which ) . '"'
+				. ' aria-selected="' . ( $current ? 'true' : 'false' ) . '"'
+				. ' tabindex="' . ( $current ? '0' : '-1' ) . '">'
+				. self::label_html( $labels[ $which ], $counts[ $which ] )
+				. '</button>';
+		}
+
+		return $out . '</div>';
+	}
+
+	/**
+	 * Open a section: a tab panel wrapping the grid, or just the grid.
+	 *
+	 * @param string $which   'open' or 'past'.
+	 * @param string $uid     This widget's unique id stem.
+	 * @param bool   $tabs    Whether this archive is tabbed.
+	 * @param bool   $current Whether this section is the one on show.
+	 * @return string
+	 */
+	private static function panel_open( $which, $uid, $tabs, $current ) {
+		if ( ! $tabs ) {
+			return '<div class="ff-polls-archive-grid">';
+		}
+
+		return '<div class="ff-poll-panel' . ( $current ? ' is-current' : '' ) . '"'
+			. ' id="' . esc_attr( $uid . '-panel-' . $which ) . '"'
+			. ' role="tabpanel"'
+			. ' aria-labelledby="' . esc_attr( $uid . '-tab-' . $which ) . '"'
+			. ( $current ? '' : ' hidden' ) . '>'
+			. '<div class="ff-polls-archive-grid">';
+	}
+
+	/**
+	 * Close a section opened by panel_open().
+	 *
+	 * @param bool $tabs Whether this archive is tabbed.
+	 * @return string
+	 */
+	private static function panel_close( $tabs ) {
+		return $tabs ? '</div></div>' : '</div>';
 	}
 
 	/*

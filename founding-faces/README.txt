@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.31
+Stable tag: 1.1.32
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,25 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.32 =
+* The polls archive can now be tabs rather than one section under the other,
+  with the open polls on the first tab and the past ones on the second.
+* Both labels are yours to write, in the content tab, and they name the
+  headings in the stacked layout as well as the tabs. {count} in a label
+  becomes how many polls are in that section, so "Past polls (12)" keeps
+  itself up to date.
+* Tabs need both sides to have something in them. With no open poll, or none
+  closed yet, the archive falls back to a single list rather than offering a
+  choice of one.
+* A Tabs style section covers alignment, gap, equal or natural widths, space
+  below the row, typography, padding and corner radius, with separate normal,
+  current and hover states for colour, background, border and shadow. The tabs
+  are drawn with nothing on them, so every line of that is yours.
+* The tabs work from the keyboard: left and right walk the row, Home and End
+  go to its ends, and only the current tab is a tab stop.
+* The Elementor editor shows the tabbed layout with sample polls on both
+  sides, so a tab row can be styled before a poll has ever closed.
 
 = 1.1.31 =
 * A new note can now be announced to The 35. A "Tell The 35" box on the note
