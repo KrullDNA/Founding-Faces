@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.33
+Stable tag: 1.1.34
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.34 =
+* A poll taken off the site by its auto-hide time now says so, on the poll
+  itself and in the On the site column, with the date it happened and what to
+  do about it. A hide time set months earlier is the one state that was
+  impossible to work out from the poll screen.
+* The auto-hide field says plainly that it outranks the status: once it
+  passes, the poll leaves the site whatever the status says.
 
 = 1.1.33 =
 * One poll widget, not two. Everything the Polls Archive did is now a "Show"

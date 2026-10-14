@@ -183,20 +183,30 @@ class FF_Polls {
 
 		echo esc_html( isset( $labels[ $state ] ) ? $labels[ $state ] : $state );
 
-		// Why, when the answer is a date rather than the dropdown.
+		// Why, and a date beats the dropdown, so the date is what gets said.
+		// A poll taken off the site by a schedule somebody set months ago is
+		// the one state that is impossible to work out from the poll screen.
 		$close_at = (int) get_post_meta( $post_id, self::META_CLOSE_AT, true );
 		$hide_at  = (int) get_post_meta( $post_id, self::META_HIDE_AT, true );
-		$status   = (string) get_post_meta( $post_id, self::META_STATUS, true );
+		$now      = time();
+		$reason   = '';
 
-		if ( 'open' === $status && 'open' !== $state ) {
-			$when = ( 'hidden' === $state ) ? $hide_at : $close_at;
-			if ( $when ) {
-				echo '<br /><span class="ff-consent">' . esc_html( sprintf(
-					/* translators: %s is a date and time. */
-					__( 'by the schedule, %s', 'founding-faces' ),
-					wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $when )
-				) ) . '</span>';
-			}
+		if ( 'hidden' === $state && $hide_at > 0 && $now >= $hide_at ) {
+			$reason = sprintf(
+				/* translators: %s is a date and time. */
+				__( 'auto-hidden on %s. Clear the auto-hide time to bring it back.', 'founding-faces' ),
+				wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $hide_at )
+			);
+		} elseif ( 'closed' === $state && $close_at > 0 && $now >= $close_at ) {
+			$reason = sprintf(
+				/* translators: %s is a date and time. */
+				__( 'auto-closed on %s', 'founding-faces' ),
+				wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $close_at )
+			);
+		}
+
+		if ( '' !== $reason ) {
+			echo '<br /><span class="ff-consent">' . esc_html( $reason ) . '</span>';
 		}
 	}
 
@@ -1442,11 +1452,32 @@ class FF_Polls {
 					<p class="description"><?php esc_html_e( 'Optional. At this time the poll stops taking votes and shows the final results and your reasoning. Leave blank to close it by hand with the Status above.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
+			<?php
+			$hide_ts = (int) get_post_meta( $post->ID, self::META_HIDE_AT, true );
+			if ( $hide_ts > 0 && time() >= $hide_ts ) :
+				?>
+			<tr>
+				<th scope="row"></th>
+				<td>
+					<div class="notice notice-warning inline" style="margin:0;padding:8px 12px;">
+						<p style="margin:0;">
+							<?php
+							echo esc_html( sprintf(
+								/* translators: %s is a date and time. */
+								__( 'This poll is off the site. The auto-hide time passed on %s, which takes a poll away whatever its status says. Clear the field below to put it back in the past polls.', 'founding-faces' ),
+								wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $hide_ts )
+							) );
+							?>
+						</p>
+					</div>
+				</td>
+			</tr>
+			<?php endif; ?>
 			<tr>
 				<th scope="row"><label for="ff_poll_hide_at"><?php esc_html_e( 'Auto-hide at', 'founding-faces' ); ?></label></th>
 				<td>
 					<input type="datetime-local" name="ff_poll_hide_at" id="ff_poll_hide_at" value="<?php echo esc_attr( $hide_at ); ?>" />
-					<p class="description"><?php esc_html_e( 'Optional. At this time the poll disappears from the site entirely. Set it a little after the close time so members can see the final votes for a while first.', 'founding-faces' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Optional, and a one-way door once it passes: the poll leaves the site entirely, past polls included, whatever the status above says. Leave it empty to keep a closed poll in the archive for good, or set it a little after the close time so members see the final votes for a while first.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
 			<tr>
