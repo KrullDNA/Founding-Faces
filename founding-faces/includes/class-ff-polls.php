@@ -686,6 +686,8 @@ class FF_Polls {
 				'layout'     => 'stacked', // 'stacked' | 'tabs'.
 				'open_label' => '',
 				'past_label' => '',
+				'open_empty' => '',
+				'past_empty' => '',
 			),
 			$atts,
 			'ff_polls_archive'
@@ -729,17 +731,23 @@ class FF_Polls {
 			'past' => '' !== trim( (string) $atts['past_label'] ) ? $atts['past_label'] : __( 'Past polls', 'founding-faces' ),
 		);
 
-		// Tabs only make sense when both sides can appear. One of the two on
-		// its own is a heading over a list, and a single tab is a label
-		// pretending to be a choice.
-		$tabs = ( 'tabs' === $atts['layout'] ) && ( 'both' === $show ) && ! empty( $open ) && ! empty( $closed );
+		$blanks = array(
+			'open' => '' !== trim( (string) $atts['open_empty'] ) ? $atts['open_empty'] : __( 'No poll open at the moment.', 'founding-faces' ),
+			'past' => '' !== trim( (string) $atts['past_empty'] ) ? $atts['past_empty'] : __( 'No past polls yet.', 'founding-faces' ),
+		);
+
+		// Both tabs, always, with the current polls in front. A tab row that
+		// appears and disappears with the polls behind it is not navigation,
+		// it is a surprise, and an empty tab still answers the question it was
+		// asked: no, there is nothing here at the moment.
+		$tabs = ( 'tabs' === $atts['layout'] ) && ( 'both' === $show );
 
 		// Headings are only useful when both sections can appear together, and
 		// never alongside the tabs, which name the sections already.
 		$headings = ( 'yes' === $atts['headings'] ) && ( 'both' === $show ) && ! $tabs;
 		$out      = '<div class="ff-polls-archive ff-polls-archive--' . esc_attr( $show ) . ( $tabs ? ' ff-polls-archive--tabs' : '' ) . '">';
 
-		if ( empty( $open ) && empty( $closed ) ) {
+		if ( empty( $open ) && empty( $closed ) && ! $tabs ) {
 			// A caller that supplied its own empty-state copy owns this moment
 			// entirely, including choosing to say nothing.
 			if ( null !== $empty ) {
@@ -764,25 +772,29 @@ class FF_Polls {
 			$out .= self::tab_bar( $labels, array( 'open' => count( $open ), 'past' => count( $closed ) ), $uid );
 		}
 
-		if ( ! empty( $open ) ) {
-			if ( $headings ) {
-				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['open'], count( $open ) ) . '</h2>';
+		foreach ( array( 'open' => $open, 'past' => $closed ) as $which => $ids_in ) {
+			// Stacked, an empty section is simply not drawn. Tabbed, the tab
+			// exists either way, so the panel behind it has to say something.
+			if ( empty( $ids_in ) && ! $tabs ) {
+				continue;
 			}
-			$out .= self::panel_open( 'open', $uid, $tabs, true );
-			foreach ( $open as $id ) {
-				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id, array(), $text ) . '</div>';
-			}
-			$out .= self::panel_close( $tabs );
-		}
 
-		if ( ! empty( $closed ) ) {
-			if ( $headings ) {
-				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels['past'], count( $closed ) ) . '</h2>';
+			if ( $headings && ! empty( $ids_in ) ) {
+				$out .= '<h2 class="ff-polls-archive-heading">' . self::label_html( $labels[ $which ], count( $ids_in ) ) . '</h2>';
 			}
-			$out .= self::panel_open( 'past', $uid, $tabs, empty( $open ) );
-			foreach ( $closed as $id ) {
+
+			// The current polls lead, always. A member arriving at the page is
+			// being asked something, not shown an archive.
+			$out .= self::panel_open( $which, $uid, $tabs, 'open' === $which );
+
+			if ( empty( $ids_in ) ) {
+				$out .= '<p class="ff-empty-note">' . FF_Text::inline( $blanks[ $which ] ) . '</p>';
+			}
+
+			foreach ( $ids_in as $id ) {
 				$out .= '<div class="ff-polls-archive-item">' . self::render_poll( $id, array(), $text ) . '</div>';
 			}
+
 			$out .= self::panel_close( $tabs );
 		}
 
