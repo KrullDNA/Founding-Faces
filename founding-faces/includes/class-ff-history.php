@@ -503,7 +503,24 @@ class FF_History {
 		$paging  = in_array( $paging, array( 'more', 'numbers', 'both' ), true ) ? $paging : 'more';
 		$sizes   = self::page_sizes( $per_page );
 
-		$out  = '<section class="ff-history-section ff-notes-section" data-paging="' . esc_attr( $paging ) . '">';
+		$extra = wp_parse_args( $extra, array(
+			'image'   => false,
+			'excerpt' => 0,
+		) );
+
+		// These describe how a row is built, so they live on the section
+		// rather than on the Load more button. The button comes and goes with
+		// the number of notes, and a filter that leaves two of them took the
+		// settings away with it, which is how a filtered list ended up as
+		// bare headings.
+		$out  = '<section class="ff-history-section ff-notes-section"'
+			. ' data-paging="' . esc_attr( $paging ) . '"'
+			. ' data-link="' . ( $link ? '1' : '0' ) . '"'
+			. ' data-new-tab="' . ( $new_tab ? '1' : '0' ) . '"'
+			. ' data-show-product="' . ( $show_product ? '1' : '0' ) . '"'
+			. ' data-image="' . ( ! empty( $extra['image'] ) ? '1' : '0' ) . '"'
+			. ' data-excerpt="' . absint( $extra['excerpt'] ) . '"'
+			. ' data-nonce="' . esc_attr( wp_create_nonce( 'ff_load_notes' ) ) . '">';
 		$out .= '<h3 class="ff-history-heading">' . FF_Text::inline( $heading ) . '</h3>';
 		$out .= self::note_filter_bar( $show );
 

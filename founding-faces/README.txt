@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.49
+Stable tag: 1.1.50
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.50 =
+* Fixed: filtering the notes list brought the rows back as bare headings,
+  without the picture, the blurb or the date under the title, while the
+  unfiltered page above had all three.
+* Two faults behind it. The settings that describe how a row is built lived on
+  the Load more button, which only exists while there are more notes to load,
+  so a filter leaving a handful of notes took them away with it. They now live
+  on the section, which is always there. And the script was never sending the
+  picture and blurb settings at all, so even with the button present the
+  server had to guess.
 
 = 1.1.49 =
 * Fixed: a note with a long title dropped its whole text column below the
