@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.44
+Stable tag: 1.1.45
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,11 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.45 =
+* Fixed: the image diagnostics switch was registered in the Video section
+  rather than the Gallery one, so it sat under a heading nothing to do with
+  it. It is now in Gallery, under "Clicking an image".
 
 = 1.1.44 =
 * A "Show image diagnostics" switch on the Note Gallery widget. Under each
