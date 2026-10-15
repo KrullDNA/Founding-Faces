@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.45
+Stable tag: 1.1.46
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,16 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.46 =
+* The diagnostics now account for the crop. With "crop to fill", an upright
+  frame on a landscape photograph is filled by its height and most of its
+  width is discarded, so measuring width against width reported room to spare
+  where there was none. It reads the actual fit and scales by the edge that
+  governs.
+* It also reports what the file weighs, in kilobytes and per megapixel, which
+  is how an over-compressed re-encode gives itself away: full resolution,
+  almost no bytes. Under about 120KB per megapixel is worth a look.
 
 = 1.1.45 =
 * Fixed: the image diagnostics switch was registered in the Video section

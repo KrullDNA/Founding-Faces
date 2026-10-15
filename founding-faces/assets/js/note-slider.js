@@ -39,19 +39,53 @@
 		var show = function () {
 			var box = img.getBoundingClientRect();
 			var dpr = window.devicePixelRatio || 1;
-			// What the box asks for in real pixels, against what the file has.
-			var wanted = Math.round( box.width * dpr );
-			var have = img.naturalWidth || 0;
-			var ratio = have ? ( wanted / have ) : 0;
-			var file = ( img.currentSrc || img.src || '' ).split( '/' ).pop().split( '?' )[ 0 ];
+			var natW = img.naturalWidth || 0;
+			var natH = img.naturalHeight || 0;
+			var src = img.currentSrc || img.src || '';
+			var file = src.split( '/' ).pop().split( '?' )[ 0 ];
+
+			// The crop has to be in this sum. With object-fit: cover the frame
+			// is filled by whichever edge runs out first, so a landscape photo
+			// in an upright frame is scaled by its height and most of its
+			// width is thrown away. Measuring width against width says there
+			// is room to spare when there is not.
+			var fit = 'fill';
+			if ( window.getComputedStyle ) {
+				fit = window.getComputedStyle( img ).objectFit || 'fill';
+			}
+
+			var byW = natW ? ( box.width / natW ) : 0;
+			var byH = natH ? ( box.height / natH ) : 0;
+			var scale = byW;
+			if ( fit === 'cover' ) {
+				scale = Math.max( byW, byH );
+			} else if ( fit === 'contain' ) {
+				scale = Math.min( byW, byH );
+			}
+			scale = scale * dpr;
+
+			// What the file actually weighs, which is how an over-compressed
+			// re-encode gives itself away: full resolution, almost no bytes.
+			var weight = '';
+			if ( window.performance && performance.getEntriesByName ) {
+				var hit = performance.getEntriesByName( src )[ 0 ];
+				var bytes = hit ? ( hit.encodedBodySize || hit.transferSize || 0 ) : 0;
+				if ( bytes > 0 ) {
+					var kb = Math.round( bytes / 1024 );
+					var perMp = ( natW * natH ) ? Math.round( kb / ( ( natW * natH ) / 1000000 ) ) : 0;
+					weight = ' · ' + kb + 'KB (' + perMp + 'KB per megapixel'
+						+ ( perMp > 0 && perMp < 120 ? ', heavily compressed' : '' ) + ')';
+				}
+			}
 
 			live.textContent =
-				'loaded ' + file + ' at ' + have + 'x' + ( img.naturalHeight || 0 ) +
+				'loaded ' + file + ' at ' + natW + 'x' + natH +
 				' · box ' + Math.round( box.width ) + 'x' + Math.round( box.height ) +
-				' at ' + dpr + 'x = needs ' + wanted + 'px wide' +
-				' · ' + ( ratio > 1.05
-					? 'enlarged ' + ratio.toFixed( 2 ) + 'x'
-					: 'no enlargement' );
+				' at ' + dpr + 'x, fit ' + fit +
+				' · ' + ( scale > 1.05
+					? 'ENLARGED ' + scale.toFixed( 2 ) + 'x'
+					: 'scale ' + scale.toFixed( 2 ) + 'x, enough detail' ) +
+				weight;
 		};
 
 		if ( img.complete && img.naturalWidth ) {
