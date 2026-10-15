@@ -58,6 +58,11 @@ class FF_Post_Types {
 	const META_NOTE_NATURAL = 'ff_note_natural';
 	const META_NOTE_STAGE   = 'ff_note_stage';
 	const META_NOTE_GALLERY = 'ff_note_gallery';
+
+	// YouTube and Vimeo links, in the order they should appear. They sit
+	// beside the gallery rather than in it: the gallery holds things this site
+	// owns, and these are links to somewhere else.
+	const META_NOTE_VIDEOS = 'ff_note_videos';
 	const META_NOTE_AUDIENCE = 'ff_note_audience';
 
 	// The label a member carries after giving feedback on this note.
@@ -499,6 +504,12 @@ class FF_Post_Types {
 			'show_in_rest'      => false,
 			'sanitize_callback' => array( __CLASS__, 'sanitize_id_list' ),
 			'auth_callback'     => $edit,
+		) );
+		register_post_meta( self::NOTE_CPT, self::META_NOTE_VIDEOS, array(
+			'type'          => 'array',
+			'single'        => true,
+			'show_in_rest'  => false,
+			'auth_callback' => $edit,
 		) );
 		register_post_meta( self::NOTE_CPT, self::META_NOTE_AUDIENCE, array(
 			'type'              => 'string',
@@ -964,7 +975,50 @@ class FF_Post_Types {
 					<p class="description"><?php esc_html_e( 'Images and video, in the order you choose them. A video plays where it sits, so keep clips short: the whole file is served from this site, with nothing to step the quality down on a slow connection.', 'founding-faces' ); ?></p>
 				</td>
 			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Video links', 'founding-faces' ); ?></th>
+				<td>
+					<div id="ff-note-videos">
+						<?php
+						$videos = self::note_videos( $post->ID );
+						foreach ( $videos as $url ) {
+							self::render_video_row( $url );
+						}
+						?>
+					</div>
+					<button type="button" class="button" id="ff-note-add-video"><?php esc_html_e( 'Add a video link', 'founding-faces' ); ?></button>
+					<p class="description"><?php esc_html_e( 'YouTube or Vimeo, one per row, shown after the gallery in the order listed. They cost this site nothing to serve and adapt to a weak connection, but a link is a link: anyone who has it can watch, members or not.', 'founding-faces' ); ?></p>
+					<script type="text/html" id="ff-note-video-template"><?php self::render_video_row( '' ); ?></script>
+				</td>
+			</tr>
 		</table>
+		<?php
+	}
+
+	/**
+	 * The video links stored against a note.
+	 *
+	 * @param int $note_id The note.
+	 * @return string[]
+	 */
+	public static function note_videos( $note_id ) {
+		$urls = get_post_meta( absint( $note_id ), self::META_NOTE_VIDEOS, true );
+
+		return is_array( $urls ) ? array_values( array_filter( array_map( 'trim', $urls ) ) ) : array();
+	}
+
+	/**
+	 * One row of the video-link repeater.
+	 *
+	 * @param string $url The link, or an empty string for a blank row.
+	 */
+	private static function render_video_row( $url ) {
+		?>
+		<p class="ff-video-row">
+			<input type="url" name="ff_note_videos[]" class="large-text code" value="<?php echo esc_attr( $url ); ?>"
+				placeholder="https://www.youtube.com/watch?v=…" />
+			<button type="button" class="button ff-video-remove" aria-label="<?php esc_attr_e( 'Remove this link', 'founding-faces' ); ?>">&times;</button>
+		</p>
 		<?php
 	}
 
@@ -1057,5 +1111,17 @@ class FF_Post_Types {
 
 		// Gallery CSV of attachment ids.
 		update_post_meta( $post_id, self::META_NOTE_GALLERY, self::sanitize_id_list( isset( $_POST['ff_note_gallery'] ) ? wp_unslash( $_POST['ff_note_gallery'] ) : '' ) );
+
+		// Video links, in the order they were left in, blanks dropped.
+		$videos = array();
+		if ( isset( $_POST['ff_note_videos'] ) && is_array( $_POST['ff_note_videos'] ) ) {
+			foreach ( wp_unslash( $_POST['ff_note_videos'] ) as $url ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$url = esc_url_raw( trim( (string) $url ) );
+				if ( '' !== $url ) {
+					$videos[] = $url;
+				}
+			}
+		}
+		update_post_meta( $post_id, self::META_NOTE_VIDEOS, $videos );
 	}
 }

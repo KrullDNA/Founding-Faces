@@ -77,6 +77,22 @@
 			frame.open();
 		} );
 
+		// The video-link repeater: rows cloned from a hidden template, in the
+		// order they are left in.
+		var $videos = $( '#ff-note-videos' );
+		var videoRow = $( '#ff-note-video-template' ).html();
+
+		$( '#ff-note-add-video' ).on( 'click', function ( e ) {
+			e.preventDefault();
+			$videos.append( videoRow );
+			$videos.find( 'input' ).last().trigger( 'focus' );
+		} );
+
+		$videos.on( 'click', '.ff-video-remove', function ( e ) {
+			e.preventDefault();
+			$( this ).closest( '.ff-video-row' ).remove();
+		} );
+
 		// Clear the whole gallery.
 		$( '#ff_note_gallery_clear' ).on( 'click', function ( e ) {
 			e.preventDefault();

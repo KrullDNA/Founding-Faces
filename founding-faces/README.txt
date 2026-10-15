@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.47
+Stable tag: 1.1.48
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,19 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.48 =
+* Video links on a note, as a repeater: add as many YouTube or Vimeo links as
+  you like, in the order you want them, and they follow the gallery in the
+  slider. They cost the site nothing to serve and adapt to a weak connection,
+  but a link is a link, so anyone who has it can watch.
+* Clicking a linked video opens it in the lightbox at its own proportions,
+  which is the only way to watch a 16:9 clip properly from a square gallery.
+* An uploaded clip now fits inside the frame rather than being cropped to it.
+  A still cropped to a square loses its edges, which is usually fine; a 16:9
+  clip cropped to a square loses a third of what is going on.
+* The gallery's height control governs the player and the embed as well as
+  the images, so one frame still holds all three.
 
 = 1.1.47 =
 * A gallery holding one image now opens a single image in the lightbox. It was

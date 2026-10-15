@@ -335,7 +335,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 		// Naming both covers the site with an optimiser and the site without.
 		// The video is named alongside the image throughout, so a gallery of
 		// both sits in one frame rather than two different ones.
-		$sel = '{{WRAPPER}} .ff-slide-img, {{WRAPPER}} .ff-slide-img img, {{WRAPPER}} .ff-slide-video';
+		$sel = '{{WRAPPER}} .ff-slide-img, {{WRAPPER}} .ff-slide-img img, {{WRAPPER}} .ff-slide-video, {{WRAPPER}} .ff-slide-embed';
 
 		// None of these carries a condition either. A condition is evaluated
 		// again when the front end's stylesheet is written, separately from the
@@ -353,7 +353,10 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'size_units'  => array( 'px', 'vh' ),
 			'range'       => array( 'px' => array( 'min' => 80, 'max' => 900 ) ),
 			'description' => __( 'Left empty, each image keeps its own proportions and the two settings below do nothing.', 'founding-faces' ),
-			'selectors'   => array( $sel => 'height: {{SIZE}}{{UNIT}};' ),
+			'selectors'   => array(
+				$sel                             => 'height: {{SIZE}}{{UNIT}};',
+				'{{WRAPPER}} .ff-slide-embed'    => 'aspect-ratio: auto;',
+			),
 		) );
 
 		$this->add_responsive_control( 'img_fit', array(
