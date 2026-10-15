@@ -202,20 +202,89 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 		$this->end_controls_section();
 
 		/* ------------------------------------------------ Frame & styling -- */
+		$this->start_controls_section( 'ff_map_legend_style', array(
+			'label'     => __( 'Key', 'founding-faces' ),
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'legend_show' => 'yes' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'lg_typo',
+			'label'    => __( 'Typography', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-map-legend',
+		) );
+		$this->add_control( 'lg_color', array(
+			'label'     => __( 'Text colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-map-legend' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'lg_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'separator' => 'before',
+			'selectors' => array( '{{WRAPPER}} .ff-map-legend' => 'background: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'lg_border',
+			'selector' => '{{WRAPPER}} .ff-map-legend',
+		) );
+		$this->add_responsive_control( 'lg_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-legend' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'lg_shadow',
+			'selector' => '{{WRAPPER}} .ff-map-legend',
+		) );
+		$this->add_responsive_control( 'lg_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-legend' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'lg_offset', array(
+			'label'      => __( 'Distance from the map edge', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-legend' => 'margin: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'lg_gap', array(
+			'label'      => __( 'Space between the lines', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-legend-item' => 'margin-bottom: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'lg_dot_gap', array(
+			'label'      => __( 'Space between a dot and its label', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-legend-item' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
 		$this->start_controls_section( 'ff_map_count_style', array(
 			'label'     => __( 'Member count', 'founding-faces' ),
 			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
-			'condition' => array( 'count_show' => 'yes', 'count_position!' => 'legend' ),
+			'condition' => array( 'count_show' => 'yes' ),
 		) );
+
+		// Both homes, named together. The count is one line of copy wherever
+		// it sits, so one set of controls governs it rather than the controls
+		// changing under you when the position does.
+		$mc = '{{WRAPPER}} .ff-map-count, {{WRAPPER}} .ff-map-legend-count';
 		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
 			'name'     => 'mc_typo',
 			'label'    => __( 'Typography', 'founding-faces' ),
-			'selector' => '{{WRAPPER}} .ff-map-count',
+			'selector' => $mc,
 		) );
 		$this->add_control( 'mc_color', array(
 			'label'     => __( 'Colour', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
-			'selectors' => array( '{{WRAPPER}} .ff-map-count' => 'color: {{VALUE}};' ),
+			'selectors' => array( $mc => 'color: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'mc_align', array(
 			'label'     => __( 'Alignment', 'founding-faces' ),
@@ -225,39 +294,109 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 				'center' => array( 'title' => __( 'Centre', 'founding-faces' ), 'icon' => 'eicon-text-align-center' ),
 				'right'  => array( 'title' => __( 'Right', 'founding-faces' ), 'icon' => 'eicon-text-align-right' ),
 			),
-			'selectors' => array( '{{WRAPPER}} .ff-map-count' => 'text-align: {{VALUE}};' ),
+			'selectors' => array( $mc => 'text-align: {{VALUE}};' ),
 		) );
 		$this->add_control( 'mc_bg', array(
 			'label'     => __( 'Background', 'founding-faces' ),
 			'type'      => \Elementor\Controls_Manager::COLOR,
 			'separator' => 'before',
-			'selectors' => array( '{{WRAPPER}} .ff-map-count' => 'background-color: {{VALUE}};' ),
+			'selectors' => array( $mc => 'background-color: {{VALUE}};' ),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
 			'name'     => 'mc_border',
-			'selector' => '{{WRAPPER}} .ff-map-count',
+			'selector' => $mc,
 		) );
 		$this->add_responsive_control( 'mc_radius', array(
 			'label'      => __( 'Corner radius', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
 			'size_units' => array( 'px', '%' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-map-count' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'selectors'  => array( $mc => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 		$this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), array(
 			'name'     => 'mc_shadow',
-			'selector' => '{{WRAPPER}} .ff-map-count',
+			'selector' => $mc,
 		) );
 		$this->add_responsive_control( 'mc_padding', array(
 			'label'      => __( 'Padding', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
 			'size_units' => array( 'px', 'em' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-map-count' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'selectors'  => array( $mc => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 		$this->add_responsive_control( 'mc_margin', array(
 			'label'      => __( 'Margin', 'founding-faces' ),
 			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
 			'size_units' => array( 'px', 'em', 'rem' ),
-			'selectors'  => array( '{{WRAPPER}} .ff-map-count' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'selectors'  => array( $mc => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'mcn_heading', array(
+			'label'       => __( 'The number itself', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::HEADING,
+			'separator'   => 'before',
+			'description' => __( 'Styles whatever {count}, {the35} and {circle} put on the page, apart from the words around them.', 'founding-faces' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'mcn_typo',
+			'label'    => __( 'Typography', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-map-count-number',
+		) );
+		$this->add_control( 'mcn_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-map-count-number' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'mcn_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-map-count-number' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'mcn_border',
+			'selector' => '{{WRAPPER}} .ff-map-count-number',
+		) );
+		$this->add_responsive_control( 'mcn_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count-number' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'mcn_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count-number' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'mc_rule', array(
+			'label'        => __( 'Line above', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'separator'    => 'before',
+			'description'  => __( 'A rule between the keys and the total, for when the two want separating.', 'founding-faces' ),
+			'selectors'    => array( $mc => 'border-top-style: solid;' ),
+		) );
+		$this->add_control( 'mc_rule_color', array(
+			'label'     => __( 'Line colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'condition' => array( 'mc_rule' => 'yes' ),
+			'selectors' => array( $mc => 'border-top-color: {{VALUE}};' ),
+		) );
+		$this->add_responsive_control( 'mc_rule_width', array(
+			'label'     => __( 'Line thickness', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'range'     => array( 'px' => array( 'min' => 1, 'max' => 10 ) ),
+			'default'   => array( 'size' => 1, 'unit' => 'px' ),
+			'condition' => array( 'mc_rule' => 'yes' ),
+			'selectors' => array( $mc => 'border-top-width: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'mc_rule_gap', array(
+			'label'     => __( 'Space above the line', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'em' ),
+			'range'     => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'condition' => array( 'mc_rule' => 'yes' ),
+			'selectors' => array( $mc => 'margin-top: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->end_controls_section();
 

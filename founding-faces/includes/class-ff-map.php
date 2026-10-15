@@ -444,10 +444,17 @@ class FF_Map {
 			/* translators: %s is a placeholder for the number of members. */
 			: __( '{count} founding faces across Australia', 'founding-faces' );
 
+		// Each figure is wrapped, so the number can be styled apart from the
+		// words around it. A number that is the whole point of the line
+		// usually wants to be bigger than the sentence carrying it.
+		$figure = function ( $value ) {
+			return '<span class="ff-map-count-number">' . number_format_i18n( $value ) . '</span>';
+		};
+
 		return strtr( FF_Text::inline( $template ), array(
-			'{count}'  => number_format_i18n( $total ),
-			'{the35}'  => number_format_i18n( $in_35 ),
-			'{circle}' => number_format_i18n( max( 0, $total - $in_35 ) ),
+			'{count}'  => $figure( $total ),
+			'{the35}'  => $figure( $in_35 ),
+			'{circle}' => $figure( max( 0, $total - $in_35 ) ),
 		) );
 	}
 
