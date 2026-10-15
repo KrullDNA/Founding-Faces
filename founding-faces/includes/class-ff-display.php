@@ -1934,13 +1934,12 @@ class FF_Display {
 				continue;
 			}
 
-			$img = wp_get_attachment_image( $id, $args['size'], false, array(
-				'class'   => 'ff-slide-img',
-				'loading' => 'lazy',
-			) );
+			$img = self::slide_image( $id, $args['size'] );
 			if ( ! $img ) {
 				continue;
 			}
+
+			$img .= self::image_debug( $id, $args );
 
 			$slides[] = self::slide_html( $img, wp_get_attachment_image_url( $id, 'full' ), $caption, $args );
 		}
@@ -1950,6 +1949,84 @@ class FF_Display {
 		}
 
 		return self::slider_html( $slides, $args );
+	}
+
+	/**
+	 * One image for the slider, at the size the widget asked for.
+	 *
+	 * Asking for Full and getting something smaller is the usual reason a
+	 * gallery looks soft. WordPress offers the browser every size it made and
+	 * a guess at how wide the slot is, and the guess comes from the file
+	 * rather than from the page, so in a container wider than the original the
+	 * browser can settle on a smaller file than the one that was chosen. With
+	 * Full chosen, the list is withheld and the full file is the only option.
+	 *
+	 * None of this invents detail. An image smaller than the space it is given
+	 * is enlarged, and the only cure for that is a bigger photograph.
+	 *
+	 * @param int    $id   The attachment.
+	 * @param string $size The registered size.
+	 * @return string
+	 */
+	private static function slide_image( $id, $size ) {
+		$attr = array(
+			'class'   => 'ff-slide-img',
+			'loading' => 'lazy',
+		);
+
+		if ( 'full' !== $size ) {
+			return wp_get_attachment_image( $id, $size, false, $attr );
+		}
+
+		add_filter( 'wp_calculate_image_srcset', '__return_false' );
+		$img = wp_get_attachment_image( $id, 'full', false, $attr );
+		remove_filter( 'wp_calculate_image_srcset', '__return_false' );
+
+		return $img;
+	}
+
+	/**
+	 * What this image actually is, for working out why it looks soft.
+	 *
+	 * Administrators only, and only when the widget asks for it. The numbers
+	 * the browser fills in are added by the slider script: the server knows
+	 * what it sent, and only the browser knows what was chosen and how big it
+	 * ended up on screen.
+	 *
+	 * @param int   $id   The attachment.
+	 * @param array $args The slider options.
+	 * @return string
+	 */
+	private static function image_debug( $id, $args ) {
+		if ( empty( $args['debug'] ) || ! current_user_can( 'manage_options' ) ) {
+			return '';
+		}
+
+		$meta = wp_get_attachment_metadata( $id );
+		$w    = isset( $meta['width'] ) ? (int) $meta['width'] : 0;
+		$h    = isset( $meta['height'] ) ? (int) $meta['height'] : 0;
+
+		$sizes = array();
+		if ( ! empty( $meta['sizes'] ) && is_array( $meta['sizes'] ) ) {
+			foreach ( $meta['sizes'] as $name => $data ) {
+				$sizes[] = $name . ' ' . (int) $data['width'] . 'x' . (int) $data['height'];
+			}
+		}
+
+		$out  = '<div class="ff-slide-debug" data-ff-debug="1">';
+		$out .= '<strong>#' . (int) $id . '</strong> ';
+		$out .= esc_html( sprintf(
+			/* translators: 1: width, 2: height, 3: the requested size name. */
+			__( 'original %1$dx%2$d, asked for %3$s', 'founding-faces' ),
+			$w,
+			$h,
+			$args['size']
+		) );
+		$out .= '<br /><span class="ff-slide-debug-live">' . esc_html__( 'measuring…', 'founding-faces' ) . '</span>';
+		$out .= '<br /><span class="ff-slide-debug-sizes">' . esc_html( implode( ', ', $sizes ) ) . '</span>';
+		$out .= '</div>';
+
+		return $out;
 	}
 
 	/**
@@ -2017,6 +2094,8 @@ class FF_Display {
 			'video_autoplay' => false,
 			'video_loop'     => false,
 			'video_muted'    => false,
+			// Administrator-only readout of what each image really is.
+			'debug'          => false,
 		) );
 	}
 

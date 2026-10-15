@@ -216,6 +216,15 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'label' => __( 'Video', 'founding-faces' ),
 		) );
 
+		$this->add_control( 'debug_images', array(
+			'label'        => __( 'Show image diagnostics', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'separator'    => 'before',
+			'description'  => __( 'A readout under each image: what the file really is, which one the browser chose, how big the frame ended up, and how far the file had to be enlarged to fill it. Visible to administrators only, so it can be left on while you work. Anything above about 1.2x will look soft.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'video_note', array(
 			'type'            => \Elementor\Controls_Manager::RAW_HTML,
 			'raw'             => esc_html__( 'Video is part of the gallery, not a section of its own. Add a clip to the note in the same place as the images and it takes its turn in the order you chose.', 'founding-faces' ),
@@ -332,6 +341,12 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 		// again when the front end's stylesheet is written, separately from the
 		// editor's, and one that answers differently in the two places gives a
 		// setting that looks applied while designing and is absent on the page.
+		$this->add_control( 'img_note', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'A frame larger than the photograph in it enlarges the photograph, and a crop uses only part of what is there, so a tall square frame on a wide image uses the middle of it and enlarges that. For a gallery this size, upload at around 2000px on the long edge.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
 		$this->add_responsive_control( 'img_height', array(
 			'label'       => __( 'Image height', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SLIDER,
@@ -695,6 +710,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'video_autoplay' => isset( $s['video_autoplay'] ) && 'yes' === $s['video_autoplay'],
 			'video_loop'     => isset( $s['video_loop'] ) && 'yes' === $s['video_loop'],
 			'video_muted'    => isset( $s['video_muted'] ) && 'yes' === $s['video_muted'],
+			'debug'          => isset( $s['debug_images'] ) && 'yes' === $s['debug_images'],
 		);
 	}
 

@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.42
+Stable tag: 1.1.44
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,26 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.44 =
+* A "Show image diagnostics" switch on the Note Gallery widget. Under each
+  image it prints what the file really is, which file the browser chose, how
+  big the frame ended up, the screen's pixel density, and how far the file had
+  to be enlarged to fill the frame. It also lists every size WordPress made of
+  that image.
+* Administrators only, so it can be left on while you work without a member
+  ever seeing it.
+
+= 1.1.43 =
+* Choosing Full for the gallery now really means full. WordPress hands the
+  browser every size it made plus a guess at how wide the slot is, and that
+  guess comes from the file rather than from the page, so in a container wider
+  than the original the browser could settle on a smaller file than the one
+  chosen. With Full chosen the list is withheld and the full file is the only
+  option.
+* A note in the gallery's image controls about what a frame bigger than the
+  photograph does, and what a crop costs, since neither can be fixed by any
+  setting.
 
 = 1.1.42 =
 * The number has its own controls, apart from the words around it, so
