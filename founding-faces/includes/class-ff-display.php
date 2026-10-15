@@ -1934,10 +1934,7 @@ class FF_Display {
 				continue;
 			}
 
-			$img = wp_get_attachment_image( $id, $args['size'], false, array(
-				'class'   => 'ff-slide-img',
-				'loading' => 'lazy',
-			) );
+			$img = self::slide_image( $id, $args['size'] );
 			if ( ! $img ) {
 				continue;
 			}
@@ -1950,6 +1947,40 @@ class FF_Display {
 		}
 
 		return self::slider_html( $slides, $args );
+	}
+
+	/**
+	 * One image for the slider, at the size the widget asked for.
+	 *
+	 * Asking for Full and getting something smaller is the usual reason a
+	 * gallery looks soft. WordPress offers the browser every size it made and
+	 * a guess at how wide the slot is, and the guess comes from the file
+	 * rather than from the page, so in a container wider than the original the
+	 * browser can settle on a smaller file than the one that was chosen. With
+	 * Full chosen, the list is withheld and the full file is the only option.
+	 *
+	 * None of this invents detail. An image smaller than the space it is given
+	 * is enlarged, and the only cure for that is a bigger photograph.
+	 *
+	 * @param int    $id   The attachment.
+	 * @param string $size The registered size.
+	 * @return string
+	 */
+	private static function slide_image( $id, $size ) {
+		$attr = array(
+			'class'   => 'ff-slide-img',
+			'loading' => 'lazy',
+		);
+
+		if ( 'full' !== $size ) {
+			return wp_get_attachment_image( $id, $size, false, $attr );
+		}
+
+		add_filter( 'wp_calculate_image_srcset', '__return_false' );
+		$img = wp_get_attachment_image( $id, 'full', false, $attr );
+		remove_filter( 'wp_calculate_image_srcset', '__return_false' );
+
+		return $img;
 	}
 
 	/**

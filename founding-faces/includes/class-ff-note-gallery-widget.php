@@ -332,6 +332,12 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 		// again when the front end's stylesheet is written, separately from the
 		// editor's, and one that answers differently in the two places gives a
 		// setting that looks applied while designing and is absent on the page.
+		$this->add_control( 'img_note', array(
+			'type'            => \Elementor\Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'A frame larger than the photograph in it enlarges the photograph, and a crop uses only part of what is there, so a tall square frame on a wide image uses the middle of it and enlarges that. For a gallery this size, upload at around 2000px on the long edge.', 'founding-faces' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
 		$this->add_responsive_control( 'img_height', array(
 			'label'       => __( 'Image height', 'founding-faces' ),
 			'type'        => \Elementor\Controls_Manager::SLIDER,
