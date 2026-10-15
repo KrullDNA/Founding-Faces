@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.46
+Stable tag: 1.1.47
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.47 =
+* A gallery holding one image now opens a single image in the lightbox. It was
+  opening as a slideshow of one, so clicking through took you from the image
+  back to the same image.
+* Two galleries on a page are now two separate slideshows. They shared one
+  group name before, so paging through either could walk into the other one's
+  images.
 
 = 1.1.46 =
 * The diagnostics now account for the crop. With "crop to fill", an upright
