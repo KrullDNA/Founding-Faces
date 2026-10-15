@@ -1908,7 +1908,7 @@ class FF_Display {
 		}
 
 		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $note_id, FF_Post_Types::META_NOTE_GALLERY, true ) ) ) );
-		if ( empty( $ids ) ) {
+		if ( empty( $ids ) && ! FF_Post_Types::note_videos( $note_id ) ) {
 			return '';
 		}
 
@@ -1946,6 +1946,14 @@ class FF_Display {
 			$img .= self::image_debug( $id, $args );
 
 			$slides[] = self::slide_html( $img, wp_get_attachment_image_url( $id, 'full' ), $caption, $args );
+		}
+
+		// The linked videos follow the gallery, in the order they were listed.
+		foreach ( FF_Post_Types::note_videos( $note_id ) as $url ) {
+			$slide = self::embed_slide( $url, '', $args );
+			if ( '' !== $slide ) {
+				$slides[] = $slide;
+			}
 		}
 
 		if ( empty( $slides ) ) {
@@ -1987,6 +1995,42 @@ class FF_Display {
 		remove_filter( 'wp_calculate_image_srcset', '__return_false' );
 
 		return $img;
+	}
+
+	/**
+	 * One linked video as a slide.
+	 *
+	 * The player is given the slide's frame and letterboxes inside it, so a
+	 * 16:9 clip in a square frame keeps its shape rather than losing its
+	 * sides. Clicking opens it in the lightbox at its own proportions, which
+	 * is the only way to see a wide video properly in a square gallery.
+	 *
+	 * @param string $url     The YouTube or Vimeo link.
+	 * @param string $caption Caption HTML, already filtered.
+	 * @param array  $args    Slider options.
+	 * @return string
+	 */
+	private static function embed_slide( $url, $caption, $args ) {
+		$embed = wp_oembed_get( $url, array( 'width' => 1280 ) );
+		if ( ! $embed ) {
+			return '';
+		}
+
+		$inner = '<div class="ff-slide-embed">' . $embed . '</div>';
+
+		// Elementor's lightbox takes a video link directly, which is how a
+		// wide video gets seen whole from a square frame. A cover over the
+		// player, because the player swallows a click meant for the link.
+		if ( 'none' !== $args['link'] ) {
+			$inner .= '<a class="ff-slide-embed-open" href="' . esc_url( $url ) . '"'
+				. ' data-elementor-open-lightbox="yes"'
+				. ' data-elementor-lightbox-video="' . esc_url( $url ) . '"'
+				. ' aria-label="' . esc_attr__( 'Open the video', 'founding-faces' ) . '"></a>';
+		}
+
+		return '<div class="ff-slide"><figure class="ff-slide-figure ff-slide-figure--embed">' . $inner
+			. ( '' !== $caption ? '<figcaption class="ff-slide-caption">' . $caption . '</figcaption>' : '' )
+			. '</figure></div>';
 	}
 
 	/**

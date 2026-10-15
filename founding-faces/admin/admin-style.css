@@ -153,6 +153,14 @@
 	text-overflow: ellipsis;
 }
 
+/* The note's video links --------------------------------------------------- */
+.ff-video-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	max-width: 640px;
+}
+
 /* Poll editor rows --------------------------------------------------------- */
 .ff-poll-row {
 	display: flex;
