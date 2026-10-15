@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.41
+Stable tag: 1.1.42
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,12 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.42 =
+* The number has its own controls, apart from the words around it, so
+  "{count} founding faces across Australia" can carry a large accent figure in
+  an ordinary sentence. Typography, colour, background, border, corner radius
+  and padding, covering {count}, {the35} and {circle} alike.
 
 = 1.1.41 =
 * The member count keeps its full style controls wherever it sits, in the key

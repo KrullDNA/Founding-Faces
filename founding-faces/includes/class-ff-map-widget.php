@@ -329,6 +329,44 @@ class FF_Map_Widget extends \Elementor\Widget_Base {
 			'selectors'  => array( $mc => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 
+		$this->add_control( 'mcn_heading', array(
+			'label'       => __( 'The number itself', 'founding-faces' ),
+			'type'        => \Elementor\Controls_Manager::HEADING,
+			'separator'   => 'before',
+			'description' => __( 'Styles whatever {count}, {the35} and {circle} put on the page, apart from the words around them.', 'founding-faces' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Typography::get_type(), array(
+			'name'     => 'mcn_typo',
+			'label'    => __( 'Typography', 'founding-faces' ),
+			'selector' => '{{WRAPPER}} .ff-map-count-number',
+		) );
+		$this->add_control( 'mcn_color', array(
+			'label'     => __( 'Colour', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-map-count-number' => 'color: {{VALUE}};' ),
+		) );
+		$this->add_control( 'mcn_bg', array(
+			'label'     => __( 'Background', 'founding-faces' ),
+			'type'      => \Elementor\Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .ff-map-count-number' => 'background-color: {{VALUE}};' ),
+		) );
+		$this->add_group_control( \Elementor\Group_Control_Border::get_type(), array(
+			'name'     => 'mcn_border',
+			'selector' => '{{WRAPPER}} .ff-map-count-number',
+		) );
+		$this->add_responsive_control( 'mcn_radius', array(
+			'label'      => __( 'Corner radius', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count-number' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'mcn_padding', array(
+			'label'      => __( 'Padding', 'founding-faces' ),
+			'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .ff-map-count-number' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
 		$this->add_control( 'mc_rule', array(
 			'label'        => __( 'Line above', 'founding-faces' ),
 			'type'         => \Elementor\Controls_Manager::SWITCHER,

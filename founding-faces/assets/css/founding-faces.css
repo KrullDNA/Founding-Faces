@@ -1285,6 +1285,13 @@
 	margin-top: 6px;
 }
 
+/* Whatever {count} put on the page. inline-block so a background, border or
+ * padding set in the editor wraps the figure rather than the line, and
+ * nothing else, since how a number looks is a decision for the panel. */
+.ff-map-count-number {
+	display: inline-block;
+}
+
 /* ==========================================================================
  * Account settings page.
  * ========================================================================== */
