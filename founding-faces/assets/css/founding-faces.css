@@ -961,8 +961,16 @@
 	gap: 0.2rem;
 	min-width: 0;
 	/* Takes the room the thumbnail and the date leave, so a long title wraps
-	 * rather than pushing the date off the end. */
-	flex: 1 1 auto;
+	 * rather than pushing the date off the end.
+	 *
+	 * The zero basis matters on a wrapping row. With "auto" the column asks
+	 * for the width of its longest line before anything is allowed to shrink,
+	 * and a row that wraps decides where things go on that asking size, so one
+	 * long title would drop the whole column below the picture while a short
+	 * one sat beside it. Two cards side by side, laid out differently, for no
+	 * reason a reader could see. From zero it always sits beside the picture
+	 * and takes whatever room is left. */
+	flex: 1 1 0;
 }
 
 /* A note's first image beside its row. Both selectors and the extra weight for

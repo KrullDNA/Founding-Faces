@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.48
+Stable tag: 1.1.49
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,12 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.49 =
+* Fixed: a note with a long title dropped its whole text column below the
+  picture while its neighbours kept theirs beside, so cards in the same grid
+  were laid out differently for no reason a reader could see. The text column
+  now always sits beside the picture and takes whatever room is left.
 
 = 1.1.48 =
 * Video links on a note, as a repeater: add as many YouTube or Vimeo links as
