@@ -1781,6 +1781,26 @@
 	object-position: center center;
 }
 
+/* The image diagnostics. A working tool rather than part of the design, so it
+ * is deliberately plain and deliberately loud, and only an administrator with
+ * the switch turned on ever sees it. */
+.ff-slide-debug {
+	position: relative;
+	z-index: 2;
+	margin: 0;
+	padding: 6px 8px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 11px;
+	line-height: 1.5;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.82);
+	word-break: break-word;
+}
+
+.ff-slide-debug-sizes {
+	opacity: 0.7;
+}
+
 /* The arrows start with no chrome at all: no background, no border, no size
  * of their own beyond the icon they hold. */
 .ff-slider-arrow {

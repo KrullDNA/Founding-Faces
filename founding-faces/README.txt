@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.43
+Stable tag: 1.1.44
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,15 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.44 =
+* A "Show image diagnostics" switch on the Note Gallery widget. Under each
+  image it prints what the file really is, which file the browser chose, how
+  big the frame ended up, the screen's pixel density, and how far the file had
+  to be enlarged to fill the frame. It also lists every size WordPress made of
+  that image.
+* Administrators only, so it can be left on while you work without a member
+  ever seeing it.
 
 = 1.1.43 =
 * Choosing Full for the gallery now really means full. WordPress hands the

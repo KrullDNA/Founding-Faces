@@ -216,6 +216,15 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'label' => __( 'Video', 'founding-faces' ),
 		) );
 
+		$this->add_control( 'debug_images', array(
+			'label'        => __( 'Show image diagnostics', 'founding-faces' ),
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'default'      => '',
+			'separator'    => 'before',
+			'description'  => __( 'A readout under each image: what the file really is, which one the browser chose, how big the frame ended up, and how far the file had to be enlarged to fill it. Visible to administrators only, so it can be left on while you work. Anything above about 1.2x will look soft.', 'founding-faces' ),
+		) );
+
 		$this->add_control( 'video_note', array(
 			'type'            => \Elementor\Controls_Manager::RAW_HTML,
 			'raw'             => esc_html__( 'Video is part of the gallery, not a section of its own. Add a clip to the note in the same place as the images and it takes its turn in the order you chose.', 'founding-faces' ),
@@ -701,6 +710,7 @@ class FF_Note_Gallery_Widget extends FF_Display_Widget_Base {
 			'video_autoplay' => isset( $s['video_autoplay'] ) && 'yes' === $s['video_autoplay'],
 			'video_loop'     => isset( $s['video_loop'] ) && 'yes' === $s['video_loop'],
 			'video_muted'    => isset( $s['video_muted'] ) && 'yes' === $s['video_muted'],
+			'debug'          => isset( $s['debug_images'] ) && 'yes' === $s['debug_images'],
 		);
 	}
 

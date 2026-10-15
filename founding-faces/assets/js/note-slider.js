@@ -24,6 +24,51 @@
 ( function () {
 	'use strict';
 
+	// The image diagnostics, when a gallery has been asked for them. The
+	// server wrote what it sent; this fills in what the browser chose, how big
+	// it ended up, and the difference between the two, which is the number
+	// that actually explains a soft image.
+	function measure( panel ) {
+		var figure = panel.closest( '.ff-slide-figure' ) || panel.parentNode;
+		var img = figure ? figure.querySelector( 'img' ) : null;
+		var live = panel.querySelector( '.ff-slide-debug-live' );
+		if ( ! img || ! live ) {
+			return;
+		}
+
+		var show = function () {
+			var box = img.getBoundingClientRect();
+			var dpr = window.devicePixelRatio || 1;
+			// What the box asks for in real pixels, against what the file has.
+			var wanted = Math.round( box.width * dpr );
+			var have = img.naturalWidth || 0;
+			var ratio = have ? ( wanted / have ) : 0;
+			var file = ( img.currentSrc || img.src || '' ).split( '/' ).pop().split( '?' )[ 0 ];
+
+			live.textContent =
+				'loaded ' + file + ' at ' + have + 'x' + ( img.naturalHeight || 0 ) +
+				' · box ' + Math.round( box.width ) + 'x' + Math.round( box.height ) +
+				' at ' + dpr + 'x = needs ' + wanted + 'px wide' +
+				' · ' + ( ratio > 1.05
+					? 'enlarged ' + ratio.toFixed( 2 ) + 'x'
+					: 'no enlargement' );
+		};
+
+		if ( img.complete && img.naturalWidth ) {
+			show();
+		} else {
+			img.addEventListener( 'load', show );
+		}
+		window.addEventListener( 'resize', show );
+	}
+
+	document.addEventListener( 'DOMContentLoaded', function () {
+		var panels = document.querySelectorAll( '[data-ff-debug]' );
+		for ( var i = 0; i < panels.length; i++ ) {
+			measure( panels[ i ] );
+		}
+	} );
+
 	// How many images are meant to be on show at this screen width.
 	function perView( el ) {
 		var raw = window.getComputedStyle( el ).getPropertyValue( '--ff-slides' );
