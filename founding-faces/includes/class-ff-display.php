@@ -1915,6 +1915,10 @@ class FF_Display {
 		$args   = self::slider_args( $args );
 		$slides = array();
 
+		if ( count( $ids ) > 1 ) {
+			$args['group'] = 'ff-note-gallery-' . $note_id;
+		}
+
 		foreach ( $ids as $id ) {
 			$caption = $args['caption'] ? FF_Text::inline( wp_get_attachment_caption( $id ) ) : '';
 
@@ -2039,8 +2043,9 @@ class FF_Display {
 	 * @return string
 	 */
 	public static function sample_gallery_html( $args = array() ) {
-		$args   = self::slider_args( $args );
-		$slides = array();
+		$args          = self::slider_args( $args );
+		$args['group'] = 'ff-note-gallery-sample';
+		$slides        = array();
 
 		for ( $i = 1; $i <= 5; $i++ ) {
 			$src = self::placeholder_image_src( $i );
@@ -2096,6 +2101,9 @@ class FF_Display {
 			'video_muted'    => false,
 			// Administrator-only readout of what each image really is.
 			'debug'          => false,
+			// The lightbox slideshow this gallery's images belong to. Empty
+			// means each image opens on its own, with nothing to page through.
+			'group'          => '',
 		) );
 	}
 
@@ -2114,7 +2122,17 @@ class FF_Display {
 		if ( 'lightbox' === $args['link'] && $full ) {
 			// Elementor's own lightbox, opened by its data attributes, so the
 			// images share one gallery and the site keeps a single lightbox.
-			$inner = '<a class="ff-slide-link" href="' . esc_url( $full ) . '" data-elementor-open-lightbox="yes" data-elementor-lightbox-slideshow="ff-note-gallery">' . $img . '</a>';
+			// The slideshow attribute is what gives the lightbox its arrows and
+			// its loop. With one image that loop runs from the image back to
+			// the same image, so it is only added when there is somewhere to
+			// go. The group is named after the note as well, so two galleries
+			// on one page are two slideshows rather than one muddled one.
+			$group = '';
+			if ( '' !== (string) $args['group'] ) {
+				$group = ' data-elementor-lightbox-slideshow="' . esc_attr( $args['group'] ) . '"';
+			}
+
+			$inner = '<a class="ff-slide-link" href="' . esc_url( $full ) . '" data-elementor-open-lightbox="yes"' . $group . '>' . $img . '</a>';
 		} elseif ( 'file' === $args['link'] && $full ) {
 			$inner = '<a class="ff-slide-link" href="' . esc_url( $full ) . '" target="_blank" rel="noopener">' . $img . '</a>';
 		}
