@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.40
+Stable tag: 1.1.41
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.41 =
+* The member count keeps its full style controls wherever it sits, in the key
+  as well as above or below the map: typography, colour, alignment,
+  background, border, corner radius, shadow, padding and margin. One set of
+  controls, so they no longer change under you when the position does.
+* A line above the count, for separating the total from the two keys, with
+  its own colour, thickness and the space above it.
+* A new Key style section, which the key box never had: typography, text
+  colour, background, border, corner radius, shadow, padding, how far it sits
+  from the map edge, the space between its lines and the space between a dot
+  and its label.
 
 = 1.1.40 =
 * Fixed: the no-poll message was laid out as though it were a poll, so on a
