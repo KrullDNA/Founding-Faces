@@ -205,7 +205,7 @@ class FF_Admin_Privacy {
 
 		// --- Posting list ---
 		echo '<h3>' . esc_html__( 'Posting list for The 35', 'founding-faces' ) . '</h3>';
-		echo '<p class="description">' . esc_html__( 'One row per active member of The 35, in number order, with their postal address. Anyone who has not filled theirs in yet is still listed, with the address columns empty and Postable set to No, so you can see who to chase. Opens in Excel or Numbers.', 'founding-faces' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Every active member of The 35 in one file, in number order: their postal address in the first columns ready for a mail merge, then their Instagram, their skin concerns, what they wrote when they applied, their email consent and the date they applied. Anyone who has not given an address yet is still listed, with those columns empty and Postable set to No, so the same file says who to chase. Opens in Excel or Numbers.', 'founding-faces' ) . '</p>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="ff_export_35" />';
 		wp_nonce_field( 'ff_export_35' );

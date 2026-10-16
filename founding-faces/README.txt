@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.59
+Stable tag: 1.1.60
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.60 =
+* The posting list now carries what they wrote when they applied as well:
+  Instagram, skin concerns, the answer to "tell us a little about your skin
+  and why you'd like to join", their email consent and the date they applied.
+  The label columns stay first, so the left of the sheet is still ready for a
+  mail merge.
+* "Unit / care of" is now "Unit, level or care of", on the form as well as in
+  the file, with a line explaining what belongs there. It is the optional
+  second line of an address: a level or suite, a building name, or a care-of.
+  A unit number usually goes in the street line, as 3/45 Smith Street.
 
 = 1.1.59 =
 * The 35 can give a postal address, in their own account area, so samples have
