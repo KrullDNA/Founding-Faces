@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.57
+Stable tag: 1.1.58
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,18 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.58 =
+* While test accounts hold numbers, "Approve into The 35" is replaced by a
+  single button reading "Reset the test accounts". There is no version of this
+  where keeping them is right, so there is no longer a question to answer: the
+  button that has to be pressed first is the only one offered.
+* That replaces a confirmation dialog whose wording asked whether to clear the
+  test accounts and whose OK button approved the member anyway. A browser
+  dialog can only say OK and Cancel, so the fix was to stop asking.
+* The button runs the same guarded reset as Privacy & Tools, which refuses
+  outright if a real member holds a number, and it is only ever offered in the
+  state where that guard is already satisfied.
 
 = 1.1.57 =
 * Approving or promoting into The 35 now asks before it acts, in the words
