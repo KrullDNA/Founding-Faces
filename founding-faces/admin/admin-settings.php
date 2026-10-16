@@ -110,9 +110,12 @@ class FF_Settings {
 		register_setting( self::GROUP, FF_Email_Template::OPT_HEADING_WEIGHT, array( 'sanitize_callback' => 'absint' ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_FOOTER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
 		register_setting( self::GROUP, FF_Email_Template::OPT_DISCLAIMER, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_small_print' ) ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_SMALL_SIZE, array( 'sanitize_callback' => 'absint' ) );
+		register_setting( self::GROUP, FF_Email_Template::OPT_SMALL_LEAD, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_line' ) ) );
 
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
 		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
+		register_setting( self::GROUP, FF_Members::OPT_PLACES, array( 'sanitize_callback' => 'absint' ) );
 
 		// The page that hosts the members portal (used by message reply emails).
 		register_setting( self::GROUP, FF_Messages::OPT_PORTAL_PAGE, array( 'sanitize_callback' => 'absint' ) );
@@ -172,6 +175,10 @@ class FF_Settings {
 		$brecv   = get_option( FF_Emails::OPT_RECEIVED_BODY, FF_Emails::default_received_body() );
 		$sdecl   = get_option( FF_Emails::OPT_DECLINE_SUBJECT, FF_Emails::default_decline_subject() );
 		$bdecl   = get_option( FF_Emails::OPT_DECLINE_BODY, FF_Emails::default_decline_body() );
+		$snote   = get_option( FF_Emails::OPT_NOTE_SUBJECT, FF_Emails::default_note_subject() );
+		$bnote   = get_option( FF_Emails::OPT_NOTE_BODY, FF_Emails::default_note_body() );
+		$snote   = '' !== trim( (string) $snote ) ? $snote : FF_Emails::default_note_subject();
+		$bnote   = '' !== trim( (string) $bnote ) ? $bnote : FF_Emails::default_note_body();
 		?>
 		<div class="wrap ff-admin">
 			<h1><?php esc_html_e( 'Founding Faces Settings', 'founding-faces' ); ?></h1>
@@ -309,6 +316,29 @@ class FF_Settings {
 							<textarea name="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"
 								id="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"
 								rows="10" class="large-text code"><?php echo esc_textarea( $bdecl ); ?></textarea>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'New-note email', 'founding-faces' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Sent to The 35 when you press "Send to The 35" on a note, never on publishing. Placeholders: {name} {number} {note_title} {product} {version} {stage} {note_url} {site_name}.', 'founding-faces' ); ?>
+				</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_NOTE_SUBJECT ); ?>"><?php esc_html_e( 'Subject', 'founding-faces' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( FF_Emails::OPT_NOTE_SUBJECT ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_NOTE_SUBJECT ); ?>"
+								type="text" class="large-text" value="<?php echo esc_attr( $snote ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_NOTE_BODY ); ?>"><?php esc_html_e( 'Body', 'founding-faces' ); ?></label></th>
+						<td>
+							<textarea name="<?php echo esc_attr( FF_Emails::OPT_NOTE_BODY ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_NOTE_BODY ); ?>"
+								rows="10" class="large-text code"><?php echo esc_textarea( $bnote ); ?></textarea>
 						</td>
 					</tr>
 				</table>
@@ -522,7 +552,8 @@ class FF_Settings {
 	 * reliably saves "off" (an unchecked checkbox otherwise sends nothing).
 	 */
 	private static function render_applications_section() {
-		$auto = FF_Application::auto_accept_enabled();
+		$auto   = FF_Application::auto_accept_enabled();
+		$places = FF_Members::places();
 		?>
 		<h2><?php esc_html_e( 'New applications', 'founding-faces' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -536,7 +567,24 @@ class FF_Settings {
 						<?php esc_html_e( 'Automatically accept new applicants into The Circle', 'founding-faces' ); ?>
 					</label>
 					<p class="description">
-						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review. Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this, bot submissions never become members.', 'founding-faces' ); ?>
+						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review.  Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this, bot submissions never become members.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Members::OPT_PLACES ); ?>"><?php esc_html_e( 'Places in The 35', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Members::OPT_PLACES ); ?>" id="<?php echo esc_attr( FF_Members::OPT_PLACES ); ?>"
+						type="number" min="1" max="500" value="<?php echo esc_attr( $places ); ?>" style="width:90px;" />
+					<p class="description">
+						<?php
+						echo esc_html( sprintf(
+							/* translators: 1: places taken, 2: places in total. */
+							__( 'Currently %1$d of %2$d taken. Nothing is enforced: the applications screen counts the places and puts a warning around the button once they are all gone, so a thirty-sixth can only happen on purpose. Withdrawing a member frees their place again.', 'founding-faces' ),
+							FF_Members::the_35_count(),
+							$places
+						) );
+						?>
 					</p>
 				</td>
 			</tr>
@@ -646,6 +694,8 @@ class FF_Settings {
 		$btn_txt  = FF_Email_Template::option( FF_Email_Template::OPT_BUTTON_TEXT );
 		$footer   = FF_Email_Template::option( FF_Email_Template::OPT_FOOTER );
 		$small    = FF_Email_Template::option( FF_Email_Template::OPT_DISCLAIMER );
+		$small_sz = FF_Email_Template::option( FF_Email_Template::OPT_SMALL_SIZE );
+		$small_lh = FF_Email_Template::option( FF_Email_Template::OPT_SMALL_LEAD );
 		?>
 		<h2><?php esc_html_e( 'Email design', 'founding-faces' ); ?></h2>
 		<p class="description"><?php esc_html_e( 'The look applied to every programme email, welcome, promotion, password reset and application received. Set it once here.', 'founding-faces' ); ?></p>
@@ -727,6 +777,18 @@ class FF_Settings {
 					<textarea name="<?php echo esc_attr( FF_Email_Template::OPT_DISCLAIMER ); ?>" id="<?php echo esc_attr( FF_Email_Template::OPT_DISCLAIMER ); ?>" rows="5" class="large-text"><?php echo esc_textarea( $small ); ?></textarea>
 					<p class="description">
 						<?php esc_html_e( 'The disclaimer below the card, outside it, in small grey type. Use {site_name} rather than typing the name, so it follows the site between staging and live. Clear the field to leave it off entirely.', 'founding-faces' ); ?>
+					</p>
+					<p>
+						<label><?php esc_html_e( 'Size (px)', 'founding-faces' ); ?>
+							<input name="<?php echo esc_attr( FF_Email_Template::OPT_SMALL_SIZE ); ?>" type="number" min="8" max="20"
+								value="<?php echo esc_attr( $small_sz ); ?>" style="width:70px;" /></label>
+						&nbsp;&nbsp;
+						<label><?php esc_html_e( 'Line height', 'founding-faces' ); ?>
+							<input name="<?php echo esc_attr( FF_Email_Template::OPT_SMALL_LEAD ); ?>" type="number" min="0.8" max="3" step="0.05"
+								value="<?php echo esc_attr( $small_lh ); ?>" style="width:80px;" /></label>
+					</p>
+					<p class="description">
+						<?php esc_html_e( 'Line height is a multiple of the size, so 1 sets the lines solid and 1.55 is the shipped setting. The unsubscribe link below takes both, so the two read as one block.', 'founding-faces' ); ?>
 					</p>
 					<p class="description">
 						<?php esc_html_e( 'The Unsubscribe link sits under this, on the welcome and promotion emails. It is not offered on the password reset (that one was asked for and has to arrive) or on the application emails, where there is no account and so no list to leave. One click takes the member off the list here and on your email platform, leaves their account, number and history untouched, and emails you so you can follow it up if it is one of The 35.', 'founding-faces' ); ?>

@@ -344,9 +344,23 @@ class FF_Emails {
 			return false;
 		}
 
+		// Everywhere else, blank means nobody wrote one rather than somebody
+		// wanting none. A stored option beats its default even when it is
+		// empty, and saving a settings screen writes every option registered
+		// on it, including any without a field on the page, so a template can
+		// end up blank without anyone emptying it. A blank body is an empty
+		// email and a blank subject is one the mail service refuses outright.
+		if ( '' === trim( (string) $body_tpl ) ) {
+			$body_tpl = $spec['body_default'];
+		}
+
 		$subject_tpl = '' !== $spec['subject_option']
 			? get_option( $spec['subject_option'], $spec['subject_default'] )
 			: $spec['subject_default'];
+
+		if ( '' === trim( (string) $subject_tpl ) ) {
+			$subject_tpl = $spec['subject_default'];
+		}
 
 		// The subject line and the heading are deliberately different sentences.
 		// A subject has to earn a click from a crowded inbox; a heading is read
@@ -464,6 +478,14 @@ class FF_Emails {
 	 */
 	private static function deliver( $to, $message ) {
 		if ( ! $message || ! is_email( $to ) ) {
+			return false;
+		}
+
+		// A mail service refuses an email with no subject, and it refuses it
+		// after the send has been attempted, so the failure arrives as a
+		// notice from somewhere else entirely. Caught here, where it can still
+		// be read as what it is.
+		if ( '' === trim( (string) $message['subject'] ) ) {
 			return false;
 		}
 		return wp_mail( $to, $message['subject'], $message['html'], self::headers() );

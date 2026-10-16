@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.52
+Stable tag: 1.1.57
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,61 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.57 =
+* Approving or promoting into The 35 now asks before it acts, in the words
+  that matter at that moment. While test accounts still hold numbers it says
+  so and warns that a real number blocks the test reset for good. With every
+  place taken it says that instead, and warns about making a thirty-sixth. A
+  banner at the top of a screen is easy to scroll past; a question at the
+  moment of clicking is not.
+* Approving into The Circle is unaffected, since it issues no number and
+  closes no door.
+
+= 1.1.56 =
+* The applications screen warns, while test accounts still hold numbers and no
+  real member has one yet, that they must be cleared before the first real
+  approval. The guarded reset refuses to run once a real number exists, and
+  the numbering cannot be put back afterwards, so this is the one moment the
+  warning is useful.
+* A "Delete test account" button on each test account in Privacy & Tools,
+  which works whether or not the reset is still available. It removes that
+  account, its votes and its history, and retires its number.
+
+= 1.1.55 =
+* The applications screen now counts The 35. A line at the top reads "The 35:
+  28 of 35 places taken", and says how many of those are test accounts, since
+  test accounts take real numbers.
+* Once every place is taken, the button that would create a thirty-sixth is
+  wrapped in a red box saying so, and asks for confirmation. The same goes for
+  "Promote → The 35" on a Circle member.
+* Nothing is blocked. A member can leave and their place is genuinely free
+  again, and a plugin that refused would be in the way. It only makes the
+  consequence impossible to walk past.
+* Withdrawing a member frees their place. Their number stays retired, as it
+  always has, so it is never issued twice.
+* The number of places is a setting, defaulting to 35.
+
+= 1.1.54 =
+* The small print under the email card now takes a size and a line height of
+  its own, both on the Settings screen beside the wording. Line height is a
+  multiple of the size, so 1 sets the lines solid. The unsubscribe link takes
+  the same two, so the pair reads as one block.
+* The phone-sized rule used to force that type to a fixed 12px, which would
+  have overruled the setting. It follows the setting now.
+
+= 1.1.53 =
+* Fixed: sending a note to The 35 failed at the mail service with "subject is
+  required". The new-note email's subject and body were registered as settings
+  but had no fields on the Emails screen, and saving that screen writes every
+  setting registered on it, so both were quietly blanked the first time it was
+  saved.
+* The fields are there now, under "New-note email", with the placeholders
+  listed.
+* Any email template that is blank now falls back to the wording the plugin
+  ships with, rather than sending an empty subject or an empty email. Clearing
+  the declined-application body still means send nothing, since that one is
+  meant to be silenced.
 
 = 1.1.52 =
 * Fixed: the "viewing as" switcher in the toolbar did nothing, while the same

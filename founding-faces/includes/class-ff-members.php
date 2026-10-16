@@ -73,6 +73,11 @@ class FF_Members {
 	// Option: the list of retired numbers, kept for audit and the Stage 12 reset.
 	const OPT_RETIRED = 'ff_retired_numbers';
 
+	// Option: how many places The 35 holds. Thirty-five, as the name says, but
+	// a setting rather than a constant: the name is a promise to members, and
+	// the number behind it should be changeable without a developer.
+	const OPT_PLACES = 'ff_the_35_places';
+
 	// The admin-post action used by every moderation button.
 	const MODERATE_ACTION = 'ff_moderate';
 
@@ -237,6 +242,78 @@ class FF_Members {
 		$next = (int) get_option( self::OPT_SEQUENCE, 0 ) + 1;
 		update_option( self::OPT_SEQUENCE, $next );
 		return $next;
+	}
+
+	/**
+	 * How many places The 35 holds.
+	 *
+	 * @return int
+	 */
+	public static function places() {
+		$places = (int) get_option( self::OPT_PLACES, 35 );
+
+		return $places > 0 ? $places : 35;
+	}
+
+	/**
+	 * How many of those places are taken.
+	 *
+	 * Counts members holding a number who are still active. A withdrawn member
+	 * keeps their number on record, for the audit, but their place is free:
+	 * that is the whole reason for withdrawing somebody.
+	 *
+	 * @return int
+	 */
+	public static function the_35_count() {
+		$ids = get_users( array(
+			'meta_key'     => self::META_NUMBER, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_compare' => 'EXISTS',
+			'fields'       => 'ID',
+		) );
+
+		$count = 0;
+		foreach ( $ids as $id ) {
+			if ( ! get_user_meta( (int) $id, self::META_DEACTIVATED, true ) ) {
+				$count++;
+			}
+		}
+
+		return $count;
+	}
+
+	/**
+	 * How many places are left, never below zero.
+	 *
+	 * @return int
+	 */
+	public static function places_left() {
+		return max( 0, self::places() - self::the_35_count() );
+	}
+
+	/**
+	 * How many of the taken places are held by test accounts.
+	 *
+	 * Test accounts take real numbers on purpose, so they fill real places.
+	 * Worth saying out loud while the programme is being built, so a full
+	 * count is not mistaken for thirty-five actual people.
+	 *
+	 * @return int
+	 */
+	public static function test_places() {
+		$ids = get_users( array(
+			'meta_key'     => self::META_NUMBER, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_compare' => 'EXISTS',
+			'fields'       => 'ID',
+		) );
+
+		$count = 0;
+		foreach ( $ids as $id ) {
+			if ( get_user_meta( (int) $id, self::META_IS_TEST, true ) && ! get_user_meta( (int) $id, self::META_DEACTIVATED, true ) ) {
+				$count++;
+			}
+		}
+
+		return $count;
 	}
 
 	/**
@@ -845,6 +922,44 @@ class FF_Members {
 	 */
 	public static function is_placeholder_email( $email ) {
 		return 1 === preg_match( '/^ff-test-[a-z0-9]+@/i', (string) $email );
+	}
+
+	/**
+	 * Delete one test account and everything it did.
+	 *
+	 * Allowed whenever the account is test-flagged, including after a real
+	 * member has a number and the guarded reset has refused for good. The
+	 * reset is refused then because it rewinds the numbering for everybody;
+	 * removing one test account rewinds nothing, so there is no reason to
+	 * refuse it, and leaving a test account in the programme for ever is a
+	 * worse answer than letting it be deleted one at a time.
+	 *
+	 * @param int $user_id The account to remove.
+	 * @return true|WP_Error
+	 */
+	public static function delete_test_member( $user_id ) {
+		global $wpdb;
+
+		$user_id = absint( $user_id );
+		if ( ! $user_id || ! get_user_meta( $user_id, self::META_IS_TEST, true ) ) {
+			return new WP_Error( 'ff_not_test', __( 'That account is not a test account, so it was not deleted.', 'founding-faces' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		// Their number goes on the retired list, exactly as a withdrawal does,
+		// so it is never handed to anybody else.
+		$number = get_user_meta( $user_id, self::META_NUMBER, true );
+		if ( $number ) {
+			self::retire_number( (int) $number );
+		}
+
+		$wpdb->delete( $wpdb->prefix . 'ff_applications', array( 'user_id' => $user_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'ff_poll_votes', array( 'member_id' => $user_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'ff_interactions', array( 'member_id' => $user_id ), array( '%d' ) );
+		wp_delete_user( $user_id );
+
+		return true;
 	}
 
 	/**

@@ -153,6 +153,38 @@
 	text-overflow: ellipsis;
 }
 
+/* How full The 35 is ------------------------------------------------------- */
+.ff-places-count {
+	margin: 0 0 1em;
+	font-size: 13px;
+	color: #50575e;
+}
+
+.ff-places-count.is-full {
+	font-weight: 600;
+	color: #8a1f1f;
+}
+
+/* The box around a button that would take a thirty-sixth place. Loud on
+ * purpose: it is the one action on this screen that cannot be undone. */
+.ff-places-full {
+	display: inline-block;
+	max-width: 320px;
+	margin: 0 6px 6px 0;
+	padding: 8px 10px;
+	border: 2px solid #d63638;
+	border-radius: 4px;
+	background: #fcf0f1;
+	vertical-align: top;
+}
+
+.ff-places-full-note {
+	margin: 0 0 8px;
+	font-size: 12px;
+	line-height: 1.5;
+	color: #8a1f1f;
+}
+
 /* The note's video links --------------------------------------------------- */
 .ff-video-row {
 	display: flex;

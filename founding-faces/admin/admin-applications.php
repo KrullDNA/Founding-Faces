@@ -118,6 +118,49 @@ class FF_Admin_Applications {
 		echo '<div class="wrap ff-admin">';
 		echo '<h1>' . esc_html__( 'Founding Faces Applications', 'founding-faces' ) . '</h1>';
 
+		// How full The 35 is, said once at the top, so the answer is known
+		// before any decision rather than discovered after one.
+		$taken  = FF_Members::the_35_count();
+		$places = FF_Members::places();
+		$tests  = FF_Members::test_places();
+
+		echo '<p class="ff-places-count' . ( $taken >= $places ? ' is-full' : '' ) . '">';
+		echo esc_html( sprintf(
+			/* translators: 1: places taken, 2: places in total. */
+			__( 'The 35: %1$d of %2$d places taken.', 'founding-faces' ),
+			$taken,
+			$places
+		) );
+		if ( $tests > 0 ) {
+			echo ' ' . esc_html( sprintf(
+				/* translators: %d is how many places are held by test accounts. */
+				_n( '%d is a test account.', '%d are test accounts.', $tests, 'founding-faces' ),
+				$tests
+			) );
+		}
+		echo '</p>';
+
+		// The one-way door: the guarded reset refuses to run the moment a real
+		// Founding Face holds a number, so test accounts have to go before the
+		// first real approval, not after it. Said here, on the screen where
+		// that approval happens, while it can still be acted on.
+		if ( $tests > 0 && ! FF_Members::has_real_numbered_member() ) {
+			echo '<div class="notice notice-warning"><p>';
+			echo '<strong>' . esc_html( sprintf(
+				/* translators: %d is how many test accounts hold numbers. */
+				_n(
+					'%d test account is holding a number.',
+					'%d test accounts are holding numbers.',
+					$tests,
+					'founding-faces'
+				),
+				$tests
+			) ) . '</strong> ';
+			echo esc_html__( 'Clear them before you approve your first real member. The reset on Privacy & Tools refuses to run once a real number has been issued, and the numbering cannot be put back afterwards, so your first Founding Face would not be number 1.', 'founding-faces' );
+			echo ' <a href="' . esc_url( admin_url( 'admin.php?page=' . FF_Admin_Privacy::PAGE_SLUG ) ) . '">' . esc_html__( 'Go to Privacy & Tools', 'founding-faces' ) . '</a>';
+			echo '</p></div>';
+		}
+
 		// Show the outcome of the last action, if any.
 		self::render_notice();
 
@@ -274,8 +317,31 @@ class FF_Admin_Applications {
 	 * @param object $app The ff_applications row.
 	 */
 	private static function render_actions( $app ) {
+		$full = ( 0 === FF_Members::places_left() );
+
+		// The question that has to be asked before the first real number goes
+		// out, because issuing one shuts the test reset for good.
+		$ask_35 = $full
+			? __( 'Every place in The 35 is already taken. Approving this one makes a thirty-sixth. Carry on?', 'founding-faces' )
+			: false;
+		$tests  = FF_Members::test_places();
+		if ( $tests > 0 && ! FF_Members::has_real_numbered_member() ) {
+			$ask_35 = sprintf(
+				/* translators: %d is how many test accounts hold numbers. */
+				_n(
+					'%d test account is still holding a number. Approving a real member into The 35 issues a real number, which blocks the test reset for good and cannot be undone. Clear the test accounts first?',
+					'%d test accounts are still holding numbers. Approving a real member into The 35 issues a real number, which blocks the test reset for good and cannot be undone. Clear the test accounts first?',
+					$tests,
+					'founding-faces'
+				),
+				$tests
+			);
+		}
+
 		if ( 'pending' === $app->status ) {
-			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary' );
+			self::full_warning( $full );
+			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary', $ask_35 );
+			self::close_warning( $full );
 			self::action_button( $app->id, 'approve_circle', __( 'Approve → The Circle', 'founding-faces' ) );
 			self::action_button( $app->id, 'decline', __( 'Decline', 'founding-faces' ), 'link-delete', true );
 			return;
@@ -284,7 +350,9 @@ class FF_Admin_Applications {
 		if ( in_array( $app->status, array( 'approved-35', 'approved-circle' ), true ) ) {
 			// A Circle member can be elevated into The 35 at any time.
 			if ( 'approved-circle' === $app->status ) {
-				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', true );
+				self::full_warning( $full );
+				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', $ask_35 ? $ask_35 : true );
+				self::close_warning( $full );
 			}
 			self::action_button( $app->id, 'resend', __( 'Resend welcome', 'founding-faces' ) );
 			self::action_button( $app->id, 'withdraw', __( 'Withdraw', 'founding-faces' ), 'link-delete', true );
@@ -295,13 +363,64 @@ class FF_Admin_Applications {
 	}
 
 	/**
+	 * Open the warning box around a button that would take a 36th place.
+	 *
+	 * The button still works. Nothing here stops you: somebody may leave the
+	 * programme and the place is genuinely free again, and a plugin that
+	 * refused would then be in the way. It only makes the consequence
+	 * impossible to walk past.
+	 *
+	 * @param bool $full Whether every place is taken.
+	 */
+	private static function full_warning( $full ) {
+		if ( ! $full ) {
+			return;
+		}
+
+		$count = FF_Members::the_35_count();
+		$tests = FF_Members::test_places();
+
+		echo '<div class="ff-places-full">';
+		echo '<p class="ff-places-full-note">';
+		echo '<strong>' . esc_html( sprintf(
+			/* translators: 1: how many members, 2: how many places. */
+			__( 'All %2$d places are taken (%1$d members).', 'founding-faces' ),
+			$count,
+			FF_Members::places()
+		) ) . '</strong> ';
+
+		if ( $tests > 0 ) {
+			echo esc_html( sprintf(
+				/* translators: %d is how many places are held by test accounts. */
+				_n( '%d of them is a test account.', '%d of them are test accounts.', $tests, 'founding-faces' ),
+				$tests
+			) ) . ' ';
+		}
+
+		echo esc_html__( 'Only use this if someone has left and their place is free. Otherwise this makes a thirty-sixth.', 'founding-faces' );
+		echo '</p>';
+	}
+
+	/**
+	 * Close the warning box.
+	 *
+	 * @param bool $full Whether every place is taken.
+	 */
+	private static function close_warning( $full ) {
+		if ( $full ) {
+			echo '</div>';
+		}
+	}
+
+	/**
 	 * Render a single moderation button as its own nonce-protected mini form.
 	 *
 	 * @param int    $app_id  The application id.
 	 * @param string $sub     The sub-action ('approve_35', 'decline', etc.).
 	 * @param string $label   The button text.
 	 * @param string $variant Optional button style ('primary', 'link-delete').
-	 * @param bool   $confirm Whether to ask for confirmation before submitting.
+	 * @param bool|string $confirm True for the standard question, or the exact
+	 *                              wording to ask instead.
 	 */
 	private static function action_button( $app_id, $sub, $label, $variant = '', $confirm = false ) {
 		$classes = 'button';
@@ -311,8 +430,10 @@ class FF_Admin_Applications {
 			$classes = 'button-link button-link-delete';
 		}
 
+		$ask = is_string( $confirm ) ? $confirm : __( 'Are you sure? This can\'t be undone.', 'founding-faces' );
+
 		$onclick = $confirm
-			? ' onclick="return confirm(\'' . esc_js( __( 'Are you sure? This can\'t be undone.', 'founding-faces' ) ) . '\');"'
+			? ' onclick="return confirm(\'' . esc_js( $ask ) . '\');"'
 			: '';
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="ff-action-form">';

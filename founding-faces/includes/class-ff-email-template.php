@@ -37,6 +37,8 @@ class FF_Email_Template {
 	const OPT_BUTTON_TEXT  = 'ff_email_button_text';   // CTA button text colour.
 	const OPT_FOOTER       = 'ff_email_footer';        // Footer text, inside the card.
 	const OPT_DISCLAIMER   = 'ff_email_disclaimer';    // Small print, below the card.
+	const OPT_SMALL_SIZE   = 'ff_email_small_size';    // Small print size, px.
+	const OPT_SMALL_LEAD   = 'ff_email_small_lead';    // Small print line height.
 
 	/**
 	 * The shipped design defaults.
@@ -57,6 +59,11 @@ class FF_Email_Template {
 			self::OPT_BUTTON_TEXT  => '#ffffff',
 			self::OPT_FOOTER       => get_bloginfo( 'name' ),
 			self::OPT_DISCLAIMER   => self::default_disclaimer(),
+			self::OPT_SMALL_SIZE   => 11,
+			// Tight by design: the small print is there to be available
+			// rather than read, and a wall of it set loose takes more room
+			// than the email it sits under.
+			self::OPT_SMALL_LEAD   => '1.55',
 		);
 	}
 
@@ -121,6 +128,14 @@ class FF_Email_Template {
 
 		$site = get_bloginfo( 'name' );
 
+		// The small print's size and leading, both settable. Clamped, because
+		// an email that arrives at 2px or with a line height of 9 is worse
+		// than one nobody styled at all.
+		$small_px   = max( 8, min( 20, (int) self::option( self::OPT_SMALL_SIZE ) ) );
+		$small_lead = (float) self::option( self::OPT_SMALL_LEAD );
+		$small_lead = ( $small_lead >= 0.8 && $small_lead <= 3 ) ? $small_lead : 1.55;
+		$small_css  = 'font-size:' . $small_px . 'px; line-height:' . $small_lead . ';';
+
 		// The small print takes {site_name} so it needs no editing between
 		// staging and live.
 		$disclaimer = strtr(
@@ -172,7 +187,7 @@ class FF_Email_Template {
 			.ff-band { padding: 26px 22px !important; }
 			.ff-body { font-size: 16px !important; line-height: 1.7 !important; }
 			.ff-foot { font-size: 13px !important; }
-			.ff-small { font-size: 12px !important; }
+			.ff-small { font-size: <?php echo (int) ( $small_px + 1 ); ?>px !important; line-height: <?php echo esc_html( (string) $small_lead ); ?> !important; }
 			.ff-btn-table { width: 100% !important; }
 			.ff-btn { display: block !important; text-align: center !important; }
 		}
@@ -266,7 +281,7 @@ class FF_Email_Template {
 					<?php if ( '' !== trim( (string) $disclaimer ) ) : ?>
 					<tr>
 						<td align="center" style="padding:20px 24px 0;">
-							<p class="ff-small" style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-align:center;">
+							<p class="ff-small" style="margin:0; font-family:<?php echo esc_attr( $family ); ?>; <?php echo esc_attr( $small_css ); ?> color:#8a9099; text-align:center;">
 								<?php echo nl2br( esc_html( $disclaimer ) ); ?>
 							</p>
 						</td>
@@ -275,7 +290,7 @@ class FF_Email_Template {
 					<?php if ( '' !== trim( (string) $unsub ) ) : ?>
 					<tr>
 						<td align="center" style="padding:14px 24px 8px;">
-							<a href="<?php echo esc_url( $unsub ); ?>" class="ff-small" style="font-family:<?php echo esc_attr( $family ); ?>; font-size:11px; line-height:1.55; color:#8a9099; text-decoration:underline;">
+							<a href="<?php echo esc_url( $unsub ); ?>" class="ff-small" style="font-family:<?php echo esc_attr( $family ); ?>; <?php echo esc_attr( $small_css ); ?> color:#8a9099; text-decoration:underline;">
 								<?php esc_html_e( 'Unsubscribe', 'founding-faces' ); ?>
 							</a>
 						</td>

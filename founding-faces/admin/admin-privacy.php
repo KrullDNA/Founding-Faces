@@ -34,6 +34,7 @@ class FF_Admin_Privacy {
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_post_ff_admin_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'admin_post_ff_admin_delete', array( __CLASS__, 'handle_delete' ) );
+		add_action( 'admin_post_ff_delete_test', array( __CLASS__, 'handle_delete_test' ) );
 		add_action( 'admin_post_ff_create_test', array( __CLASS__, 'handle_create_test' ) );
 		add_action( 'admin_post_ff_test_reset', array( __CLASS__, 'handle_test_reset' ) );
 	}
@@ -141,6 +142,9 @@ class FF_Admin_Privacy {
 			echo '<td class="ff-actions">';
 			self::action_button( 'ff_admin_export', $uid, __( 'Export CSV', 'founding-faces' ) );
 			self::action_button( 'ff_admin_delete', $uid, __( 'Delete data', 'founding-faces' ), true );
+			if ( $is_test ) {
+				self::action_button( 'ff_delete_test', $uid, __( 'Delete test account', 'founding-faces' ), true );
+			}
 			echo '</td>';
 			echo '</tr>';
 		}
@@ -273,6 +277,18 @@ class FF_Admin_Privacy {
 	}
 
 	/**
+	 * Handle deleting one test account.
+	 */
+	public static function handle_delete_test() {
+		self::guard();
+		$uid = isset( $_POST['uid'] ) ? absint( wp_unslash( $_POST['uid'] ) ) : 0;
+		check_admin_referer( 'ff_delete_test_' . $uid );
+
+		$result = FF_Members::delete_test_member( $uid );
+		self::redirect( is_wp_error( $result ) ? 'not_test' : 'test_deleted' );
+	}
+
+	/**
 	 * Handle creating a test member.
 	 */
 	public static function handle_create_test() {
@@ -349,6 +365,8 @@ class FF_Admin_Privacy {
 		$messages = array(
 			'deleted'           => array( 'success', __( 'The member\'s personal data was deleted; their number is retired.', 'founding-faces' ) ),
 			'test_created'      => array( 'success', __( 'Test member created.', 'founding-faces' ) ),
+			'test_deleted'      => array( 'success', __( 'Test account deleted, along with its votes and history. Its number is retired.', 'founding-faces' ) ),
+			'not_test'          => array( 'error', __( 'That account is not a test account, so nothing was deleted.', 'founding-faces' ) ),
 			'test_email_taken'  => array( 'error', __( 'There is already an account on that email address. Add a tag to your own, you+35@…, and each one counts as a separate account.', 'founding-faces' ) ),
 			'reset_done'        => array( 'success', __( 'Reset complete, numbering is back to zero and test accounts are gone.', 'founding-faces' ) ),
 			'reset_refused'     => array( 'error', __( 'Reset refused: a real numbered member exists.', 'founding-faces' ) ),
