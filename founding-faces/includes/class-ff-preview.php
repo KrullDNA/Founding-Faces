@@ -33,6 +33,7 @@ class FF_Preview {
 		add_action( 'edit_user_profile_update', array( __CLASS__, 'save_profile' ) );
 		add_action( 'admin_bar_menu', array( __CLASS__, 'admin_bar' ), 90 );
 		add_action( 'init', array( __CLASS__, 'maybe_switch' ) );
+		add_action( 'admin_post_ff_preview', array( __CLASS__, 'handle_switch' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'switch_notice' ) );
 	}
 
@@ -134,13 +135,28 @@ class FF_Preview {
 			'meta'  => array( 'title' => __( 'Founding Faces preview', 'founding-faces' ) ),
 		) );
 
-		// Built from the current page with this tool's own arguments stripped,
-		// so switching twice from the same screen does not stack them up.
-		$base = remove_query_arg( array( 'ff_preview', '_wpnonce', 'ff_switched' ) );
+		// Where to come back to: this page, minus this tool's own arguments.
+		$back = remove_query_arg( array( 'ff_preview', '_wpnonce', 'ff_switched' ) );
 
 		foreach ( $labels as $key => $label ) {
 			$value = '' === $key ? 'none' : $key;
-			$url   = wp_nonce_url( add_query_arg( 'ff_preview', $value, $base ), 'ff_preview' );
+
+			// An endpoint of its own, rather than adding arguments to whatever
+			// screen you are standing on. Every screen is somebody else's: it
+			// may redirect, rewrite or drop a query argument it does not know,
+			// and when it does the switch silently fails and the switcher
+			// looks broken.
+			$url = wp_nonce_url(
+				add_query_arg(
+					array(
+						'action' => 'ff_preview',
+						'to'     => $value,
+						'back'   => rawurlencode( $back ),
+					),
+					admin_url( 'admin-post.php' )
+				),
+				'ff_preview'
+			);
 			$mark  = ( $current === $key ) ? '● ' : '○ ';
 			$bar->add_node( array(
 				'id'     => 'ff-preview-' . $value,
@@ -149,6 +165,28 @@ class FF_Preview {
 				'href'   => esc_url( $url ),
 			) );
 		}
+	}
+
+	/**
+	 * Switch the preview from the toolbar link, then go back where you were.
+	 *
+	 * @return void
+	 */
+	public static function handle_switch() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to do that.', 'founding-faces' ) );
+		}
+		check_admin_referer( 'ff_preview' );
+
+		$value = isset( $_GET['to'] ) ? sanitize_key( wp_unslash( $_GET['to'] ) ) : 'none';
+		self::set_preview( get_current_user_id(), $value );
+		set_transient( 'ff_preview_switched_' . get_current_user_id(), $value, MINUTE_IN_SECONDS );
+
+		$back = isset( $_GET['back'] ) ? rawurldecode( wp_unslash( $_GET['back'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$back = $back ? esc_url_raw( $back ) : admin_url();
+
+		wp_safe_redirect( add_query_arg( 'ff_switched', '1', $back ) );
+		exit;
 	}
 
 	/**

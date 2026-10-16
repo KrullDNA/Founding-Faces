@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.51
+Stable tag: 1.1.52
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.52 =
+* Fixed: the "viewing as" switcher in the toolbar did nothing, while the same
+  setting on your own profile worked. It changed the preview by adding
+  arguments to whatever screen you were standing on, and a screen is somebody
+  else's: it can redirect, rewrite or drop an argument it does not recognise,
+  and when it does the switch fails silently. It now posts to an endpoint of
+  its own and returns you to the page you were on.
 
 = 1.1.51 =
 * The "viewing as" switcher now confirms what it did, reading the setting back
