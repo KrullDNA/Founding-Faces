@@ -172,6 +172,10 @@ class FF_Settings {
 		$brecv   = get_option( FF_Emails::OPT_RECEIVED_BODY, FF_Emails::default_received_body() );
 		$sdecl   = get_option( FF_Emails::OPT_DECLINE_SUBJECT, FF_Emails::default_decline_subject() );
 		$bdecl   = get_option( FF_Emails::OPT_DECLINE_BODY, FF_Emails::default_decline_body() );
+		$snote   = get_option( FF_Emails::OPT_NOTE_SUBJECT, FF_Emails::default_note_subject() );
+		$bnote   = get_option( FF_Emails::OPT_NOTE_BODY, FF_Emails::default_note_body() );
+		$snote   = '' !== trim( (string) $snote ) ? $snote : FF_Emails::default_note_subject();
+		$bnote   = '' !== trim( (string) $bnote ) ? $bnote : FF_Emails::default_note_body();
 		?>
 		<div class="wrap ff-admin">
 			<h1><?php esc_html_e( 'Founding Faces Settings', 'founding-faces' ); ?></h1>
@@ -309,6 +313,29 @@ class FF_Settings {
 							<textarea name="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"
 								id="<?php echo esc_attr( FF_Emails::OPT_DECLINE_BODY ); ?>"
 								rows="10" class="large-text code"><?php echo esc_textarea( $bdecl ); ?></textarea>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'New-note email', 'founding-faces' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Sent to The 35 when you press "Send to The 35" on a note, never on publishing. Placeholders: {name} {number} {note_title} {product} {version} {stage} {note_url} {site_name}.', 'founding-faces' ); ?>
+				</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_NOTE_SUBJECT ); ?>"><?php esc_html_e( 'Subject', 'founding-faces' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( FF_Emails::OPT_NOTE_SUBJECT ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_NOTE_SUBJECT ); ?>"
+								type="text" class="large-text" value="<?php echo esc_attr( $snote ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="<?php echo esc_attr( FF_Emails::OPT_NOTE_BODY ); ?>"><?php esc_html_e( 'Body', 'founding-faces' ); ?></label></th>
+						<td>
+							<textarea name="<?php echo esc_attr( FF_Emails::OPT_NOTE_BODY ); ?>"
+								id="<?php echo esc_attr( FF_Emails::OPT_NOTE_BODY ); ?>"
+								rows="10" class="large-text code"><?php echo esc_textarea( $bnote ); ?></textarea>
 						</td>
 					</tr>
 				</table>

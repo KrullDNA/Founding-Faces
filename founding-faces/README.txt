@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.52
+Stable tag: 1.1.53
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,19 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.53 =
+* Fixed: sending a note to The 35 failed at the mail service with "subject is
+  required". The new-note email's subject and body were registered as settings
+  but had no fields on the Emails screen, and saving that screen writes every
+  setting registered on it, so both were quietly blanked the first time it was
+  saved.
+* The fields are there now, under "New-note email", with the placeholders
+  listed.
+* Any email template that is blank now falls back to the wording the plugin
+  ships with, rather than sending an empty subject or an empty email. Clearing
+  the declined-application body still means send nothing, since that one is
+  meant to be silenced.
 
 = 1.1.52 =
 * Fixed: the "viewing as" switcher in the toolbar did nothing, while the same
