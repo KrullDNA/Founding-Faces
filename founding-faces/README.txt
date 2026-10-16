@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.50
+Stable tag: 1.1.51
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,15 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.51 =
+* The "viewing as" switcher now confirms what it did, reading the setting back
+  from the database rather than repeating the click, so a switch that fails to
+  save says so instead of agreeing with you.
+* The nonce on that link was being lowercased before it was checked, which can
+  refuse a perfectly valid request. It is checked as sent now.
+* The switch link is built from the current page with its own arguments
+  stripped first, so switching twice from one screen cannot stack them up.
 
 = 1.1.50 =
 * Fixed: filtering the notes list brought the rows back as bare headings,

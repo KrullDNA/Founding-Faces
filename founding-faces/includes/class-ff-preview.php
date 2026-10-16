@@ -33,6 +33,7 @@ class FF_Preview {
 		add_action( 'edit_user_profile_update', array( __CLASS__, 'save_profile' ) );
 		add_action( 'admin_bar_menu', array( __CLASS__, 'admin_bar' ), 90 );
 		add_action( 'init', array( __CLASS__, 'maybe_switch' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'switch_notice' ) );
 	}
 
 	/**
@@ -133,9 +134,13 @@ class FF_Preview {
 			'meta'  => array( 'title' => __( 'Founding Faces preview', 'founding-faces' ) ),
 		) );
 
+		// Built from the current page with this tool's own arguments stripped,
+		// so switching twice from the same screen does not stack them up.
+		$base = remove_query_arg( array( 'ff_preview', '_wpnonce', 'ff_switched' ) );
+
 		foreach ( $labels as $key => $label ) {
 			$value = '' === $key ? 'none' : $key;
-			$url   = wp_nonce_url( add_query_arg( 'ff_preview', $value ), 'ff_preview' );
+			$url   = wp_nonce_url( add_query_arg( 'ff_preview', $value, $base ), 'ff_preview' );
 			$mark  = ( $current === $key ) ? '● ' : '○ ';
 			$bar->add_node( array(
 				'id'     => 'ff-preview-' . $value,
@@ -144,6 +149,49 @@ class FF_Preview {
 				'href'   => esc_url( $url ),
 			) );
 		}
+	}
+
+	/**
+	 * Confirm the switch, and say what is actually stored.
+	 *
+	 * Reads the setting back from the database rather than repeating what was
+	 * asked for, so a switch that failed to save says so instead of agreeing
+	 * with the click.
+	 */
+	public static function switch_notice() {
+		if ( empty( $_GET['ff_switched'] ) || ! current_user_can( 'manage_options' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		$asked = get_transient( 'ff_preview_switched_' . get_current_user_id() );
+		if ( false === $asked ) {
+			return;
+		}
+		delete_transient( 'ff_preview_switched_' . get_current_user_id() );
+
+		$stored  = get_user_meta( get_current_user_id(), FF_Gating::META_PREVIEW, true );
+		$stored  = in_array( $stored, array( 'the-35', 'the-circle' ), true ) ? $stored : '';
+		$wanted  = ( 'none' === $asked ) ? '' : $asked;
+		$labels  = self::options();
+		$matched = ( $stored === $wanted );
+
+		printf(
+			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+			esc_attr( $matched ? 'success' : 'error' ),
+			esc_html( $matched
+				? sprintf(
+					/* translators: %s is a group name. */
+					__( 'Now viewing the site as: %s', 'founding-faces' ),
+					isset( $labels[ $stored ] ) ? $labels[ $stored ] : __( 'Administrator', 'founding-faces' )
+				)
+				: sprintf(
+					/* translators: 1: the group asked for, 2: the group actually stored. */
+					__( 'The preview did not change. Asked for %1$s, still set to %2$s. Try the "View the site as" setting on your own profile instead.', 'founding-faces' ),
+					isset( $labels[ $wanted ] ) ? $labels[ $wanted ] : $wanted,
+					isset( $labels[ $stored ] ) ? $labels[ $stored ] : __( 'Administrator', 'founding-faces' )
+				)
+			)
+		);
 	}
 
 	/**
@@ -158,14 +206,23 @@ class FF_Preview {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'ff_preview' ) ) {
+		// Not sanitize_key, which lowercases: a nonce is checked character for
+		// character and lowercasing one is how a valid request gets refused.
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'ff_preview' ) ) {
 			return;
 		}
 
 		$value = sanitize_key( wp_unslash( $_GET['ff_preview'] ) );
 		self::set_preview( get_current_user_id(), $value );
 
-		wp_safe_redirect( remove_query_arg( array( 'ff_preview', '_wpnonce' ) ) );
+		// Say what happened on the other side of the redirect. A switch that
+		// looks like it did nothing is indistinguishable from one that did
+		// nothing, and this is a tool for checking what members can see, so
+		// being sure which member you are is the whole point of it.
+		set_transient( 'ff_preview_switched_' . get_current_user_id(), $value, MINUTE_IN_SECONDS );
+
+		wp_safe_redirect( add_query_arg( 'ff_switched', '1', remove_query_arg( array( 'ff_preview', '_wpnonce', 'ff_switched' ) ) ) );
 		exit;
 	}
 }
