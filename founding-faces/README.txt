@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.56
+Stable tag: 1.1.57
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,16 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.57 =
+* Approving or promoting into The 35 now asks before it acts, in the words
+  that matter at that moment. While test accounts still hold numbers it says
+  so and warns that a real number blocks the test reset for good. With every
+  place taken it says that instead, and warns about making a thirty-sixth. A
+  banner at the top of a screen is easy to scroll past; a question at the
+  moment of clicking is not.
+* Approving into The Circle is unaffected, since it issues no number and
+  closes no door.
 
 = 1.1.56 =
 * The applications screen warns, while test accounts still hold numbers and no

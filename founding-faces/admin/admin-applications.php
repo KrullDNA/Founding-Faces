@@ -319,9 +319,28 @@ class FF_Admin_Applications {
 	private static function render_actions( $app ) {
 		$full = ( 0 === FF_Members::places_left() );
 
+		// The question that has to be asked before the first real number goes
+		// out, because issuing one shuts the test reset for good.
+		$ask_35 = $full
+			? __( 'Every place in The 35 is already taken. Approving this one makes a thirty-sixth. Carry on?', 'founding-faces' )
+			: false;
+		$tests  = FF_Members::test_places();
+		if ( $tests > 0 && ! FF_Members::has_real_numbered_member() ) {
+			$ask_35 = sprintf(
+				/* translators: %d is how many test accounts hold numbers. */
+				_n(
+					'%d test account is still holding a number. Approving a real member into The 35 issues a real number, which blocks the test reset for good and cannot be undone. Clear the test accounts first?',
+					'%d test accounts are still holding numbers. Approving a real member into The 35 issues a real number, which blocks the test reset for good and cannot be undone. Clear the test accounts first?',
+					$tests,
+					'founding-faces'
+				),
+				$tests
+			);
+		}
+
 		if ( 'pending' === $app->status ) {
 			self::full_warning( $full );
-			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary', $full );
+			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary', $ask_35 );
 			self::close_warning( $full );
 			self::action_button( $app->id, 'approve_circle', __( 'Approve → The Circle', 'founding-faces' ) );
 			self::action_button( $app->id, 'decline', __( 'Decline', 'founding-faces' ), 'link-delete', true );
@@ -332,7 +351,7 @@ class FF_Admin_Applications {
 			// A Circle member can be elevated into The 35 at any time.
 			if ( 'approved-circle' === $app->status ) {
 				self::full_warning( $full );
-				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', true );
+				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', $ask_35 ? $ask_35 : true );
 				self::close_warning( $full );
 			}
 			self::action_button( $app->id, 'resend', __( 'Resend welcome', 'founding-faces' ) );
@@ -400,7 +419,8 @@ class FF_Admin_Applications {
 	 * @param string $sub     The sub-action ('approve_35', 'decline', etc.).
 	 * @param string $label   The button text.
 	 * @param string $variant Optional button style ('primary', 'link-delete').
-	 * @param bool   $confirm Whether to ask for confirmation before submitting.
+	 * @param bool|string $confirm True for the standard question, or the exact
+	 *                              wording to ask instead.
 	 */
 	private static function action_button( $app_id, $sub, $label, $variant = '', $confirm = false ) {
 		$classes = 'button';
@@ -410,8 +430,10 @@ class FF_Admin_Applications {
 			$classes = 'button-link button-link-delete';
 		}
 
+		$ask = is_string( $confirm ) ? $confirm : __( 'Are you sure? This can\'t be undone.', 'founding-faces' );
+
 		$onclick = $confirm
-			? ' onclick="return confirm(\'' . esc_js( __( 'Are you sure? This can\'t be undone.', 'founding-faces' ) ) . '\');"'
+			? ' onclick="return confirm(\'' . esc_js( $ask ) . '\');"'
 			: '';
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="ff-action-form">';
