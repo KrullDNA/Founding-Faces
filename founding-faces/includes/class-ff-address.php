@@ -42,7 +42,7 @@ class FF_Address {
 	public static function fields() {
 		return array(
 			self::META_LINE1    => __( 'Street address', 'founding-faces' ),
-			self::META_LINE2    => __( 'Unit, building or care of', 'founding-faces' ),
+			self::META_LINE2    => __( 'Unit, level or care of', 'founding-faces' ),
 			self::META_SUBURB   => __( 'Suburb', 'founding-faces' ),
 			self::META_STATE    => __( 'State', 'founding-faces' ),
 			self::META_POSTCODE => __( 'Postcode', 'founding-faces' ),
@@ -151,9 +151,9 @@ class FF_Address {
 		$out .= '<p class="ff-field"><label for="ff-addr-line1">' . esc_html__( 'Street address', 'founding-faces' ) . '</label>';
 		$out .= '<input type="text" id="ff-addr-line1" name="ff_addr_line1" autocomplete="address-line1" value="' . esc_attr( $a[ self::META_LINE1 ] ) . '" /></p>';
 
-		$out .= '<p class="ff-field"><label for="ff-addr-line2">' . esc_html__( 'Unit, building or care of', 'founding-faces' ) . '</label>';
+		$out .= '<p class="ff-field"><label for="ff-addr-line2">' . esc_html__( 'Unit, level or care of', 'founding-faces' ) . '</label>';
 		$out .= '<input type="text" id="ff-addr-line2" name="ff_addr_line2" autocomplete="address-line2" value="' . esc_attr( $a[ self::META_LINE2 ] ) . '" />';
-		$out .= '<span class="ff-hint">' . esc_html__( 'Optional.', 'founding-faces' ) . '</span></p>';
+		$out .= '<span class="ff-hint">' . esc_html__( 'Optional. For a level or suite number, a building name, or a care-of address. A unit number usually goes in the line above, as 3/45 Smith Street.', 'founding-faces' ) . '</span></p>';
 
 		$out .= '<p class="ff-field"><label for="ff-addr-suburb">' . esc_html__( 'Suburb', 'founding-faces' ) . '</label>';
 		$out .= '<input type="text" id="ff-addr-suburb" name="ff_addr_suburb" autocomplete="address-level2" value="' . esc_attr( $a[ self::META_SUBURB ] ) . '" /></p>';
@@ -353,6 +353,10 @@ class FF_Address {
 			$real    = (string) get_user_meta( $id, FF_Members::META_REAL_NAME, true );
 			$updated = (int) get_user_meta( $id, self::META_UPDATED, true );
 
+			// What they wrote when they applied, which is the other half of
+			// knowing who you are posting to.
+			$app = FF_Privacy::get_application( $id );
+
 			$rows[] = array(
 				(int) get_user_meta( $id, FF_Members::META_NUMBER, true ),
 				'' !== trim( $real ) ? $real : $user->display_name,
@@ -365,6 +369,11 @@ class FF_Address {
 				'' !== trim( $a[ self::META_COUNTRY ] ) ? $a[ self::META_COUNTRY ] : __( 'Australia', 'founding-faces' ),
 				self::complete( $id ) ? __( 'Yes', 'founding-faces' ) : __( 'No', 'founding-faces' ),
 				$updated ? wp_date( 'Y-m-d', $updated ) : '',
+				$app && isset( $app->instagram ) ? $app->instagram : '',
+				$app && isset( $app->skin_concerns ) ? $app->skin_concerns : '',
+				$app && isset( $app->answers ) ? $app->answers : '',
+				get_user_meta( $id, FF_Members::META_CONSENT, true ) ? __( 'Yes', 'founding-faces' ) : __( 'No', 'founding-faces' ),
+				$app && ! empty( $app->created_at ) ? substr( (string) $app->created_at, 0, 10 ) : '',
 				get_user_meta( $id, FF_Members::META_IS_TEST, true ) ? __( 'Test account', 'founding-faces' ) : '',
 			);
 		}
@@ -383,11 +392,13 @@ class FF_Address {
 		// any name with an accent in it.
 		fwrite( $handle, "\xEF\xBB\xBF" );
 
+		// The label columns first, so the left of the sheet is ready for a mail
+		// merge, and everything else after it.
 		fputcsv( $handle, array(
 			__( 'Number', 'founding-faces' ),
 			__( 'Name', 'founding-faces' ),
 			__( 'Email', 'founding-faces' ),
-			__( 'Unit / care of', 'founding-faces' ),
+			__( 'Unit, level or care of', 'founding-faces' ),
 			__( 'Street address', 'founding-faces' ),
 			__( 'Suburb', 'founding-faces' ),
 			__( 'State', 'founding-faces' ),
@@ -395,6 +406,11 @@ class FF_Address {
 			__( 'Country', 'founding-faces' ),
 			__( 'Postable', 'founding-faces' ),
 			__( 'Address updated', 'founding-faces' ),
+			__( 'Instagram', 'founding-faces' ),
+			__( 'Skin concerns', 'founding-faces' ),
+			__( 'About their skin and why they applied', 'founding-faces' ),
+			__( 'Email consent', 'founding-faces' ),
+			__( 'Applied', 'founding-faces' ),
 			__( 'Note', 'founding-faces' ),
 		) );
 

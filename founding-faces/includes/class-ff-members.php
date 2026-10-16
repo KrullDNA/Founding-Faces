@@ -867,18 +867,24 @@ class FF_Members {
 		$postcodes = array( '2000', '3000', '4000', '5000', '6000', '7000', '0800', '2600' );
 		$postcode  = $postcodes[ array_rand( $postcodes ) ];
 
+		// A test account with empty fields makes the moderation screen look
+		// broken rather than empty: you cannot tell a column that shows
+		// nothing from one that is not working. So it carries the kind of
+		// answer a real applicant writes, at the kind of length they write it.
+		$sample = self::sample_application();
+
 		$now = current_time( 'mysql' );
 
 		$wpdb->insert(
 			$wpdb->prefix . 'ff_applications',
 			array(
 				'created_at'    => $now,
-				'name'          => '' !== $name ? $name : 'Test ' . $token,
+				'name'          => '' !== $name ? $name : $sample['name'],
 				'email'         => $email ? $email : self::placeholder_email( $token, $host ),
 				'postcode'      => $postcode,
-				'instagram'     => '',
-				'skin_concerns' => '',
-				'answers'       => 'Test account',
+				'instagram'     => $sample['instagram'],
+				'skin_concerns' => $sample['concerns'],
+				'answers'       => $sample['answers'],
 				// Consent only where there is an address that can actually
 				// receive, and only because you asked for it on this one.
 				'consent'       => ( $email && $consent ) ? 1 : 0,
@@ -898,6 +904,46 @@ class FF_Members {
 
 		// Approve it just like a real one, so it takes a real number.
 		return self::approve( $app_id, $group_slug );
+	}
+
+	/**
+	 * A plausible application, for a test account to carry.
+	 *
+	 * Written the way the people this programme is for actually write: a
+	 * specific history, a specific frustration, and a reason that is about the
+	 * formulation rather than about free product.
+	 *
+	 * @return array name, instagram, concerns, answers.
+	 */
+	private static function sample_application() {
+		$people = array(
+			array(
+				'name'      => 'Marguerite Fenn',
+				'instagram' => '@margueritefenn',
+				'concerns'  => 'Dryness, early pigmentation, occasional reactivity around the nose',
+				'answers'   => "I'm 41 and my skin changed over about a year. I've been on a retinol two nights a week since 2024 and it suits me, but everything else I try either sits on top or stings.\n\nI'd like to join because I'd rather understand what's in a formula than be told it's clean.",
+			),
+			array(
+				'name'      => 'Priya Raman',
+				'instagram' => '@priya.raman',
+				'concerns'  => 'Sensitivity and redness, worse in winter',
+				'answers'   => "My skin reacts to almost every fragranced product, so I've ended up with a routine of four things I'm afraid to change.\n\nI'm interested in watching something get made and understanding why it ends up the way it does.",
+			),
+			array(
+				'name'      => 'Thomas Oyelaran',
+				'instagram' => '',
+				'concerns'  => 'Texture and dullness, some congestion along the jaw',
+				'answers'   => "I've never had a routine beyond a cleanser and whatever moisturiser was on offer. At 38 that has stopped being enough.\n\nI'd like to be told what things do rather than what they promise.",
+			),
+			array(
+				'name'      => 'Jo Whitlam',
+				'instagram' => '@jowhitlam',
+				'concerns'  => 'Barrier damage after over-exfoliating, tightness after washing',
+				'answers'   => "I spent most of last year making my skin worse with acids, which I now understand. It is calmer but it is not back.\n\nI want to follow the reasoning behind a formula, including the versions that do not work.",
+			),
+		);
+
+		return $people[ array_rand( $people ) ];
 	}
 
 	/**
