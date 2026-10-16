@@ -68,7 +68,11 @@ class FF_Text {
 	 * @return string Safe HTML.
 	 */
 	public static function inline( $value ) {
-		return trim( wp_kses( (string) $value, self::inline_tags() ) );
+		// The house rule is applied on the way out as well as on the way in.
+		// Saving catches what is typed here; this catches what was saved
+		// before the rule existed, and anything written into a widget field
+		// that the save-time sanitisers never see.
+		return trim( wp_kses( self::no_em_dash( $value ), self::inline_tags() ) );
 	}
 
 	/**
@@ -78,7 +82,7 @@ class FF_Text {
 	 * @return string Safe HTML.
 	 */
 	public static function rich( $value ) {
-		return trim( wp_kses_post( (string) $value ) );
+		return trim( wp_kses_post( self::no_em_dash( $value ) ) );
 	}
 
 	/**

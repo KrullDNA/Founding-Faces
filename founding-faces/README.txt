@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.60
+Stable tag: 1.1.61
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,17 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.61 =
+* Test accounts now carry a believable application: a name, an Instagram
+  handle, real skin concerns and a few sentences about why they applied. An
+  account with every field blank makes the moderation screen look broken
+  rather than empty, since a column showing nothing reads the same as one that
+  is not working.
+* The no-em-dash rule is applied on the way out as well as on the way in. It
+  was enforced when copy is saved, which never reached text typed into an
+  Elementor widget field or saved before the rule existed. Every piece of
+  author copy the plugin renders now passes through it.
 
 = 1.1.60 =
 * The posting list now carries what they wrote when they applied as well:
