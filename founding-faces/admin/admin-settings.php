@@ -115,6 +115,7 @@ class FF_Settings {
 
 		// New-applications behaviour: hold for review, or auto-accept into Circle.
 		register_setting( self::GROUP, FF_Application::OPT_AUTO_ACCEPT, array( 'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ) ) );
+		register_setting( self::GROUP, FF_Members::OPT_PLACES, array( 'sanitize_callback' => 'absint' ) );
 
 		// The page that hosts the members portal (used by message reply emails).
 		register_setting( self::GROUP, FF_Messages::OPT_PORTAL_PAGE, array( 'sanitize_callback' => 'absint' ) );
@@ -551,7 +552,8 @@ class FF_Settings {
 	 * reliably saves "off" (an unchecked checkbox otherwise sends nothing).
 	 */
 	private static function render_applications_section() {
-		$auto = FF_Application::auto_accept_enabled();
+		$auto   = FF_Application::auto_accept_enabled();
+		$places = FF_Members::places();
 		?>
 		<h2><?php esc_html_e( 'New applications', 'founding-faces' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -565,7 +567,24 @@ class FF_Settings {
 						<?php esc_html_e( 'Automatically accept new applicants into The Circle', 'founding-faces' ); ?>
 					</label>
 					<p class="description">
-						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review. Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this, bot submissions never become members.', 'founding-faces' ); ?>
+						<?php esc_html_e( 'Leave this OFF while you are choosing The 35, so every application waits for your review.  Turn it ON once The 35 is chosen: new valid applications then become Circle members instantly and get the Circle welcome email, with no clicks from you. You can still promote a Circle member into The 35 at any time. The application form\'s spam trap protects this, bot submissions never become members.', 'founding-faces' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="<?php echo esc_attr( FF_Members::OPT_PLACES ); ?>"><?php esc_html_e( 'Places in The 35', 'founding-faces' ); ?></label></th>
+				<td>
+					<input name="<?php echo esc_attr( FF_Members::OPT_PLACES ); ?>" id="<?php echo esc_attr( FF_Members::OPT_PLACES ); ?>"
+						type="number" min="1" max="500" value="<?php echo esc_attr( $places ); ?>" style="width:90px;" />
+					<p class="description">
+						<?php
+						echo esc_html( sprintf(
+							/* translators: 1: places taken, 2: places in total. */
+							__( 'Currently %1$d of %2$d taken. Nothing is enforced: the applications screen counts the places and puts a warning around the button once they are all gone, so a thirty-sixth can only happen on purpose. Withdrawing a member frees their place again.', 'founding-faces' ),
+							FF_Members::the_35_count(),
+							$places
+						) );
+						?>
 					</p>
 				</td>
 			</tr>

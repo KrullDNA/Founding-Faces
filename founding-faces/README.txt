@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.54
+Stable tag: 1.1.55
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,20 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.55 =
+* The applications screen now counts The 35. A line at the top reads "The 35:
+  28 of 35 places taken", and says how many of those are test accounts, since
+  test accounts take real numbers.
+* Once every place is taken, the button that would create a thirty-sixth is
+  wrapped in a red box saying so, and asks for confirmation. The same goes for
+  "Promote → The 35" on a Circle member.
+* Nothing is blocked. A member can leave and their place is genuinely free
+  again, and a plugin that refused would be in the way. It only makes the
+  consequence impossible to walk past.
+* Withdrawing a member frees their place. Their number stays retired, as it
+  always has, so it is never issued twice.
+* The number of places is a setting, defaulting to 35.
 
 = 1.1.54 =
 * The small print under the email card now takes a size and a line height of

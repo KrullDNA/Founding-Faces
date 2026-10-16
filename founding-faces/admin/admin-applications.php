@@ -118,6 +118,28 @@ class FF_Admin_Applications {
 		echo '<div class="wrap ff-admin">';
 		echo '<h1>' . esc_html__( 'Founding Faces Applications', 'founding-faces' ) . '</h1>';
 
+		// How full The 35 is, said once at the top, so the answer is known
+		// before any decision rather than discovered after one.
+		$taken  = FF_Members::the_35_count();
+		$places = FF_Members::places();
+		$tests  = FF_Members::test_places();
+
+		echo '<p class="ff-places-count' . ( $taken >= $places ? ' is-full' : '' ) . '">';
+		echo esc_html( sprintf(
+			/* translators: 1: places taken, 2: places in total. */
+			__( 'The 35: %1$d of %2$d places taken.', 'founding-faces' ),
+			$taken,
+			$places
+		) );
+		if ( $tests > 0 ) {
+			echo ' ' . esc_html( sprintf(
+				/* translators: %d is how many places are held by test accounts. */
+				_n( '%d is a test account.', '%d are test accounts.', $tests, 'founding-faces' ),
+				$tests
+			) );
+		}
+		echo '</p>';
+
 		// Show the outcome of the last action, if any.
 		self::render_notice();
 
@@ -274,8 +296,12 @@ class FF_Admin_Applications {
 	 * @param object $app The ff_applications row.
 	 */
 	private static function render_actions( $app ) {
+		$full = ( 0 === FF_Members::places_left() );
+
 		if ( 'pending' === $app->status ) {
-			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary' );
+			self::full_warning( $full );
+			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary', $full );
+			self::close_warning( $full );
 			self::action_button( $app->id, 'approve_circle', __( 'Approve → The Circle', 'founding-faces' ) );
 			self::action_button( $app->id, 'decline', __( 'Decline', 'founding-faces' ), 'link-delete', true );
 			return;
@@ -284,7 +310,9 @@ class FF_Admin_Applications {
 		if ( in_array( $app->status, array( 'approved-35', 'approved-circle' ), true ) ) {
 			// A Circle member can be elevated into The 35 at any time.
 			if ( 'approved-circle' === $app->status ) {
+				self::full_warning( $full );
 				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', true );
+				self::close_warning( $full );
 			}
 			self::action_button( $app->id, 'resend', __( 'Resend welcome', 'founding-faces' ) );
 			self::action_button( $app->id, 'withdraw', __( 'Withdraw', 'founding-faces' ), 'link-delete', true );
@@ -292,6 +320,56 @@ class FF_Admin_Applications {
 		}
 
 		echo '<span class="ff-muted">' . esc_html__( 'No actions', 'founding-faces' ) . '</span>';
+	}
+
+	/**
+	 * Open the warning box around a button that would take a 36th place.
+	 *
+	 * The button still works. Nothing here stops you: somebody may leave the
+	 * programme and the place is genuinely free again, and a plugin that
+	 * refused would then be in the way. It only makes the consequence
+	 * impossible to walk past.
+	 *
+	 * @param bool $full Whether every place is taken.
+	 */
+	private static function full_warning( $full ) {
+		if ( ! $full ) {
+			return;
+		}
+
+		$count = FF_Members::the_35_count();
+		$tests = FF_Members::test_places();
+
+		echo '<div class="ff-places-full">';
+		echo '<p class="ff-places-full-note">';
+		echo '<strong>' . esc_html( sprintf(
+			/* translators: 1: how many members, 2: how many places. */
+			__( 'All %2$d places are taken (%1$d members).', 'founding-faces' ),
+			$count,
+			FF_Members::places()
+		) ) . '</strong> ';
+
+		if ( $tests > 0 ) {
+			echo esc_html( sprintf(
+				/* translators: %d is how many places are held by test accounts. */
+				_n( '%d of them is a test account.', '%d of them are test accounts.', $tests, 'founding-faces' ),
+				$tests
+			) ) . ' ';
+		}
+
+		echo esc_html__( 'Only use this if someone has left and their place is free. Otherwise this makes a thirty-sixth.', 'founding-faces' );
+		echo '</p>';
+	}
+
+	/**
+	 * Close the warning box.
+	 *
+	 * @param bool $full Whether every place is taken.
+	 */
+	private static function close_warning( $full ) {
+		if ( $full ) {
+			echo '</div>';
+		}
 	}
 
 	/**
