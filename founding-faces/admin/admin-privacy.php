@@ -35,6 +35,7 @@ class FF_Admin_Privacy {
 		add_action( 'admin_post_ff_admin_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'admin_post_ff_admin_delete', array( __CLASS__, 'handle_delete' ) );
 		add_action( 'admin_post_ff_delete_test', array( __CLASS__, 'handle_delete_test' ) );
+		add_action( 'admin_post_ff_export_35', array( __CLASS__, 'handle_export_35' ) );
 		add_action( 'admin_post_ff_create_test', array( __CLASS__, 'handle_create_test' ) );
 		add_action( 'admin_post_ff_test_reset', array( __CLASS__, 'handle_test_reset' ) );
 	}
@@ -202,6 +203,15 @@ class FF_Admin_Privacy {
 			$test_count
 		) . '</p>';
 
+		// --- Posting list ---
+		echo '<h3>' . esc_html__( 'Posting list for The 35', 'founding-faces' ) . '</h3>';
+		echo '<p class="description">' . esc_html__( 'One row per active member of The 35, in number order, with their postal address. Anyone who has not filled theirs in yet is still listed, with the address columns empty and Postable set to No, so you can see who to chase. Opens in Excel or Numbers.', 'founding-faces' ) . '</p>';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<input type="hidden" name="action" value="ff_export_35" />';
+		wp_nonce_field( 'ff_export_35' );
+		echo '<button type="submit" class="button">' . esc_html__( 'Download the posting list (CSV)', 'founding-faces' ) . '</button>';
+		echo '</form>';
+
 		// --- Create test member ---
 		echo '<h3>' . esc_html__( 'Create a test member', 'founding-faces' ) . '</h3>';
 		echo '<p class="description">' . esc_html__( 'Test accounts take real numbers so you can exercise the whole flow. Clear them with the reset below before going live.', 'founding-faces' ) . '</p>';
@@ -274,6 +284,16 @@ class FF_Admin_Privacy {
 
 		$result = FF_Privacy::delete_member( $uid );
 		self::redirect( is_wp_error( $result ) ? 'error' : 'deleted' );
+	}
+
+	/**
+	 * Stream the posting list for The 35.
+	 */
+	public static function handle_export_35() {
+		self::guard();
+		check_admin_referer( 'ff_export_35' );
+
+		FF_Address::stream_list();
 	}
 
 	/**
