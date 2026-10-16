@@ -72,6 +72,9 @@ class FF_Privacy {
 		fputcsv( $handle, array( 'Public name', get_user_meta( $user_id, FF_Members::META_PUBLIC_NAME, true ) ) );
 		fputcsv( $handle, array( 'Email', $user ? $user->user_email : '' ) );
 		fputcsv( $handle, array( 'Account active', get_user_meta( $user_id, FF_Members::META_DEACTIVATED, true ) ? 'No' : 'Yes' ) );
+		if ( FF_Address::complete( $user_id ) ) {
+			fputcsv( $handle, array( 'Postal address', FF_Address::one_line( $user_id ) ) );
+		}
 		fputcsv( $handle, array() );
 
 		// Application block.
@@ -201,6 +204,7 @@ class FF_Privacy {
 		// Strip the personal user meta.
 		delete_user_meta( $user_id, FF_Members::META_REAL_NAME );
 		delete_user_meta( $user_id, FF_Members::META_POSTCODE );
+		FF_Address::forget( $user_id );
 		update_user_meta( $user_id, FF_Members::META_CONSENT, 0 );
 
 		// Deactivate and anonymise the account, keeping the number/group so the

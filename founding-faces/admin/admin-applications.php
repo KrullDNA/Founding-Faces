@@ -33,6 +33,7 @@ class FF_Admin_Applications {
 	public static function register() {
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'admin_post_ff_clear_tests', array( __CLASS__, 'handle_clear_tests' ) );
 	}
 
 	/**
@@ -156,8 +157,7 @@ class FF_Admin_Applications {
 				),
 				$tests
 			) ) . '</strong> ';
-			echo esc_html__( 'Clear them before you approve your first real member. The reset on Privacy & Tools refuses to run once a real number has been issued, and the numbering cannot be put back afterwards, so your first Founding Face would not be number 1.', 'founding-faces' );
-			echo ' <a href="' . esc_url( admin_url( 'admin.php?page=' . FF_Admin_Privacy::PAGE_SLUG ) ) . '">' . esc_html__( 'Go to Privacy & Tools', 'founding-faces' ) . '</a>';
+			echo esc_html__( 'They have to go before the first real member, so your first Founding Face is number 1: the numbering cannot be put back once a real number is issued. Until then, Approve into The 35 is replaced by the button that clears them.', 'founding-faces' );
 			echo '</p></div>';
 		}
 
@@ -319,29 +319,26 @@ class FF_Admin_Applications {
 	private static function render_actions( $app ) {
 		$full = ( 0 === FF_Members::places_left() );
 
-		// The question that has to be asked before the first real number goes
-		// out, because issuing one shuts the test reset for good.
 		$ask_35 = $full
 			? __( 'Every place in The 35 is already taken. Approving this one makes a thirty-sixth. Carry on?', 'founding-faces' )
 			: false;
-		$tests  = FF_Members::test_places();
-		if ( $tests > 0 && ! FF_Members::has_real_numbered_member() ) {
-			$ask_35 = sprintf(
-				/* translators: %d is how many test accounts hold numbers. */
-				_n(
-					'%d test account is still holding a number. Approving a real member into The 35 issues a real number, which blocks the test reset for good and cannot be undone. Clear the test accounts first?',
-					'%d test accounts are still holding numbers. Approving a real member into The 35 issues a real number, which blocks the test reset for good and cannot be undone. Clear the test accounts first?',
-					$tests,
-					'founding-faces'
-				),
-				$tests
-			);
-		}
+
+		// While test accounts hold numbers, approving into The 35 is not a
+		// decision to be confirmed, it is a thing to be done later. There is
+		// no version of this where keeping them is right, so the button is
+		// replaced by the one that clears them rather than being guarded by a
+		// question with a wrong answer in it.
+		$tests   = FF_Members::test_places();
+		$blocked = ( $tests > 0 && ! FF_Members::has_real_numbered_member() );
 
 		if ( 'pending' === $app->status ) {
-			self::full_warning( $full );
-			self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary', $ask_35 );
-			self::close_warning( $full );
+			if ( $blocked ) {
+				self::clear_tests_first( $tests );
+			} else {
+				self::full_warning( $full );
+				self::action_button( $app->id, 'approve_35', __( 'Approve → The 35', 'founding-faces' ), 'primary', $ask_35 );
+				self::close_warning( $full );
+			}
 			self::action_button( $app->id, 'approve_circle', __( 'Approve → The Circle', 'founding-faces' ) );
 			self::action_button( $app->id, 'decline', __( 'Decline', 'founding-faces' ), 'link-delete', true );
 			return;
@@ -350,9 +347,13 @@ class FF_Admin_Applications {
 		if ( in_array( $app->status, array( 'approved-35', 'approved-circle' ), true ) ) {
 			// A Circle member can be elevated into The 35 at any time.
 			if ( 'approved-circle' === $app->status ) {
-				self::full_warning( $full );
-				self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', $ask_35 ? $ask_35 : true );
-				self::close_warning( $full );
+				if ( $blocked ) {
+					self::clear_tests_first( $tests );
+				} else {
+					self::full_warning( $full );
+					self::action_button( $app->id, 'promote_35', __( 'Promote → The 35', 'founding-faces' ), 'primary', $ask_35 ? $ask_35 : true );
+					self::close_warning( $full );
+				}
 			}
 			self::action_button( $app->id, 'resend', __( 'Resend welcome', 'founding-faces' ) );
 			self::action_button( $app->id, 'withdraw', __( 'Withdraw', 'founding-faces' ), 'link-delete', true );
@@ -360,6 +361,69 @@ class FF_Admin_Applications {
 		}
 
 		echo '<span class="ff-muted">' . esc_html__( 'No actions', 'founding-faces' ) . '</span>';
+	}
+
+	/**
+	 * Clear the test accounts, from the button that stands in for approving.
+	 *
+	 * The same guarded reset as on Privacy & Tools, which refuses outright if
+	 * a real member holds a number, so this cannot reach a real Founding Face
+	 * however it is called.
+	 *
+	 * @return void
+	 */
+	public static function handle_clear_tests() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to do that.', 'founding-faces' ) );
+		}
+		check_admin_referer( 'ff_clear_tests' );
+
+		$result = FF_Members::run_test_reset();
+		$code   = is_wp_error( $result ) ? 'reset_refused' : 'tests_cleared';
+
+		wp_safe_redirect( add_query_arg(
+			array(
+				'page'   => self::PAGE_SLUG,
+				'ff_msg' => $code,
+			),
+			admin_url( 'admin.php' )
+		) );
+		exit;
+	}
+
+	/**
+	 * Stand in for the approve button while test accounts hold numbers.
+	 *
+	 * One button, and it is the one that has to happen first. The reset it
+	 * runs is the same guarded one as on Privacy & Tools, and it can only be
+	 * offered here in the state where that guard is already satisfied: test
+	 * accounts present, no real member holding a number. So there is nothing
+	 * to confirm and nothing at risk, and asking would only invite the wrong
+	 * answer.
+	 *
+	 * @param int $tests How many test accounts hold numbers.
+	 */
+	private static function clear_tests_first( $tests ) {
+		echo '<div class="ff-places-full">';
+		echo '<p class="ff-places-full-note"><strong>' . esc_html( sprintf(
+			/* translators: %d is how many test accounts hold numbers. */
+			_n(
+				'%d test account is holding a number.',
+				'%d test accounts are holding numbers.',
+				$tests,
+				'founding-faces'
+			),
+			$tests
+		) ) . '</strong> ';
+		echo esc_html__( 'Clear them before the first real member, so your first Founding Face is number 1. The numbering cannot be put back afterwards.', 'founding-faces' );
+		echo '</p>';
+
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="ff-action-form">';
+		echo '<input type="hidden" name="action" value="ff_clear_tests" />';
+		wp_nonce_field( 'ff_clear_tests' );
+		echo '<button type="submit" class="button button-primary">' . esc_html__( 'Reset the test accounts', 'founding-faces' ) . '</button>';
+		echo '</form>';
+		echo '</div>';
 	}
 
 	/**
@@ -482,9 +546,11 @@ class FF_Admin_Applications {
 			'declined'        => __( 'Application declined.', 'founding-faces' ),
 			'withdrawn'       => __( 'Member withdrawn; their number has been retired.', 'founding-faces' ),
 			'resent'          => __( 'Welcome email resent.', 'founding-faces' ),
+			'tests_cleared'   => __( 'Test accounts cleared and numbering reset. The next member approved into The 35 is number 1.', 'founding-faces' ),
 		);
 
 		$errors = array(
+			'reset_refused'       => __( 'The reset was refused: a real member already holds a number.', 'founding-faces' ),
 			'ff_not_found'        => __( 'That application could not be found.', 'founding-faces' ),
 			'ff_already'          => __( 'That application has already been approved.', 'founding-faces' ),
 			'ff_email_exists'     => __( 'A WordPress user already exists with that email address.', 'founding-faces' ),

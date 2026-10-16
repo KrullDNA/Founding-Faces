@@ -241,6 +241,8 @@ class FF_Account {
 					<span class="ff-hint"><?php esc_html_e( 'Turning this off unsubscribes you at our email platform too, not just here.', 'founding-faces' ); ?></span>
 				</p>
 
+				<?php echo FF_Address::fields_html( $user_id ); // Escaped inside. ?>
+
 				<p class="ff-submit">
 					<button type="submit"><?php esc_html_e( 'Save changes', 'founding-faces' ); ?></button>
 				</p>
@@ -391,6 +393,9 @@ class FF_Account {
 				FF_Connectors::unsubscribe_member( $user_id );
 			}
 		}
+
+		// --- Postal address (The 35 only; the method checks) ---
+		FF_Address::save( $user_id, $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// --- Email change (with confirmation) ---
 		if ( isset( $_POST['ff_email'] ) ) {

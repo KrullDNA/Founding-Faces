@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.57
+Stable tag: 1.1.59
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,36 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.59 =
+* The 35 can give a postal address, in their own account area, so samples have
+  somewhere to go. Street, unit or care of, suburb, state, postcode and
+  country, with the browser's own address autofill wired up.
+* The Circle are never asked. They receive no samples, and a programme that
+  collects an address it has no use for is collecting it for no reason.
+* A change emails you, with the new address and the previous one side by side,
+  so a label already written can be corrected before the next sendout rather
+  than coming back through the post.
+* A new posting list on Privacy & Tools: every active member of The 35 in
+  number order, with their address, as a CSV that opens in Excel or Numbers.
+  Members who have not filled theirs in are listed with Postable set to No, so
+  it doubles as the list of who to chase.
+* The address is part of a member's own data export, and is removed with the
+  rest of their details when they delete their data.
+* A member who moves also moves on the members map, which reads the postcode
+  from the address rather than keeping the one they applied with.
+
+= 1.1.58 =
+* While test accounts hold numbers, "Approve into The 35" is replaced by a
+  single button reading "Reset the test accounts". There is no version of this
+  where keeping them is right, so there is no longer a question to answer: the
+  button that has to be pressed first is the only one offered.
+* That replaces a confirmation dialog whose wording asked whether to clear the
+  test accounts and whose OK button approved the member anyway. A browser
+  dialog can only say OK and Cancel, so the fix was to stop asking.
+* The button runs the same guarded reset as Privacy & Tools, which refuses
+  outright if a real member holds a number, and it is only ever offered in the
+  state where that guard is already satisfied.
 
 = 1.1.57 =
 * Approving or promoting into The 35 now asks before it acts, in the words
