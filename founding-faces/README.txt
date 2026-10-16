@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.48
+Stable tag: 1.1.52
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,40 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.52 =
+* Fixed: the "viewing as" switcher in the toolbar did nothing, while the same
+  setting on your own profile worked. It changed the preview by adding
+  arguments to whatever screen you were standing on, and a screen is somebody
+  else's: it can redirect, rewrite or drop an argument it does not recognise,
+  and when it does the switch fails silently. It now posts to an endpoint of
+  its own and returns you to the page you were on.
+
+= 1.1.51 =
+* The "viewing as" switcher now confirms what it did, reading the setting back
+  from the database rather than repeating the click, so a switch that fails to
+  save says so instead of agreeing with you.
+* The nonce on that link was being lowercased before it was checked, which can
+  refuse a perfectly valid request. It is checked as sent now.
+* The switch link is built from the current page with its own arguments
+  stripped first, so switching twice from one screen cannot stack them up.
+
+= 1.1.50 =
+* Fixed: filtering the notes list brought the rows back as bare headings,
+  without the picture, the blurb or the date under the title, while the
+  unfiltered page above had all three.
+* Two faults behind it. The settings that describe how a row is built lived on
+  the Load more button, which only exists while there are more notes to load,
+  so a filter leaving a handful of notes took them away with it. They now live
+  on the section, which is always there. And the script was never sending the
+  picture and blurb settings at all, so even with the button present the
+  server had to guess.
+
+= 1.1.49 =
+* Fixed: a note with a long title dropped its whole text column below the
+  picture while its neighbours kept theirs beside, so cards in the same grid
+  were laid out differently for no reason a reader could see. The text column
+  now always sits beside the picture and takes whatever room is left.
 
 = 1.1.48 =
 * Video links on a note, as a repeater: add as many YouTube or Vimeo links as

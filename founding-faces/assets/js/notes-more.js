@@ -13,6 +13,28 @@
 	'use strict';
 
 	/**
+	 * One request setting, from the section if it has it, the button if not.
+	 *
+	 * The settings used to live on the Load more button alone, which exists
+	 * only while there are more notes to load. The section is always there.
+	 *
+	 * @param {HTMLElement} section  The notes section.
+	 * @param {HTMLElement} button   The load-more button, which may be absent.
+	 * @param {string}      name     The dataset key.
+	 * @param {string}      fallback What to send when neither has it.
+	 * @return {string}
+	 */
+	function setting( section, button, name, fallback ) {
+		if ( section && section.dataset[ name ] !== undefined ) {
+			return section.dataset[ name ];
+		}
+		if ( button && button.dataset[ name ] !== undefined ) {
+			return button.dataset[ name ];
+		}
+		return fallback;
+	}
+
+	/**
 	 * Read the current filter values from a section's filter bar.
 	 *
 	 * @param {HTMLElement} section The notes section.
@@ -68,12 +90,17 @@
 	function request( section, button, offset ) {
 		var body = new URLSearchParams();
 		body.append( 'action', 'ff_load_notes' );
-		body.append( 'nonce', button.dataset.nonce );
+		body.append( 'nonce', setting( section, button, 'nonce', '' ) );
 		body.append( 'offset', offset );
 		body.append( 'per_page', devicePerPage( button ) );
-		body.append( 'link', button.dataset.link );
-		body.append( 'new_tab', button.dataset.newTab );
-		body.append( 'show_product', button.dataset.showProduct );
+		body.append( 'link', setting( section, button, 'link', '1' ) );
+		body.append( 'new_tab', setting( section, button, 'newTab', '0' ) );
+		body.append( 'show_product', setting( section, button, 'showProduct', '1' ) );
+		// How a row is built, not just which rows come back. Without these a
+		// filtered list came back as bare headings while the unfiltered page
+		// above it had pictures and blurbs.
+		body.append( 'image', setting( section, button, 'image', '0' ) );
+		body.append( 'excerpt', setting( section, button, 'excerpt', '0' ) );
 
 		var filters = readFilters( section );
 		Object.keys( filters ).forEach( function ( key ) {
@@ -200,7 +227,7 @@
 		// No nonce means this is the editor's sample list: it is there to be
 		// styled, not driven, so leave its button and filters inert rather than
 		// letting a click return an error on the canvas.
-		if ( ! button || ! results || ! button.dataset.nonce ) {
+		if ( ! button || ! results || ! setting( section, button, 'nonce', '' ) ) {
 			return;
 		}
 
