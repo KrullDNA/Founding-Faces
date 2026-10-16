@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.53
+Stable tag: 1.1.54
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,14 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.54 =
+* The small print under the email card now takes a size and a line height of
+  its own, both on the Settings screen beside the wording. Line height is a
+  multiple of the size, so 1 sets the lines solid. The unsubscribe link takes
+  the same two, so the pair reads as one block.
+* The phone-sized rule used to force that type to a fixed 12px, which would
+  have overruled the setting. It follows the setting now.
 
 = 1.1.53 =
 * Fixed: sending a note to The 35 failed at the mail service with "subject is
