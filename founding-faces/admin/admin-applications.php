@@ -140,6 +140,27 @@ class FF_Admin_Applications {
 		}
 		echo '</p>';
 
+		// The one-way door: the guarded reset refuses to run the moment a real
+		// Founding Face holds a number, so test accounts have to go before the
+		// first real approval, not after it. Said here, on the screen where
+		// that approval happens, while it can still be acted on.
+		if ( $tests > 0 && ! FF_Members::has_real_numbered_member() ) {
+			echo '<div class="notice notice-warning"><p>';
+			echo '<strong>' . esc_html( sprintf(
+				/* translators: %d is how many test accounts hold numbers. */
+				_n(
+					'%d test account is holding a number.',
+					'%d test accounts are holding numbers.',
+					$tests,
+					'founding-faces'
+				),
+				$tests
+			) ) . '</strong> ';
+			echo esc_html__( 'Clear them before you approve your first real member. The reset on Privacy & Tools refuses to run once a real number has been issued, and the numbering cannot be put back afterwards, so your first Founding Face would not be number 1.', 'founding-faces' );
+			echo ' <a href="' . esc_url( admin_url( 'admin.php?page=' . FF_Admin_Privacy::PAGE_SLUG ) ) . '">' . esc_html__( 'Go to Privacy & Tools', 'founding-faces' ) . '</a>';
+			echo '</p></div>';
+		}
+
 		// Show the outcome of the last action, if any.
 		self::render_notice();
 

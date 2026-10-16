@@ -925,6 +925,44 @@ class FF_Members {
 	}
 
 	/**
+	 * Delete one test account and everything it did.
+	 *
+	 * Allowed whenever the account is test-flagged, including after a real
+	 * member has a number and the guarded reset has refused for good. The
+	 * reset is refused then because it rewinds the numbering for everybody;
+	 * removing one test account rewinds nothing, so there is no reason to
+	 * refuse it, and leaving a test account in the programme for ever is a
+	 * worse answer than letting it be deleted one at a time.
+	 *
+	 * @param int $user_id The account to remove.
+	 * @return true|WP_Error
+	 */
+	public static function delete_test_member( $user_id ) {
+		global $wpdb;
+
+		$user_id = absint( $user_id );
+		if ( ! $user_id || ! get_user_meta( $user_id, self::META_IS_TEST, true ) ) {
+			return new WP_Error( 'ff_not_test', __( 'That account is not a test account, so it was not deleted.', 'founding-faces' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		// Their number goes on the retired list, exactly as a withdrawal does,
+		// so it is never handed to anybody else.
+		$number = get_user_meta( $user_id, self::META_NUMBER, true );
+		if ( $number ) {
+			self::retire_number( (int) $number );
+		}
+
+		$wpdb->delete( $wpdb->prefix . 'ff_applications', array( 'user_id' => $user_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'ff_poll_votes', array( 'member_id' => $user_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'ff_interactions', array( 'member_id' => $user_id ), array( '%d' ) );
+		wp_delete_user( $user_id );
+
+		return true;
+	}
+
+	/**
 	 * Run the guarded test reset: delete test accounts and reset numbering.
 	 *
 	 * Deletes every test-flagged account (and any leftover test applications),

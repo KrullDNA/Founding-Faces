@@ -3,7 +3,7 @@ Contributors: KDNA
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.55
+Stable tag: 1.1.56
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,16 @@ Stage 14 (this release), Members map Elementor widget & add-on split:
   you use; only one is active at a time.
 
 == Changelog ==
+
+= 1.1.56 =
+* The applications screen warns, while test accounts still hold numbers and no
+  real member has one yet, that they must be cleared before the first real
+  approval. The guarded reset refuses to run once a real number exists, and
+  the numbering cannot be put back afterwards, so this is the one moment the
+  warning is useful.
+* A "Delete test account" button on each test account in Privacy & Tools,
+  which works whether or not the reset is still available. It removes that
+  account, its votes and its history, and retires its number.
 
 = 1.1.55 =
 * The applications screen now counts The 35. A line at the top reads "The 35:
